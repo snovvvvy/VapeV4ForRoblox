@@ -3259,7 +3259,12 @@ run(function()
 	Mode = POV:CreateDropdown({
 		Name = "Mode",
 		List = {"Classic", "LockFirstPerson"},
-		Function = function(...) end
+		Function = function(...) 
+			if POV.Enabled then 
+				POV:Toggle()
+				POV:Toggle()
+			end
+		end
 	})
 end)
 
