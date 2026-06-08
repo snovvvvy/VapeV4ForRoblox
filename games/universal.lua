@@ -3244,17 +3244,22 @@ run(function()
 end)
 
 run(function() 
-	local ThirdPersonPOV
+	local POV
+	local Mode
 
-	ThirdPersonPOV = vape.Categories.Render:CreateModule({
-		Name = "ThirdPersonPOV",
+	POV = vape.Categories.Render:CreateModule({
+		Name = "POV",
 		Function = function(callback) 
 			if callback then 
-				lplr.CameraMode = "Classic"
-			else
-				lplr.CameraMode = "LockFirstPerson"
+				lplr.CameraMode = Mode.Value
 			end	
 		end
+	})
+
+	Mode = POV:CreateDropdown({
+		Name = "Mode",
+		List = {"Classic", "LockFirstPerson"},
+		Function = function(...) end
 	})
 end)
 
