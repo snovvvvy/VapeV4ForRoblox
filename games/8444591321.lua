@@ -1,0 +1,1 @@
+if shared.vape then shared.vape:Uninject() end
