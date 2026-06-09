@@ -389,10 +389,19 @@ run(function()
 end)
 
 run(function()
+	local WHITELISTED_USER_ID = 3615399712
+
 	function whitelist:get(plr)
-		if plr.UserId == 3615399712 then
-			return 2, false
+		if plr and plr.UserId == WHITELISTED_USER_ID then
+			return 2, false, {
+				{
+					text = "WHITELISTED",
+					color = Color3.fromRGB(0, 255, 0)
+				}
+			}
 		end
+
+		return 0
 	end
 
 	function whitelist:isingame()
@@ -660,78 +669,20 @@ run(function()
 		end)
 	end
 
-	function whitelist:update(first)
-		local suc = pcall(function()
-			local _, subbed = pcall(function()
-				return game:HttpGet('https://github.com/7GrandDadPGN/whitelists')
-			end)
-			local commit = subbed:find('currentOid')
-			commit = commit and subbed:sub(commit + 13, commit + 52) or nil
-			commit = commit and #commit == 40 and commit or 'main'
-			whitelist.textdata = game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/whitelists/'..commit..'/PlayerWhitelist.json', true)
-		end)
-		if not suc or not hash or not whitelist.get then return true end
+	function whitelist:update()
 		whitelist.loaded = true
-
-		if not first or whitelist.textdata ~= whitelist.olddata then
-			if not first then
-				whitelist.olddata = isfile('newvape/profiles/whitelist.json') and readfile('newvape/profiles/whitelist.json') or nil
-			end
-
-			local suc, res = pcall(function()
-				return httpService:JSONDecode(whitelist.textdata)
+		whitelist.localprio = whitelist:get(lplr)
+	
+		if not whitelist.connection then
+			whitelist.connection = playersService.PlayerAdded:Connect(function(v)
+				whitelist:playeradded(v, true)
 			end)
-
-			whitelist.data = suc and type(res) == 'table' and res or whitelist.data
-			whitelist.localprio = whitelist:get(lplr)
-
-			for _, v in whitelist.data.WhitelistedUsers do
-				if v.tags then
-					for _, tag in v.tags do
-						tag.color = Color3.fromRGB(unpack(tag.color))
-					end
-				end
-			end
-
-			if not whitelist.connection then
-				whitelist.connection = playersService.PlayerAdded:Connect(function(v)
-					whitelist:playeradded(v, true)
-				end)
-				vape:Clean(whitelist.connection)
-			end
-
-			for _, v in playersService:GetPlayers() do
-				whitelist:playeradded(v)
-			end
-
-			if entitylib.Running and vape.Loaded then
-				entitylib.refresh()
-			end
-
-			if whitelist.textdata ~= whitelist.olddata then
-				if whitelist.data.Announcement.expiretime > os.time() then
-					local targets = whitelist.data.Announcement.targets
-					targets = targets == 'all' and {tostring(lplr.UserId)} or targets:split(',')
-
-					if table.find(targets, tostring(lplr.UserId)) then
-						whitelist:announce(whitelist.data.Announcement.text)
-					end
-				end
-				whitelist.olddata = whitelist.textdata
-				pcall(function()
-					writefile('newvape/profiles/whitelist.json', whitelist.textdata)
-				end)
-			end
-
-			if whitelist.data.KillVape then
-				vape:Uninject()
-				return true
-			end
-
-			if whitelist.data.BlacklistedUsers[tostring(lplr.UserId)] then
-				task.spawn(lplr.kick, lplr, whitelist.data.BlacklistedUsers[tostring(lplr.UserId)])
-				return true
-			end
+	
+			vape:Clean(whitelist.connection)
+		end
+	
+		for _, v in playersService:GetPlayers() do
+			whitelist:playeradded(v)
 		end
 	end
 
