@@ -217,6 +217,7 @@ run(function()
 		end
 		if ent.NPC then return true end
 		if isFriend(ent.Player) then return false end
+		if not select(2, whitelist:get(ent.Player)) then return false end
 		if vape.Categories.Main.Options['Teams by server'].Enabled then
 			return lplr.Team ~= ent.Player.Team and ent.Player.Team ~= teams.Neutral
 		end
