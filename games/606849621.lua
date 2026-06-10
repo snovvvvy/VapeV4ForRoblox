@@ -735,7 +735,7 @@ run(function()
 	})
 end)
 	
-run(function()
+--[[run(function()
 	local nitrotable = debug.getupvalue(jb.VehicleController.NitroShopVisible, 1)
 	local oldnitro
 	
@@ -759,7 +759,7 @@ run(function()
 		end,
 		Tooltip = 'Infinite boost for the local car'
 	})
-end)
+end)]]
 	
 run(function()
 	vape.Categories.Utility:CreateModule({
