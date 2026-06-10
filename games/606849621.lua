@@ -752,7 +752,9 @@ run(function()
 				until not InfNitro.Enabled
 			else
 				nitrotable.Nitro = oldnitro
-				jb.VehicleController.updateSpdBarRatio(oldnitro / 250)
+				if oldnitro then 
+					jb.VehicleController.updateSpdBarRatio(oldnitro / 250)
+				end
 			end
 		end,
 		Tooltip = 'Infinite boost for the local car'
