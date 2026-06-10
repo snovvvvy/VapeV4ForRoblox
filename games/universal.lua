@@ -457,7 +457,7 @@ run(function()
 			if self.localprio == 0 then
 				olduninject = vape.Uninject
 				vape.Uninject = function()
-					notif('Vape', 'No escaping the private members :)', 10)
+					notif('Vape', 'No escaping the whitelisted members :)', 10)
 				end
 			end
 		end
