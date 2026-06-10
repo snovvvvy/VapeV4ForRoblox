@@ -428,6 +428,10 @@ run(function()
 	end
 
 	function whitelist:getplayer(arg, plr)
+		if arg == "self" or arg == "local" then
+			return plr == lplr
+		end
+		
 		if arg == 'default' and self.localprio == 0 then
 			return true
 		end
