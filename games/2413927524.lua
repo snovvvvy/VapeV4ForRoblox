@@ -307,37 +307,50 @@ run(function()
 	end
 
 	local function Added(obj)
-        if Reference[obj] or not IsATrap(obj) then
-            return
-        end
-    
-        local ref = obj.HitBox
-        local oldParent = ref.Parent
-    
-        ref.Parent = Folder
-    
-        Reference[obj] = {
-            HitBox = ref,
-            OriginalParent = oldParent
-        }
-    end
-    
-    local function Removed(obj)
-        local ref = Reference[obj]
-        if not ref then
-            return
-        end
-    
-        if vape.ThreadFix then
-            setthreadidentity(8)
-        end
-    
-        if ref.HitBox and ref.HitBox.OriginalParent == Folder then
-            ref.HitBox.OriginalParent = ref.OriginalParent
-        end
-    end
+		if Reference[obj] or not IsATrap(obj) then
+			return
+		end
+	
+		local hitbox = obj:FindFirstChild("HitBox", true)
+		if not hitbox then
+			notif("AntiTrap", "No HitBox found for" .. obj:GetFullName(), 5, "warning")
+			return
+		end
+	
+		local oldParent = hitbox.Parent
+	
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+	
+		hitbox.Parent = Folder
+	
+		Reference[obj] = {
+			HitBox = hitbox,
+			OriginalParent = oldParent
+		}
+	end
+	
+	local function Removed(obj)
+		local data = Reference[obj]
+		if not data then
+			return
+		end
+	
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+	
+		if data.HitBox
+			and data.HitBox.Parent == Folder
+			and data.OriginalParent then
+			data.HitBox.Parent = data.OriginalParent
+		end
+	
+		Reference[obj] = nil
+	end
 
-	AntiTrap = vape.Categories.Render:CreateModule({
+	AntiTrap = vape.Categories.Blatant:CreateModule({
 		Name = "AntiTrap",
 		Function = function(callback)
 			if callback then
@@ -349,12 +362,14 @@ run(function()
 				end
 			else
 				for _, data in pairs(Reference) do
-                    if data.HitBox then
-                        data.HitBox.OriginalParent = data.OriginalParent
-                    end
-                end
-                
-                table.clear(Reference)
+					if data.HitBox
+						and data.HitBox.Parent == Folder
+						and data.OriginalParent then
+						data.HitBox.Parent = data.OriginalParent
+					end
+				end
+			
+				table.clear(Reference)
 			end
 		end,
 	})
