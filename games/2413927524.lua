@@ -79,7 +79,7 @@ local getcustomasset = vape.Libraries.getcustomasset
 local uipallet = vape.Libraries.uipallet
 local entitylib = vape.Libraries.entity
 local sessioninfo = vape.Libraries.SessionInfo
-task.wait(1)
+
 local function notif(...)
 	return vape:CreateNotification(...)
 end
@@ -141,7 +141,7 @@ run(function()
     local powerValues = replicatedStorage.PowerValues
     local powerLevel = powerValues.PowerLevel
 
-    local power = sessioninfo:AddItem("Power", powerLevel.MaxValue, function(val) 
+    local power = vape.Libraries.SessionInfo:AddItem("Power", powerLevel.MaxValue, function(val) 
         return powerLevel.Value
     end, false)
 end)
