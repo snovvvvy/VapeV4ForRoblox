@@ -1001,10 +1001,14 @@ run(function()
 	local AvoidTraps
 
 	local Farming = false
-	local currentToken = 0
+	local CurrentToken = 0
 	local FailedScraps = {}
-	local FailCooldown = 
+	local FailCooldown = 5
 	local TrapAvoidRadius = 8
+
+	local TrapModifiers = {}
+	local ModifierFolder = Instance.new("Folder")
+	ModifierFolder.Name = "ScrapFarm_TrapAvoidance"
 
 	local function GetScrapPosition(scrap)
 		if scrap:IsA("BasePart") then
@@ -1036,33 +1040,77 @@ run(function()
 		return nil
 	end
 
-	local function GetTrapPositions()
-		local positions = {}
+	local function CreateTrapModifier(trap)
+		if TrapModifiers[trap] then
+			return
+		end
+
+		local pos = GetTrapPosition(trap)
+		if not pos then
+			return
+		end
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		local zone = Instance.new("Part")
+		zone.Name = "TrapAvoidanceZone"
+		zone.Shape = Enum.PartType.Block
+		zone.Size = Vector3.new(TrapAvoidRadius * 2, 12, TrapAvoidRadius * 2)
+		zone.CFrame = CFrame.new(pos)
+		zone.Anchored = true
+		zone.CanCollide = false
+		zone.CanQuery = false
+		zone.CanTouch = false
+		zone.Transparency = 1
+		zone.Parent = ModifierFolder
+
+		local modifier = Instance.new("PathfindingModifier")
+		modifier.PassThrough = false
+		modifier.Parent = zone
+
+		TrapModifiers[trap] = zone
+	end
+
+	local function RemoveTrapModifier(trap)
+		local zone = TrapModifiers[trap]
+		if not zone then
+			return
+		end
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		zone:Destroy()
+		TrapModifiers[trap] = nil
+	end
+
+	local function ClearAllTrapModifiers()
+		for trap in pairs(TrapModifiers) do
+			RemoveTrapModifier(trap)
+		end
+
+		table.clear(TrapModifiers)
+	end
+
+	local function EnableTrapAvoidance()
+		ModifierFolder.Parent = workspace
 
 		for _, trap in ipairs(collectionService:GetTagged("Trap")) do
 			if trap.Parent then
-				local pos = GetTrapPosition(trap)
-				if pos then
-					positions[#positions + 1] = pos
-				end
+				CreateTrapModifier(trap)
 			end
 		end
 
-		return positions
+		ScrapFarm:Clean(collectionService:GetInstanceAddedSignal("Trap"):Connect(CreateTrapModifier))
+		ScrapFarm:Clean(collectionService:GetInstanceRemovedSignal("Trap"):Connect(RemoveTrapModifier))
 	end
 
-	local function PathCrossesTrap(waypoints, trapPositions)
-		for _, wp in ipairs(waypoints) do
-			local wpPos = wp.Position
-
-			for _, trapPos in ipairs(trapPositions) do
-				if (wpPos - trapPos).Magnitude <= TrapAvoidRadius then
-					return true
-				end
-			end
-		end
-
-		return false
+	local function DisableTrapAvoidance()
+		ClearAllTrapModifiers()
+		ModifierFolder.Parent = nil
 	end
 
 	local function IsValidScrap(obj)
@@ -1133,31 +1181,9 @@ run(function()
 
 		local waypoints = path:GetWaypoints()
 
-		if AvoidTraps.Enabled then
-			local trapPositions = GetTrapPositions()
-			if #trapPositions > 0 and PathCrossesTrap(waypoints, trapPositions) then
-				return "trap"
-			end
-		end
-
 		for i = 1, #waypoints do
-			if not Farming or token ~= currentToken then
+			if not Farming or token ~= CurrentToken then
 				return false
-			end
-
-			if AvoidTraps.Enabled then
-				local trapPositions = GetTrapPositions()
-				if #trapPositions > 0 then
-					for j = i, math.min(i + 1, #waypoints) do
-						local wpPos = waypoints[j].Position
-						for _, trapPos in ipairs(trapPositions) do
-							if (wpPos - trapPos).Magnitude <= TrapAvoidRadius then
-								humanoid:Move(Vector3.zero)
-								return "trap"
-							end
-						end
-					end
-				end
 			end
 
 			local wp = waypoints[i]
@@ -1170,7 +1196,7 @@ run(function()
 
 			local start = os.clock()
 			while (root.Position - wp.Position).Magnitude > 3 do
-				if not Farming or token ~= currentToken then
+				if not Farming or token ~= CurrentToken then
 					return false
 				end
 
@@ -1190,22 +1216,24 @@ run(function()
 		Function = function(callback)
 			if callback then
 				Farming = true
-				currentToken += 1
-				local token = currentToken
+				CurrentToken += 1
+				local token = CurrentToken
+
+				if AvoidTraps.Enabled then
+					EnableTrapAvoidance()
+				end
 
 				task.spawn(function()
-					while Farming and token == currentToken do
+					while Farming and token == CurrentToken do
 						local scrap = GetClosestScrap()
 
 						if scrap then
 							local pos = GetScrapPosition(scrap)
 
 							if pos then
-								local result = WalkPathTo(pos, token)
+								local success = WalkPathTo(pos, token)
 
-								-- Cool down this scrap if we failed for any reason
-								-- other than being toggled off mid-walk.
-								if result ~= true and Farming and token == currentToken then
+								if not success and Farming and token == CurrentToken then
 									if scrap.Parent then
 										FailedScraps[scrap] = os.clock() + FailCooldown
 									end
@@ -1218,8 +1246,9 @@ run(function()
 				end)
 			else
 				Farming = false
-				currentToken += 1
+				CurrentToken += 1
 				table.clear(FailedScraps)
+				DisableTrapAvoidance()
 
 				local character = lplr.Character
 				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -1229,12 +1258,23 @@ run(function()
 				end
 			end
 		end,
-		Tooltip = "Automatically walks to and collects the nearest scrap.",
+		Tooltip = "Automatically walks to and collects the nearest tagged Scrap.",
 	})
 
 	AvoidTraps = ScrapFarm:CreateToggle({
 		Name = "Avoid Traps",
 		Default = true,
-		Tooltip = "Skips scrap pickups whose path runs through a tagged Trap, and re-routes mid-walk if one appears.",
+		Function = function(callback)
+			if not Farming then
+				return
+			end
+
+			if callback then
+				EnableTrapAvoidance()
+			else
+				DisableTrapAvoidance()
+			end
+		end,
+		Tooltip = "Treats tagged Traps as solid obstacles so pathfinding routes around them instead of through.",
 	})
 end)
