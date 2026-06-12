@@ -141,7 +141,7 @@ run(function()
     local powerValues = replicatedStorage.PowerValues
     local powerLevel = powerValues.PowerLevel
 
-    local power = vape.Libraries.SessionInfo:AddItem("Power", powerLevel.MaxValue, function(val) 
+    local power = sessioninfo:AddItem("Power", powerLevel.MaxValue, function(val) 
         return powerLevel.Value
     end, false)
 end)
