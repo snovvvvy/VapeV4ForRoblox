@@ -1056,53 +1056,55 @@ run(function()
 	local function WalkPathTo(targetPos, token)
 		local character = lplr.Character
 		if not character then return false end
-
+	
 		local humanoid = character:FindFirstChildOfClass("Humanoid")
 		local root = character:FindFirstChild("HumanoidRootPart")
 		if not humanoid or not root then return false end
-
-		local path = pathfindingService:CreatePath({
+	
+		local path = PathfindingService:CreatePath({
 			AgentRadius = 2,
 			AgentHeight = 5,
 			AgentCanJump = true,
-			WaypointSpacing = 4
+			WaypointSpacing = 10
 		})
-
+	
 		local ok = pcall(function()
 			path:ComputeAsync(root.Position, targetPos)
 		end)
-
+	
 		if not ok or path.Status ~= Enum.PathStatus.Success then
 			return false
 		end
-
-		for _, waypoint in ipairs(path:GetWaypoints()) do
+	
+		local waypoints = path:GetWaypoints()
+	
+		for i = 1, #waypoints do
 			if not Farming or token ~= currentToken then
 				return false
 			end
-
-			local newScrap, newDist = GetClosestScrap()
-			local currentDist = (root.Position - targetPos).Magnitude
-
-			if newScrap then
-				local newPos = GetScrapPosition(newScrap)
-				if newPos and newDist < currentDist - 6 then
-					return false
-				end
-			end
-
-			if waypoint.Action == Enum.PathWaypointAction.Jump then
+	
+			local wp = waypoints[i]
+	
+			if wp.Action == Enum.PathWaypointAction.Jump then
 				humanoid.Jump = true
 			end
+	
+			humanoid:MoveTo(wp.Position)
+			
+			local start = os.clock()
+			while (root.Position - wp.Position).Magnitude > 3 do
+				if not Farming or token ~= currentToken then
+					return false
+				end
 
-			humanoid:MoveTo(waypoint.Position)
-
-			local reached = humanoid.MoveToFinished:Wait()
-			if not reached then
-				return false
+				if os.clock() - start > 1.5 then
+					break
+				end
+	
+				task.wait(0.05)
 			end
 		end
-
+	
 		return true
 	end
 
