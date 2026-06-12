@@ -409,7 +409,8 @@ run(function()
 
 		Connections[obj].Spam = task.spawn(function()
 			while Connections[obj] and obj.Parent do
-				print("TRAP HIT:", obj:GetFullName())
+				keypress(0x20)
+				keyrelease(0x20)
 				task.wait()
 			end
 		end)
@@ -441,7 +442,6 @@ run(function()
 			local value = obj:GetAttribute("HitChar")
 
 			if value == lplr.Name then
-				print("Trap hit detected")
 				StartSpam(obj)
 			end
 		end)
