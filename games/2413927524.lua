@@ -389,10 +389,10 @@ run(function()
 		Name = "SupplyCrateESP",
 		Function = function(callback)
 			if callback then
-				SupplyCrateESP:Clean(collectionService:GetInstanceAddedSignal("Scrap"):Connect(Added))
-				SupplyCrateESP:Clean(collectionService:GetInstanceRemovedSignal("Scrap"):Connect(Removed))
+				SupplyCrateESP:Clean(collectionService:GetInstanceAddedSignal("SupplyCrate"):Connect(Added))
+				SupplyCrateESP:Clean(collectionService:GetInstanceRemovedSignal("SupplyCrate"):Connect(Removed))
 
-				for _, obj in ipairs(collectionService:GetTagged("Scrap")) do
+				for _, obj in ipairs(collectionService:GetTagged("SupplyCrate")) do
 					Added(obj)
 				end
 			else
@@ -915,6 +915,7 @@ run(function()
 				table.clear(Connections)
 			end
 		end,
+		Tooltip = "Automatically presses spacebar when you get caught on a trap.\n(really fast)",
 	})
 end)
 
@@ -941,7 +942,7 @@ run(function()
 	end
 	
 	Invisible = vape.Categories.Blatant:CreateModule({
-		Name = 'GodMode',
+		Name = 'PartialGodMode',
 		Function = function(callback)
 			if callback then
 				animationTrickery()
@@ -990,6 +991,6 @@ run(function()
 				end
 			end
 		end,
-		Tooltip = 'Turns you invisible so that the rake cant see you.'
+		Tooltip = 'Turns you invisible so that the rake cant see you.\n (sometimes does not work, especially in bloodhour mode.)'
 	})
 end)
