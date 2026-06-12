@@ -179,10 +179,16 @@ end
 run(function() 
     local powerValues = replicatedStorage.PowerValues
     local powerLevel = powerValues.PowerLevel
+	
+	local Timer = replicatedStorage.Timer
 
     local power = sessioninfo:AddItem("Power", powerLevel.MaxValue, function(val) 
         return powerLevel.Value <= 60 and "⚠️ " .. powerLevel.Value .. "/" .. powerLevel.MaxValue or powerLevel.Value .. "/" .. powerLevel.MaxValue
     end, false)
+
+	local timer = sessioninfo:AddItem("Time Until Day", 0, function(val)
+		return Timer.Value == 1 and Timer.Value .. " sec" or Timer.Value .. " secs"
+	end)
 end)
 
 run(function()
