@@ -182,7 +182,7 @@ run(function()
 		local current = obj.Parent
 
 		while current do
-			if current = workspace then
+			if current == workspace then
 				return true
 			end
 
