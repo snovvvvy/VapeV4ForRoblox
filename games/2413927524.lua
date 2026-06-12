@@ -78,7 +78,7 @@ local getfontsize = vape.Libraries.getfontsize
 local getcustomasset = vape.Libraries.getcustomasset
 local uipallet = vape.Libraries.uipallet
 local entitylib = vape.Libraries.entity
-local sessioninfo = vape.Libraries.SessionInfo
+local sessioninfo = vape.Libraries.sessioninfo
 
 local function notif(...)
 	return vape:CreateNotification(...)
