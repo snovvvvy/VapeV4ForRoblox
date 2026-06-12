@@ -57,7 +57,7 @@ local textChatService = cloneref(game:GetService("TextChatService"))
 local contextService = cloneref(game:GetService("ContextActionService"))
 local collectionService = cloneref(game:GetService("CollectionService"))
 local teamsService = cloneref(game:GetService("Teams"))
-local pathfindingService = game:GetService("PathfindingService")
+local pathfindingService = cloneref(game:GetService("PathfindingService"))
 local coreGui = cloneref(game:GetService("CoreGui"))
 
 local isnetworkowner = identifyexecutor
@@ -1002,50 +1002,35 @@ run(function()
 
 	local currentToken = 0
 
-	local function IsAScrap(obj)
-		if not obj then return false end
-		if not obj.Name:find("Scrap") then return false end
-
-		local current = obj.Parent
-		while current do
-			if current.Name:find("ItemSpawn") then
-				return true
-			end
-			current = current.Parent
-		end
-
-		return false
-	end
-
 	local function GetScrapPosition(scrap)
 		if scrap:IsA("BasePart") then
 			return scrap.Position
 		end
 
-		if scrap:IsA("Model") then
-			local part = scrap.PrimaryPart or scrap:FindFirstChildWhichIsA("BasePart")
+		if scrap:IsA("Model") or scrap:IsA("Folder") then
+			local part = (scrap.PrimaryPart) or scrap:FindFirstChildWhichIsA("BasePart", true)
 			if part then
 				return part.Position
 			end
 		end
+
+		return nil
 	end
 
 	local function GetClosestScrap()
 		local character = lplr.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
-		if not root then return end
+		if not root then return nil, nil end
 
 		local closest, closestDist = nil, math.huge
 
 		for _, obj in ipairs(collectionService:GetTagged("Scrap")) do
-			if IsAScrap(obj) then
-				local pos = GetScrapPosition(obj)
-				if pos then
-					local dist = (root.Position - pos).Magnitude
-					if dist < closestDist then
-						closestDist = dist
-						closest = obj
-					end
+			local pos = GetScrapPosition(obj)
+			if pos then
+				local dist = (root.Position - pos).Magnitude
+				if dist < closestDist then
+					closestDist = dist
+					closest = obj
 				end
 			end
 		end
@@ -1056,39 +1041,45 @@ run(function()
 	local function WalkPathTo(targetPos, token)
 		local character = lplr.Character
 		if not character then return false end
-	
+
 		local humanoid = character:FindFirstChildOfClass("Humanoid")
 		local root = character:FindFirstChild("HumanoidRootPart")
 		if not humanoid or not root then return false end
-	
+
 		local path = pathfindingService:CreatePath({
-			AgentRadius = 2,
+			AgentRadius = 1.5,
 			AgentHeight = 5,
 			AgentCanJump = true,
-			WaypointSpacing = 10
+			WaypointSpacing = 4
 		})
-	
-		local ok = pcall(function()
+
+		local ok, err = pcall(function()
 			path:ComputeAsync(root.Position, targetPos)
 		end)
-	
-		if not ok or path.Status ~= Enum.PathStatus.Success then
+
+		if not ok then
+			notif("ScrapFarm", "ComputeAsync error: " .. err, 5, "warning")
 			return false
 		end
-	
+
+		if path.Status ~= Enum.PathStatus.Success then
+			notif("ScrapFarm", "Path failed with status: " .. path.Status.Name, 5, "warning")
+			return false
+		end
+
 		local waypoints = path:GetWaypoints()
-	
+
 		for i = 1, #waypoints do
 			if not Farming or token ~= currentToken then
 				return false
 			end
-	
+
 			local wp = waypoints[i]
-	
+
 			if wp.Action == Enum.PathWaypointAction.Jump then
 				humanoid.Jump = true
 			end
-	
+
 			humanoid:MoveTo(wp.Position)
 
 			local start = os.clock()
@@ -1100,38 +1091,38 @@ run(function()
 				if os.clock() - start > 1.5 then
 					break
 				end
-	
+
 				task.wait(0.05)
 			end
 		end
-	
+
 		return true
 	end
 
 	ScrapFarm = vape.Categories.Blatant:CreateModule({
 		Name = "ScrapFarm",
 		Function = function(callback)
-			Farming = ScrapFarm.Enabled
 			if callback then
+				Farming = true
 				currentToken += 1
+				local token = currentToken
 
 				task.spawn(function()
-					repeat 
-						local token = currentToken
-
+					while Farming and token == currentToken do
 						local scrap = GetClosestScrap()
+
 						if scrap then
 							local pos = GetScrapPosition(scrap)
-
 							if pos then
 								WalkPathTo(pos, token)
 							end
 						end
 
 						task.wait(0.1)
-					until not ScrapFarm.Enabled
+					end
 				end)
 			else
+				Farming = false
 				currentToken += 1
 
 				local character = lplr.Character
