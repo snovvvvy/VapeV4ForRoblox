@@ -79,7 +79,7 @@ local getcustomasset = vape.Libraries.getcustomasset
 local uipallet = vape.Libraries.uipallet
 local entitylib = vape.Libraries.entity
 local sessioninfo = vape.Libraries.SessionInfo
-
+task.wait(1)
 local function notif(...)
 	return vape:CreateNotification(...)
 end
