@@ -999,6 +999,7 @@ end)
 run(function()
 	local ScrapFarm
 	local AvoidTraps
+	local ShowPath
 
 	local Farming = false
 	local CurrentToken = 0
@@ -1009,6 +1010,11 @@ run(function()
 	local TrapModifiers = {}
 	local ModifierFolder = Instance.new("Folder")
 	ModifierFolder.Name = "ScrapFarm_TrapAvoidance"
+
+	local PathVisuals = {}
+	local PathFolder = Instance.new("Folder")
+	PathFolder.Name = "ScrapFarm_PathVisuals"
+	PathFolder.Parent = vape.gui
 
 	local function GetScrapPosition(scrap)
 		if scrap:IsA("BasePart") then
@@ -1113,6 +1119,62 @@ run(function()
 		ModifierFolder.Parent = nil
 	end
 
+	local function ClearPathVisuals()
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		for _, part in ipairs(PathVisuals) do
+			part:Destroy()
+		end
+
+		table.clear(PathVisuals)
+	end
+
+	local function DrawPathVisuals(waypoints)
+		ClearPathVisuals()
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		for i, wp in ipairs(waypoints) do
+			local node = Instance.new("Part")
+			node.Name = "PathNode"
+			node.Shape = Enum.PartType.Ball
+			node.Size = Vector3.new(0.6, 0.6, 0.6)
+			node.Position = wp.Position
+			node.Anchored = true
+			node.CanCollide = false
+			node.CanQuery = false
+			node.CanTouch = false
+			node.Material = Enum.Material.Neon
+			node.Color = wp.Action == Enum.PathWaypointAction.Jump and Color3.new(1, 1, 0) or Color3.new(0, 1, 0.5)
+			node.Parent = PathFolder
+
+			PathVisuals[#PathVisuals + 1] = node
+
+			if i > 1 then
+				local prev = waypoints[i - 1]
+				local distance = (wp.Position - prev.Position).Magnitude
+
+				local line = Instance.new("Part")
+				line.Name = "PathLine"
+				line.Size = Vector3.new(0.15, 0.15, distance)
+				line.CFrame = CFrame.new(prev.Position, wp.Position) * CFrame.new(0, 0, -distance / 2)
+				line.Anchored = true
+				line.CanCollide = false
+				line.CanQuery = false
+				line.CanTouch = false
+				line.Material = Enum.Material.Neon
+				line.Color = Color3.new(0, 1, 0.5)
+				line.Parent = PathFolder
+
+				PathVisuals[#PathVisuals + 1] = line
+			end
+		end
+	end
+
 	local function IsValidScrap(obj)
 		if not obj or not obj.Parent then
 			return false
@@ -1176,10 +1238,18 @@ run(function()
 		end
 
 		if path.Status ~= Enum.PathStatus.Success then
+			if ShowPath.Enabled then
+				ClearPathVisuals()
+			end
+
 			return false
 		end
 
 		local waypoints = path:GetWaypoints()
+
+		if ShowPath.Enabled then
+			DrawPathVisuals(waypoints)
+		end
 
 		for i = 1, #waypoints do
 			if not Farming or token ~= CurrentToken then
@@ -1249,6 +1319,7 @@ run(function()
 				CurrentToken += 1
 				table.clear(FailedScraps)
 				DisableTrapAvoidance()
+				ClearPathVisuals()
 
 				local character = lplr.Character
 				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -1276,5 +1347,16 @@ run(function()
 			end
 		end,
 		Tooltip = "Treats tagged Traps as solid obstacles so pathfinding routes around them instead of through.",
+	})
+
+	ShowPath = ScrapFarm:CreateToggle({
+		Name = "Show Path",
+		Default = false,
+		Function = function(callback)
+			if not callback then
+				ClearPathVisuals()
+			end
+		end,
+		Tooltip = "Renders the current PathfindingService route as nodes and lines.",
 	})
 end)
