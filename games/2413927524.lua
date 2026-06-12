@@ -998,11 +998,13 @@ end)
 
 run(function()
 	local ScrapFarm
-	local Farming = false
+	local AvoidTraps
 
+	local Farming = false
 	local currentToken = 0
 	local FailedScraps = {}
-	local failcd = 5
+	local FailCooldown = 
+	local TrapAvoidRadius = 8
 
 	local function GetScrapPosition(scrap)
 		if scrap:IsA("BasePart") then
@@ -1019,6 +1021,50 @@ run(function()
 		return nil
 	end
 
+	local function GetTrapPosition(trap)
+		if trap:IsA("BasePart") then
+			return trap.Position
+		end
+
+		if trap:IsA("Model") or trap:IsA("Folder") then
+			local part = trap.PrimaryPart or trap:FindFirstChildWhichIsA("BasePart", true)
+			if part then
+				return part.Position
+			end
+		end
+
+		return nil
+	end
+
+	local function GetTrapPositions()
+		local positions = {}
+
+		for _, trap in ipairs(collectionService:GetTagged("Trap")) do
+			if trap.Parent then
+				local pos = GetTrapPosition(trap)
+				if pos then
+					positions[#positions + 1] = pos
+				end
+			end
+		end
+
+		return positions
+	end
+
+	local function PathCrossesTrap(waypoints, trapPositions)
+		for _, wp in ipairs(waypoints) do
+			local wpPos = wp.Position
+
+			for _, trapPos in ipairs(trapPositions) do
+				if (wpPos - trapPos).Magnitude <= TrapAvoidRadius then
+					return true
+				end
+			end
+		end
+
+		return false
+	end
+
 	local function IsValidScrap(obj)
 		if not obj or not obj.Parent then
 			return false
@@ -1028,7 +1074,7 @@ run(function()
 		if expiry and os.clock() < expiry then
 			return false
 		elseif expiry then
-			FailedScraps[obj] = nil -- cooldown elapsed, allow retry
+			FailedScraps[obj] = nil
 		end
 
 		return true
@@ -1087,9 +1133,31 @@ run(function()
 
 		local waypoints = path:GetWaypoints()
 
+		if AvoidTraps.Enabled then
+			local trapPositions = GetTrapPositions()
+			if #trapPositions > 0 and PathCrossesTrap(waypoints, trapPositions) then
+				return "trap"
+			end
+		end
+
 		for i = 1, #waypoints do
 			if not Farming or token ~= currentToken then
 				return false
+			end
+
+			if AvoidTraps.Enabled then
+				local trapPositions = GetTrapPositions()
+				if #trapPositions > 0 then
+					for j = i, math.min(i + 1, #waypoints) do
+						local wpPos = waypoints[j].Position
+						for _, trapPos in ipairs(trapPositions) do
+							if (wpPos - trapPos).Magnitude <= TrapAvoidRadius then
+								humanoid:Move(Vector3.zero)
+								return "trap"
+							end
+						end
+					end
+				end
 			end
 
 			local wp = waypoints[i]
@@ -1133,11 +1201,13 @@ run(function()
 							local pos = GetScrapPosition(scrap)
 
 							if pos then
-								local success = WalkPathTo(pos, token)
+								local result = WalkPathTo(pos, token)
 
-								if not success and Farming and token == currentToken then
+								-- Cool down this scrap if we failed for any reason
+								-- other than being toggled off mid-walk.
+								if result ~= true and Farming and token == currentToken then
 									if scrap.Parent then
-										FailedScraps[scrap] = os.clock() + failcd
+										FailedScraps[scrap] = os.clock() + FailCooldown
 									end
 								end
 							end
@@ -1159,5 +1229,12 @@ run(function()
 				end
 			end
 		end,
+		Tooltip = "Automatically walks to and collects the nearest scrap.",
+	})
+
+	AvoidTraps = ScrapFarm:CreateToggle({
+		Name = "Avoid Traps",
+		Default = true,
+		Tooltip = "Skips scrap pickups whose path runs through a tagged Trap, and re-routes mid-walk if one appears.",
 	})
 end)
