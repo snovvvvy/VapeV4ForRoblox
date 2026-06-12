@@ -182,13 +182,19 @@ run(function()
 	
 	local Timer = replicatedStorage.Timer
 
+	local DistanceTravelled = lplr.DistanceTravelled
+
     local power = sessioninfo:AddItem("Power", powerLevel.MaxValue, function(val) 
         return powerLevel.Value <= 60 and "⚠️ " .. powerLevel.Value .. "/" .. powerLevel.MaxValue or powerLevel.Value .. "/" .. powerLevel.MaxValue
     end, false)
 
 	local timer = sessioninfo:AddItem("Time Until Day/Night", 0, function(val)
 		return Timer.Value == 1 and Timer.Value .. " sec" or Timer.Value .. " secs"
-	end)
+	end, false)
+
+	local distanceTravelled = sessioninfo:AddItem("Distance Travelled", 0, function(val) 
+		return DistanceTravelled.Value
+	end, false)
 end)
 
 run(function()
