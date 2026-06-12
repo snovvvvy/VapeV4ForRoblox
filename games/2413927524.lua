@@ -139,7 +139,7 @@ end
 
 run(function() 
     local powerValues = replicatedStorage.PowerValues
-    local powerLevel = PowerValues.PowerLevel
+    local powerLevel = powerValues.PowerLevel
 
     local power = sessioninfo:AddItem("Power", powerLevel.MaxValue, function(val) 
         return powerLevel.Value
