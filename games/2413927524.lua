@@ -172,7 +172,7 @@ end
 
 vape:Clean(workspace.DescendantAdded:Connect(tagObj))
 
-for _, v in { "Reach", "Disabler", "Jesus", "Killaura", "MurderMystery", "SilentAim", "AimAssist" } do
+for _, v in { "Reach", "Invisible", "Disabler", "Jesus", "Killaura", "MurderMystery", "SilentAim", "AimAssist" } do
 	vape:Remove(v)
 end
 
