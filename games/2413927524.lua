@@ -456,6 +456,7 @@ run(function()
 			notif("AntiTrap", "No HitBox found for" .. obj:GetFullName(), 5, "warning")
 			if AntiTrap.Enabled then
 				AntiTrap:Toggle()
+				task.wait(1)
 				AntiTrap:Toggle()
 			end
 			return
