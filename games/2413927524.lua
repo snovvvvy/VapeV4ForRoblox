@@ -1061,7 +1061,7 @@ run(function()
 		local root = character:FindFirstChild("HumanoidRootPart")
 		if not humanoid or not root then return false end
 	
-		local path = PathfindingService:CreatePath({
+		local path = pathfindingService:CreatePath({
 			AgentRadius = 2,
 			AgentHeight = 5,
 			AgentCanJump = true,
@@ -1090,7 +1090,7 @@ run(function()
 			end
 	
 			humanoid:MoveTo(wp.Position)
-			
+
 			local start = os.clock()
 			while (root.Position - wp.Position).Magnitude > 3 do
 				if not Farming or token ~= currentToken then
