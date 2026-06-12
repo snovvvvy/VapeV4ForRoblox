@@ -374,3 +374,109 @@ run(function()
 		end,
 	})
 end)
+
+run(function()
+	local AutoSpacebar
+
+	local Connections = {}
+
+	local function IsATrap(obj)
+		if not obj then
+			return false
+		end
+
+		if obj.Name ~= "RakeTrapModel" then
+			return false
+		end
+
+		local current = obj.Parent
+
+		while current do
+			if current:IsA("Folder") and current.Name == "Traps" then
+				return true
+			end
+
+			current = current.Parent
+		end
+
+		return false
+	end
+
+	local function StartSpam(obj)
+		if Connections[obj].Spam then
+			return
+		end
+
+		Connections[obj].Spam = task.spawn(function()
+			while Connections[obj] and obj.Parent do
+				print("TRAP HIT:", obj:GetFullName())
+				task.wait()
+			end
+		end)
+	end
+
+	local function Added(obj)
+		if Connections[obj] or not IsATrap(obj) then
+			return
+		end
+
+		local knownAttributes = {}
+
+		for name in pairs(obj:GetAttributes()) do
+			knownAttributes[name] = true
+		end
+
+		Connections[obj] = {}
+
+		local hitChar = obj:GetAttribute("HitChar")
+		if hitChar == lplr.Name then
+			StartSpam(obj)
+		end
+
+		Connections[obj].AttributeChanged = obj.AttributeChanged:Connect(function(attributeName)
+			if attributeName ~= "HitChar" then
+				return
+			end
+
+			local value = obj:GetAttribute("HitChar")
+
+			if value == lplr.Name then
+				print("Trap hit detected")
+				StartSpam(obj)
+			end
+		end)
+	end
+
+	local function Removed(obj)
+		local data = Connections[obj]
+		if not data then
+			return
+		end
+
+		if data.AttributeChanged then
+			data.AttributeChanged:Disconnect()
+		end
+
+		Connections[obj] = nil
+	end
+
+	AutoSpacebar = vape.Categories.Blatant:CreateModule({
+		Name = "AutoSpacebar",
+		Function = function(callback)
+			if callback then
+				AutoSpacebar:Clean(collectionService:GetInstanceAddedSignal("Trap"):Connect(Added))
+				AutoSpacebar:Clean(collectionService:GetInstanceRemovedSignal("Trap"):Connect(Removed))
+
+				for _, obj in ipairs(collectionService:GetTagged("Trap")) do
+					Added(obj)
+				end
+			else
+				for obj in pairs(Connections) do
+					Removed(obj)
+				end
+
+				table.clear(Connections)
+			end
+		end,
+	})
+end)
