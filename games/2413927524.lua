@@ -1001,6 +1001,8 @@ run(function()
 	local Farming = false
 
 	local currentToken = 0
+	local FailedScraps = {}
+	local failcd = 5
 
 	local function GetScrapPosition(scrap)
 		if scrap:IsA("BasePart") then
@@ -1017,25 +1019,42 @@ run(function()
 		return nil
 	end
 
+	local function IsValidScrap(obj)
+		if not obj or not obj.Parent then
+			return false
+		end
+
+		local expiry = FailedScraps[obj]
+		if expiry and os.clock() < expiry then
+			return false
+		elseif expiry then
+			FailedScraps[obj] = nil -- cooldown elapsed, allow retry
+		end
+
+		return true
+	end
+
 	local function GetClosestScrap()
 		local character = lplr.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
-		if not root then return nil, nil end
+		if not root then return nil end
 
 		local closest, closestDist = nil, math.huge
 
 		for _, obj in ipairs(collectionService:GetTagged("Scrap")) do
-			local pos = GetScrapPosition(obj)
-			if pos then
-				local dist = (root.Position - pos).Magnitude
-				if dist < closestDist then
-					closestDist = dist
-					closest = obj
+			if IsValidScrap(obj) then
+				local pos = GetScrapPosition(obj)
+				if pos then
+					local dist = (root.Position - pos).Magnitude
+					if dist < closestDist then
+						closestDist = dist
+						closest = obj
+					end
 				end
 			end
 		end
 
-		return closest, closestDist
+		return closest
 	end
 
 	local function WalkPathTo(targetPos, token)
@@ -1058,12 +1077,11 @@ run(function()
 		end)
 
 		if not ok then
-			notif("ScrapFarm", "ComputeAsync error: " .. err, 5, "warning")
+			warn("[ScrapFarm] ComputeAsync error:", err)
 			return false
 		end
 
 		if path.Status ~= Enum.PathStatus.Success then
-			notif("ScrapFarm", "Path failed with status: " .. path.Status.Name, 5, "warning")
 			return false
 		end
 
@@ -1113,8 +1131,15 @@ run(function()
 
 						if scrap then
 							local pos = GetScrapPosition(scrap)
+
 							if pos then
-								WalkPathTo(pos, token)
+								local success = WalkPathTo(pos, token)
+
+								if not success and Farming and token == currentToken then
+									if scrap.Parent then
+										FailedScraps[scrap] = os.clock() + failcd
+									end
+								end
 							end
 						end
 
@@ -1124,6 +1149,7 @@ run(function()
 			else
 				Farming = false
 				currentToken += 1
+				table.clear(FailedScraps)
 
 				local character = lplr.Character
 				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
