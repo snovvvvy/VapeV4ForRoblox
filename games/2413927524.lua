@@ -130,7 +130,7 @@ local function tagObj(obj)
 		current = obj.Parent
 
 		while current do
-			if current = workspace then
+			if current == workspace then
 				safeTag(obj, "Rake")
 				break
 			end
