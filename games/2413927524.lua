@@ -155,7 +155,7 @@ run(function()
     local powerLevel = powerValues.PowerLevel
 
     local power = sessioninfo:AddItem("Power", powerLevel.MaxValue, function(val) 
-        return powerLevel.Value
+        return powerLevel.Value <= 60 and "⚠️ " .. powerLevel.Value or powerLevel.Value
     end, false)
 end)
 
