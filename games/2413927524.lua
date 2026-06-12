@@ -1069,7 +1069,7 @@ run(function()
 			AgentRadius = 1.5,
 			AgentHeight = 5,
 			AgentCanJump = true,
-			WaypointSpacing = 4
+			WaypointSpacing = 6
 		})
 
 		local ok, err = pcall(function()
