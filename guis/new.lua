@@ -6324,9 +6324,8 @@ general:CreateButton({
 general:CreateButton({
 	Name = "Reinject",
 	Function = function()
-			shared.vapereload = true
-			loadstring(game:HttpGet("https://raw.githubusercontent.com/snovvvvy/VapeV4ForRoblox/main/NewMainScript.lua", true))()
-		end
+		shared.vapereload = true
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/snovvvvy/VapeV4ForRoblox/main/NewMainScript.lua", true))()
 	end,
 	Tooltip = "Reloads vape for debugging purposes",
 })
