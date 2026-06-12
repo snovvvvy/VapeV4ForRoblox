@@ -151,6 +151,19 @@ local function tagObj(obj)
 			current = current.Parent
 		end
 	end
+
+	if obj.Name == "Box" then 
+		current = obj.Parent
+
+		while current do
+			if current.Name == "SupplyCrates" then
+				safeTag(obj, "SupplyCrate")
+				break
+			end
+
+			current = current.Parent
+		end
+	end
 end
 
 for _, obj in ipairs(workspace:GetDescendants()) do
@@ -286,6 +299,133 @@ run(function()
 	})
 
 	OutlineTransparency = RakeESP:CreateSlider({
+		Name = "Outline Transparency",
+		Min = 0,
+		Max = 1,
+		Default = 0.5,
+		Function = function(val)
+			for _, v in pairs(Reference) do
+				v.OutlineTransparency = val
+			end
+		end,
+		Decimal = 10,
+	})
+end)
+
+run(function()
+	local SupplyCrateESP
+	local FillColor
+	local OutlineColor
+	local FillTransparency
+	local OutlineTransparency
+
+	local Reference = {}
+	local Folder = Instance.new("Folder")
+	Folder.Parent = vape.gui
+
+	local function IsASupplyCrate(obj)
+		if not obj then
+			return false
+		end
+
+		if not obj.Name == "Box" then
+			return false
+		end
+
+		local current = obj.Parent
+
+		while current do
+			if current.Name == "SupplyCrates" then
+				return true
+			end
+
+			current = current.Parent
+		end
+
+		return false
+	end
+
+	local function Added(obj)
+		if Reference[obj] or not IsASupplyCrate(obj) then
+			return
+		end
+
+		local cham = Instance.new("Highlight")
+		cham.Adornee = obj
+		cham.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+		cham.FillColor = Color3.fromHSV(FillColor.Hue, FillColor.Sat, FillColor.Value)
+		cham.OutlineColor = Color3.fromHSV(OutlineColor.Hue, OutlineColor.Sat, OutlineColor.Value)
+		cham.FillTransparency = FillTransparency.Value
+		cham.OutlineTransparency = OutlineTransparency.Value
+		cham.Parent = Folder
+
+		Reference[obj] = cham
+	end
+
+	local function Removed(obj)
+		if Reference[obj] then
+			if vape.ThreadFix then
+				setthreadidentity(8)
+			end
+
+			Reference[obj]:Destroy()
+			Reference[obj] = nil
+		end
+	end
+
+	SupplyCrateESP = vape.Categories.Render:CreateModule({
+		Name = "SupplyCrateESP",
+		Function = function(callback)
+			if callback then
+				SupplyCrateESP:Clean(collectionService:GetInstanceAddedSignal("Scrap"):Connect(Added))
+				SupplyCrateESP:Clean(collectionService:GetInstanceRemovedSignal("Scrap"):Connect(Removed))
+
+				for _, obj in ipairs(collectionService:GetTagged("Scrap")) do
+					Added(obj)
+				end
+			else
+				for _, v in pairs(Reference) do
+					v:Destroy()
+				end
+
+				table.clear(Reference)
+			end
+		end,
+	})
+
+	FillColor = SupplyCrateESP:CreateColorSlider({
+		Name = "Color",
+		Function = function(hue, sat, val)
+			for _, v in pairs(Reference) do
+				v.FillColor = Color3.fromHSV(hue, sat, val)
+			end
+		end,
+	})
+
+	OutlineColor = SupplyCrateESP:CreateColorSlider({
+		Name = "Outline Color",
+		DefaultSat = 0,
+		Function = function(hue, sat, val)
+			for _, v in pairs(Reference) do
+				v.OutlineColor = Color3.fromHSV(hue, sat, val)
+			end
+		end,
+	})
+
+	FillTransparency = SupplyCrateESP:CreateSlider({
+		Name = "Transparency",
+		Min = 0,
+		Max = 1,
+		Default = 0.5,
+		Function = function(val)
+			for _, v in pairs(Reference) do
+				v.FillTransparency = val
+			end
+		end,
+		Decimal = 10,
+	})
+
+	OutlineTransparency = SupplyCrateESP:CreateSlider({
 		Name = "Outline Transparency",
 		Min = 0,
 		Max = 1,
