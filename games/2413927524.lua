@@ -186,7 +186,7 @@ run(function()
         return powerLevel.Value <= 60 and "⚠️ " .. powerLevel.Value .. "/" .. powerLevel.MaxValue or powerLevel.Value .. "/" .. powerLevel.MaxValue
     end, false)
 
-	local timer = sessioninfo:AddItem("Time Until Day", 0, function(val)
+	local timer = sessioninfo:AddItem("Time Until Day/Night", 0, function(val)
 		return Timer.Value == 1 and Timer.Value .. " sec" or Timer.Value .. " secs"
 	end)
 end)
