@@ -57,6 +57,7 @@ local textChatService = cloneref(game:GetService("TextChatService"))
 local contextService = cloneref(game:GetService("ContextActionService"))
 local collectionService = cloneref(game:GetService("CollectionService"))
 local teamsService = cloneref(game:GetService("Teams"))
+local pathfindingService = game:GetService("PathfindingService")
 local coreGui = cloneref(game:GetService("CoreGui"))
 
 local isnetworkowner = identifyexecutor
@@ -992,5 +993,152 @@ run(function()
 			end
 		end,
 		Tooltip = 'Turns you invisible so that the rake cant see you.\n (sometimes does not work, especially in bloodhour mode.)'
+	})
+end)
+
+run(function()
+	local ScrapFarm
+	local Farming = false
+
+	local currentToken = 0
+
+	local function IsAScrap(obj)
+		if not obj then return false end
+		if not obj.Name:find("Scrap") then return false end
+
+		local current = obj.Parent
+		while current do
+			if current.Name:find("ItemSpawn") then
+				return true
+			end
+			current = current.Parent
+		end
+
+		return false
+	end
+
+	local function GetScrapPosition(scrap)
+		if scrap:IsA("BasePart") then
+			return scrap.Position
+		end
+
+		if scrap:IsA("Model") then
+			local part = scrap.PrimaryPart or scrap:FindFirstChildWhichIsA("BasePart")
+			if part then
+				return part.Position
+			end
+		end
+	end
+
+	local function GetClosestScrap()
+		local character = lplr.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if not root then return end
+
+		local closest, closestDist = nil, math.huge
+
+		for _, obj in ipairs(collectionService:GetTagged("Scrap")) do
+			if IsAScrap(obj) then
+				local pos = GetScrapPosition(obj)
+				if pos then
+					local dist = (root.Position - pos).Magnitude
+					if dist < closestDist then
+						closestDist = dist
+						closest = obj
+					end
+				end
+			end
+		end
+
+		return closest, closestDist
+	end
+
+	local function WalkPathTo(targetPos, token)
+		local character = lplr.Character
+		if not character then return false end
+
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		local root = character:FindFirstChild("HumanoidRootPart")
+		if not humanoid or not root then return false end
+
+		local path = pathfindingService:CreatePath({
+			AgentRadius = 2,
+			AgentHeight = 5,
+			AgentCanJump = true,
+			WaypointSpacing = 4
+		})
+
+		local ok = pcall(function()
+			path:ComputeAsync(root.Position, targetPos)
+		end)
+
+		if not ok or path.Status ~= Enum.PathStatus.Success then
+			return false
+		end
+
+		for _, waypoint in ipairs(path:GetWaypoints()) do
+			if not Farming or token ~= currentToken then
+				return false
+			end
+
+			local newScrap, newDist = GetClosestScrap()
+			local currentDist = (root.Position - targetPos).Magnitude
+
+			if newScrap then
+				local newPos = GetScrapPosition(newScrap)
+				if newPos and newDist < currentDist - 6 then
+					return false
+				end
+			end
+
+			if waypoint.Action == Enum.PathWaypointAction.Jump then
+				humanoid.Jump = true
+			end
+
+			humanoid:MoveTo(waypoint.Position)
+
+			local reached = humanoid.MoveToFinished:Wait()
+			if not reached then
+				return false
+			end
+		end
+
+		return true
+	end
+
+	ScrapFarm = vape.Categories.Blatant:CreateModule({
+		Name = "ScrapFarm",
+		Function = function(callback)
+			Farming = ScrapFarm.Enabled
+			if callback then
+				currentToken += 1
+
+				task.spawn(function()
+					repeat 
+						local token = currentToken
+
+						local scrap = GetClosestScrap()
+						if scrap then
+							local pos = GetScrapPosition(scrap)
+
+							if pos then
+								WalkPathTo(pos, token)
+							end
+						end
+
+						task.wait(0.1)
+					until not ScrapFarm.Enabled
+				end)
+			else
+				currentToken += 1
+
+				local character = lplr.Character
+				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+				if humanoid then
+					humanoid:Move(Vector3.zero)
+				end
+			end
+		end,
 	})
 end)
