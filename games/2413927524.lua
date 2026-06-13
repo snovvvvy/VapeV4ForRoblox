@@ -1799,6 +1799,259 @@ run(function()
 	})
 end)
 
+run(function()
+	local AutoBringScraps
+	local AutoOpenSupplyCrates
+	local AutoUnlockPrompts
+	local UnlockDistance
+	local RestoreCoreGui
+	local RemoveIntroGui
+	local SafeHouseDoorBypass
+
+	local function GetRoot()
+		if not entitylib.isAlive then return nil end
+		return entitylib.character.RootPart
+	end
+
+	local function SafeFire(remote, ...)
+		if not remote then return false end
+
+		local ok = pcall(function()
+			remote:FireServer(...)
+		end)
+
+		return ok
+	end
+
+	local function UnlockPrompt(prompt)
+		if not prompt or not prompt:IsA("ProximityPrompt") then
+			return false
+		end
+
+		local ok = pcall(function()
+			prompt.Enabled = true
+			prompt.HoldDuration = 0
+			prompt.RequiresLineOfSight = false
+			prompt.ClickablePrompt = true
+			prompt.MaxActivationDistance = UnlockDistance.Value
+		end)
+
+		return ok
+	end
+
+	AutoBringScraps = vape.Categories.Blatant:CreateModule({
+		Name = "AutoBringScraps",
+		Function = function(callback)
+			if callback then
+				AutoBringScraps:Clean(task.spawn(function()
+					while AutoBringScraps.Enabled do
+						local root = GetRoot()
+
+						if root then
+							for _, obj in ipairs(collectionService:GetTagged("Scrap")) do
+								if obj.Parent then
+									pcall(function()
+										if obj:IsA("BasePart") then
+											obj.CFrame = root.CFrame
+										elseif obj:IsA("Model") then
+											obj:PivotTo(root.CFrame)
+										end
+									end)
+								end
+							end
+						end
+
+						task.wait(1)
+					end
+				end))
+			end
+		end,
+		Tooltip = "Continuously teleports all tagged Scrap pickups to your position.",
+	})
+
+	AutoOpenSupplyCrates = vape.Categories.Blatant:CreateModule({
+		Name = "AutoOpenSupplyCrates",
+		Function = function(callback)
+			if callback then
+				AutoOpenSupplyCrates:Clean(task.spawn(function()
+					while AutoOpenSupplyCrates.Enabled do
+						for _, box in ipairs(collectionService:GetTagged("SupplyCrate")) do
+							if box.Parent then
+								local prompt = box:FindFirstChildWhichIsA("ProximityPrompt", true)
+								if prompt then
+									UnlockPrompt(prompt)
+								end
+
+								SafeFire(replicatedStorage:FindFirstChild("SupplyClientEvent"), "Open", true)
+							end
+						end
+
+						task.wait(1)
+					end
+				end))
+			end
+		end,
+		Tooltip = "Continuously unlocks and fires the open request for all tagged Supply Crates.",
+	})
+
+	AutoUnlockPrompts = vape.Categories.Blatant:CreateModule({
+		Name = "AutoUnlockPrompts",
+		Function = function(callback)
+			if callback then
+				AutoUnlockPrompts:Clean(task.spawn(function()
+					while AutoUnlockPrompts.Enabled do
+						local root = GetRoot()
+
+						if root then
+							for _, obj in ipairs(workspace:GetDescendants()) do
+								if obj:IsA("ProximityPrompt") then
+									local part = obj:FindFirstAncestorWhichIsA("BasePart")
+									local pos = part and part.Position
+
+									if pos and (pos - root.Position).Magnitude <= UnlockDistance.Value then
+										UnlockPrompt(obj)
+									end
+								end
+							end
+						end
+
+						task.wait(0.5)
+					end
+				end))
+			end
+		end,
+		Tooltip = "Continuously scans nearby ProximityPrompts within Unlock Distance and removes their hold/line-of-sight requirements.",
+	})
+
+	UnlockDistance = AutoUnlockPrompts:CreateSlider({
+		Name = "Unlock Distance",
+		Min = 5,
+		Max = 100,
+		Default = 25,
+		Suffix = function(val)
+			return val == 1 and "stud" or "studs"
+		end,
+		Tooltip = "MaxActivationDistance applied to prompts unlocked by AutoUnlockPrompts and AutoOpenSupplyCrates.",
+	})
+
+	RestoreCoreGui = vape.Categories.Blatant:CreateModule({
+		Name = "RestoreCoreGui",
+		Function = function(callback)
+			if callback then
+				local starter = game:GetService("StarterGui")
+
+				AutoBringScraps:Clean(nil)
+
+				RestoreCoreGui:Clean(runService.Heartbeat:Connect(function()
+					pcall(function()
+						starter:SetCore("TopbarEnabled", true)
+					end)
+
+					pcall(function()
+						starter:SetCore("ResetButtonCallback", true)
+					end)
+
+					for _, kind in ipairs({
+						Enum.CoreGuiType.Health,
+						Enum.CoreGuiType.Backpack,
+						Enum.CoreGuiType.PlayerList,
+						Enum.CoreGuiType.Chat,
+					}) do
+						pcall(function()
+							starter:SetCoreGuiEnabled(kind, true)
+						end)
+					end
+
+					pcall(function()
+						inputService.MouseIconEnabled = true
+					end)
+				end))
+			end
+		end,
+		Tooltip = "Continuously keeps the topbar, reset button, backpack, player list, chat, and mouse icon enabled.",
+	})
+
+	RemoveIntroGui = vape.Categories.Blatant:CreateModule({
+		Name = "RemoveIntroGui",
+		Function = function(callback)
+			if callback then
+				local function Remove(gui)
+					if not gui:IsA("ScreenGui") then
+						return
+					end
+
+					local isIntro = gui.Name == "IntroGUI"
+						or (gui:FindFirstChild("LoadingFrame") and gui:FindFirstChild("MenuFrame"))
+
+					if isIntro then
+						gui:Destroy()
+
+						pcall(function()
+							local died = replicatedStorage:FindFirstChild("DiedEvent")
+							if died then
+								died:Fire(false, true)
+							end
+						end)
+					end
+				end
+
+				for _, gui in ipairs(playerGui:GetChildren()) do
+					Remove(gui)
+				end
+
+				RemoveIntroGui:Clean(playerGui.ChildAdded:Connect(Remove))
+			end
+		end,
+		Tooltip = "Destroys intro/loading screens immediately and whenever new ones appear.",
+	})
+
+	SafeHouseDoorBypass = vape.Categories.Blatant:CreateModule({
+		Name = "SafeHouseDoorBypass",
+		Function = function(callback)
+			if callback then
+				task.spawn(function()
+					local root = GetRoot()
+					local map = workspace:FindFirstChild("Map")
+					local door = map and map:FindFirstChild("SafeHouse")
+					door = door and door:FindFirstChild("Door")
+					local doorModel = door and door:FindFirstChild("Door")
+					local remote = door and door:FindFirstChild("RemoteEvent")
+
+					if root and doorModel and remote then
+						local lastPos = root.CFrame
+						local wasAnchored = root.Anchored
+
+						if vape.ThreadFix then
+							setthreadidentity(8)
+						end
+
+						root.CFrame = doorModel.CFrame + Vector3.new(0, -7, 0)
+						task.wait()
+						root.Anchored = true
+						task.wait(0.4)
+
+						SafeFire(remote, "Door")
+
+						task.wait(0.4)
+						root.CFrame = lastPos
+						task.wait()
+						root.Anchored = wasAnchored
+
+						notif("QuickActions", "Sent SafeHouse door open request.", 5, "info")
+					else
+						notif("QuickActions", "SafeHouse door not found.", 5, "warning")
+					end
+
+					if SafeHouseDoorBypass.Enabled then
+						SafeHouseDoorBypass:Toggle()
+					end
+				end)
+			end
+		end,
+		Tooltip = "Teleports to the SafeHouse door, fires the open remote, returns you, then switches itself back off.",
+	})
+end)
+
 run(function() 
 	local SpamSafehouseDoor
 
