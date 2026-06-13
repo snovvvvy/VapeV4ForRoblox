@@ -1828,6 +1828,28 @@ run(function()
 end)
 
 run(function() 
+	local ThirdPersonPOV
+	local oldCameraMode, oldCameraMaxZoomDistance
+
+	ThirdPersonPOV = vape.Legit:CreateModule({
+		Name = "ThirdPersonPOV",
+		Function = function(callback) 
+			if callback then 
+				oldCameraMode = lplr.CameraMode
+				oldCameraMaxZoomDistance = lplr.CameraMaxZoomDistance
+				repeat
+					lplr.CameraMode = "Classic"
+					lplr.CameraMaxZoomDistance = 10
+				until not ThirdPersonPOV.Enabled
+			else
+				lplr.CameraMode = oldCameraMode or "LockFirstPerson"
+				lplr.CameraMaxZoomDistance = oldCameraMaxZoomDistance or 0.5
+			end
+		end
+	})
+end)
+
+run(function() 
 	local SpamSafehouseDoor
 
 	local SafehouseDoor = map:WaitForChild("SafeHouse"):WaitForChild("Door")
