@@ -70,6 +70,8 @@ local gameCamera = workspace.CurrentCamera or workspace:FindFirstChildWhichIsA("
 local lplr = playersService.LocalPlayer
 local playerGui = lplr:WaitForChild("PlayerGui")
 
+local map = workspace:WaitForChild("Map")
+
 local assetfunction = getcustomasset
 
 local vape = shared.vape
@@ -196,6 +198,14 @@ run(function()
 	local distanceTravelled = sessioninfo:AddItem("Distance Travelled", 0, function(val) 
 		return DistanceTravelled.Value
 	end, false)
+end)
+
+run(function() 
+	vape:CreateCategory({
+		Name = 'Troll',
+		Icon = getcustomasset('newvape/assets/troll.png'),
+		Size = UDim2.fromOffset(13, 14)
+	})
 end)
 
 run(function()
@@ -1622,5 +1632,19 @@ run(function()
 	})
 end)
 
--- TODO: add AvoidRake
+run(function() 
+	local SpamSafehouseDoor
 
+	local SafehouseDoor = map:WaitForChild("SafeHouse"):WaitForChild("Door")
+
+	SpamSafehouseDoor = vape.Categories.Troll:CreateModule({
+		Name = "SpamSafehouseDoor",
+		Function = function(callback) 
+			if callback then 
+				repeat
+					SafehouseDoor:WaitForChild("RemoteEvent"):FireServer("Door")
+				until not SpamSafehouseDoor.Enabled
+			end
+		end
+	})
+end)
