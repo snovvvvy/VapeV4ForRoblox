@@ -1376,6 +1376,24 @@ run(function()
 		return true
 	end
 
+	local function GetGroundPosition(position, character)
+		local params = RaycastParams.new()
+		params.FilterType = Enum.RaycastFilterType.Blacklist
+		params.FilterDescendantsInstances = {character}
+	
+		local result = workspace:Raycast(
+			position + Vector3.new(0, 50, 0),
+			Vector3.new(0, -200, 0),
+			params
+		)
+	
+		if result then
+			return result.Position
+		end
+	
+		return position
+	end
+
 	local function WalkTweenTo(targetPos, token)
 		local character = lplr.Character
 		if not character then return false end
