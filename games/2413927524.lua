@@ -595,10 +595,17 @@ run(function()
 	local OutlineColor
 	local FillTransparency
 	local OutlineTransparency
+	local FontOption
+	local LabelColor
+	local LabelScale
+	local LabelBackground
 
 	local Reference = {}
 	local Folder = Instance.new("Folder")
 	Folder.Parent = vape.gui
+
+	local LabelFolder = Instance.new("Folder")
+	LabelFolder.Parent = vape.gui
 
 	local function IsATrap(obj)
 		if not obj then
@@ -622,6 +629,33 @@ run(function()
 		return false
 	end
 
+	local function CreateLabel(obj)
+		local text = "Trap"
+		local tagSize = getfontsize(text, 14 * LabelScale.Value, FontOption.Value, Vector2.new(100000, 100000))
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Size = UDim2.fromOffset(tagSize.X + 8, tagSize.Y + 7)
+		billboard.StudsOffset = Vector3.new(0, 2, 0)
+		billboard.AlwaysOnTop = true
+		billboard.Adornee = obj
+		billboard.Parent = LabelFolder
+
+		local tag = Instance.new("TextLabel")
+		tag.BackgroundColor3 = Color3.new()
+		tag.BorderSizePixel = 0
+		tag.Visible = true
+		tag.RichText = true
+		tag.FontFace = FontOption.Value
+		tag.TextSize = 14 * LabelScale.Value
+		tag.BackgroundTransparency = LabelBackground.Value
+		tag.Size = billboard.Size
+		tag.Text = text
+		tag.TextColor3 = Color3.fromHSV(LabelColor.Hue, LabelColor.Sat, LabelColor.Value)
+		tag.Parent = billboard
+
+		return billboard
+	end
+
 	local function Added(obj)
 		if Reference[obj] or not IsATrap(obj) then
 			return
@@ -636,16 +670,23 @@ run(function()
 		cham.OutlineTransparency = OutlineTransparency.Value
 		cham.Parent = Folder
 
-		Reference[obj] = cham
+		local label = CreateLabel(obj)
+
+		Reference[obj] = {
+			Cham = cham,
+			Label = label,
+		}
 	end
 
 	local function Removed(obj)
-		if Reference[obj] then
+		local data = Reference[obj]
+		if data then
 			if vape.ThreadFix then
 				setthreadidentity(8)
 			end
 
-			Reference[obj]:Destroy()
+			data.Cham:Destroy()
+			data.Label:Destroy()
 			Reference[obj] = nil
 		end
 	end
@@ -661,8 +702,9 @@ run(function()
 					Added(obj)
 				end
 			else
-				for _, v in pairs(Reference) do
-					v:Destroy()
+				for _, data in pairs(Reference) do
+					data.Cham:Destroy()
+					data.Label:Destroy()
 				end
 
 				table.clear(Reference)
@@ -673,8 +715,8 @@ run(function()
 	FillColor = TrapESP:CreateColorSlider({
 		Name = "Color",
 		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.FillColor = Color3.fromHSV(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Cham.FillColor = Color3.fromHSV(hue, sat, val)
 			end
 		end,
 	})
@@ -683,8 +725,8 @@ run(function()
 		Name = "Outline Color",
 		DefaultSat = 0,
 		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.OutlineColor = Color3.fromHSV(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Cham.OutlineColor = Color3.fromHSV(hue, sat, val)
 			end
 		end,
 	})
@@ -695,8 +737,8 @@ run(function()
 		Max = 1,
 		Default = 0.5,
 		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.FillTransparency = val
+			for _, data in pairs(Reference) do
+				data.Cham.FillTransparency = val
 			end
 		end,
 		Decimal = 10,
@@ -708,11 +750,59 @@ run(function()
 		Max = 1,
 		Default = 0.5,
 		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.OutlineTransparency = val
+			for _, data in pairs(Reference) do
+				data.Cham.OutlineTransparency = val
 			end
 		end,
 		Decimal = 10,
+	})
+
+	FontOption = TrapESP:CreateFont({
+		Name = "Label Font",
+		Blacklist = "Arial",
+		Function = function()
+			if TrapESP.Enabled then
+				TrapESP:Toggle()
+				TrapESP:Toggle()
+			end
+		end,
+	})
+
+	LabelColor = TrapESP:CreateColorSlider({
+		Name = "Label Color",
+		Function = function(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Label.TextLabel.TextColor3 = Color3.fromHSV(hue, sat, val)
+			end
+		end,
+	})
+
+	LabelScale = TrapESP:CreateSlider({
+		Name = "Label Scale",
+		Default = 1,
+		Min = 0.1,
+		Max = 1.5,
+		Decimal = 10,
+		Function = function()
+			if TrapESP.Enabled then
+				TrapESP:Toggle()
+				TrapESP:Toggle()
+			end
+		end,
+	})
+
+	LabelBackground = TrapESP:CreateSlider({
+		Name = "Label Transparency",
+		Default = 0.5,
+		Min = 0,
+		Max = 1,
+		Decimal = 10,
+		Function = function()
+			if TrapESP.Enabled then
+				TrapESP:Toggle()
+				TrapESP:Toggle()
+			end
+		end,
 	})
 end)
 
