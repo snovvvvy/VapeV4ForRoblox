@@ -1733,33 +1733,6 @@ run(function()
 		Tooltip = 'Sends a notification of who killed you.'
 	})
 end)
-
-run(function()
-	local AutoRejoin
-	
-	AutoRejoin = vape.Categories.Utility:CreateModule({
-		Name = 'AutoRejoin',
-		Function = function(callback)
-			if callback then
-				local check
-				AutoRejoin:Clean(guiService.ErrorMessageChanged:Connect(function(str)
-					if (not check or guiService:GetErrorCode() ~= Enum.ConnectionError.DisconnectLuaKick) and guiService:GetErrorCode() ~= Enum.ConnectionError.DisconnectConnectionLost and not str:lower():find('ban') then
-						check = true
-						notif('Rejoin', 'Rejoining...', 5)
-						Rejoin:Toggle()
-			
-						if playersService.NumPlayers > 1 then
-							teleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
-						else
-							teleportService:Teleport(game.PlaceId)
-						end
-					end
-				end))
-			end
-		end,
-		Tooltip = 'Automatically rejoins into the same server if you get disconnected / kicked'
-	})
-end)
 	
 run(function()
 	local AutoDetonate
