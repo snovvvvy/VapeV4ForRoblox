@@ -1096,7 +1096,7 @@ run(function()
 	})
 end)
 
-run(function()
+--[[run(function()
 	local ScrapFarm
 	local AvoidTraps
 	local AvoidRake
@@ -1714,7 +1714,7 @@ run(function()
 		end,
 		Tooltip = "Avoids the rake.",
 	})
-end)
+end)]]
 
 run(function()
 	local AntiRakeChase
