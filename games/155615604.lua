@@ -1371,7 +1371,7 @@ run(function()
 
 	AnyonePossible = Killaura:CreateToggle({
 		Name = "Anyone Possible",
-		Function = function(val) end
+		Function = function(val) end,
 		Tooltip = "Punches anyone possible."
 	})
 end)
