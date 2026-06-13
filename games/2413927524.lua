@@ -203,7 +203,7 @@ end)
 run(function() 
 	vape:CreateCategory({
 		Name = 'Troll',
-		Icon = getcustomasset('newvape/assets/troll.png'),
+		Icon = getcustomasset('newvape/assets/new/troll.png'),
 		Size = UDim2.fromOffset(13, 14)
 	})
 end)
