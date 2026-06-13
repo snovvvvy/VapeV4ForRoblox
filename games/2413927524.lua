@@ -999,16 +999,23 @@ end)
 run(function()
 	local ScrapFarm
 	local AvoidTraps
+	local AvoidRake
 
 	local Farming = false
 	local CurrentToken = 0
 	local FailedScraps = {}
 	local FailCooldown = 5
 	local TrapAvoidRadius = 8
+	local RakeAvoidRadius = 12
 
 	local TrapModifiers = {}
 	local ModifierFolder = Instance.new("Folder")
 	ModifierFolder.Name = "ScrapFarm_TrapAvoidance"
+
+	local RakeModifiers = {}
+	local RakeModifierFolder = Instance.new("Folder")
+	RakeModifierFolder.Name = "ScrapFarm_RakeAvoidance"
+	local RakeUpdateConnection
 
 	local function GetScrapPosition(scrap)
 		if scrap:IsA("BasePart") then
@@ -1032,6 +1039,21 @@ run(function()
 
 		if trap:IsA("Model") or trap:IsA("Folder") then
 			local part = trap.PrimaryPart or trap:FindFirstChildWhichIsA("BasePart", true)
+			if part then
+				return part.Position
+			end
+		end
+
+		return nil
+	end
+
+	local function GetRakePosition(rake)
+		if rake:IsA("BasePart") then
+			return rake.Position
+		end
+
+		if rake:IsA("Model") or rake:IsA("Folder") then
+			local part = rake.PrimaryPart or rake:FindFirstChildWhichIsA("BasePart", true)
 			if part then
 				return part.Position
 			end
@@ -1113,6 +1135,97 @@ run(function()
 		ModifierFolder.Parent = nil
 	end
 
+	local function CreateRakeModifier(rake)
+		if RakeModifiers[rake] then
+			return
+		end
+
+		local pos = GetRakePosition(rake)
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		local zone = Instance.new("Part")
+		zone.Name = "RakeAvoidanceZone"
+		zone.Shape = Enum.PartType.Block
+		zone.Size = Vector3.new(RakeAvoidRadius * 2, 12, RakeAvoidRadius * 2)
+		zone.CFrame = CFrame.new(pos or Vector3.zero)
+		zone.Anchored = true
+		zone.CanCollide = false
+		zone.CanQuery = false
+		zone.CanTouch = false
+		zone.Transparency = 1
+		zone.Parent = RakeModifierFolder
+
+		local modifier = Instance.new("PathfindingModifier")
+		modifier.PassThrough = false
+		modifier.Parent = zone
+
+		RakeModifiers[rake] = zone
+	end
+
+	local function RemoveRakeModifier(rake)
+		local zone = RakeModifiers[rake]
+		if not zone then
+			return
+		end
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		zone:Destroy()
+		RakeModifiers[rake] = nil
+	end
+
+	local function ClearAllRakeModifiers()
+		for rake in pairs(RakeModifiers) do
+			RemoveRakeModifier(rake)
+		end
+
+		table.clear(RakeModifiers)
+	end
+
+	local function UpdateRakeModifierPositions()
+		for rake, zone in pairs(RakeModifiers) do
+			if rake.Parent then
+				local pos = GetRakePosition(rake)
+				if pos then
+					zone.CFrame = CFrame.new(pos)
+				end
+			else
+				RemoveRakeModifier(rake)
+			end
+		end
+	end
+
+	local function EnableRakeAvoidance()
+		RakeModifierFolder.Parent = workspace
+
+		for _, rake in ipairs(collectionService:GetTagged("Rake")) do
+			if rake.Parent then
+				CreateRakeModifier(rake)
+			end
+		end
+
+		ScrapFarm:Clean(collectionService:GetInstanceAddedSignal("Rake"):Connect(CreateRakeModifier))
+		ScrapFarm:Clean(collectionService:GetInstanceRemovedSignal("Rake"):Connect(RemoveRakeModifier))
+
+		RakeUpdateConnection = runService.Heartbeat:Connect(UpdateRakeModifierPositions)
+		ScrapFarm:Clean(RakeUpdateConnection)
+	end
+
+	local function DisableRakeAvoidance()
+		if RakeUpdateConnection then
+			RakeUpdateConnection:Disconnect()
+			RakeUpdateConnection = nil
+		end
+
+		ClearAllRakeModifiers()
+		RakeModifierFolder.Parent = nil
+	end
+
 	local function IsValidScrap(obj)
 		if not obj or not obj.Parent then
 			return false
@@ -1171,7 +1284,7 @@ run(function()
 		end)
 
 		if not ok then
-			warn("[ScrapFarm] ComputeAsync error:", err)
+			notif("ScrapFarm", "ComputeAsync error:" .. err, 10, "warningup")
 			return false
 		end
 
@@ -1223,6 +1336,10 @@ run(function()
 					EnableTrapAvoidance()
 				end
 
+				if AvoidRake.Enabled then
+					EnableRakeAvoidance()
+				end
+
 				task.spawn(function()
 					while Farming and token == CurrentToken do
 						local scrap = GetClosestScrap()
@@ -1249,6 +1366,7 @@ run(function()
 				CurrentToken += 1
 				table.clear(FailedScraps)
 				DisableTrapAvoidance()
+				DisableRakeAvoidance()
 
 				local character = lplr.Character
 				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -1276,6 +1394,23 @@ run(function()
 			end
 		end,
 		Tooltip = "Treats tagged Traps as solid obstacles so pathfinding routes around them instead of through.",
+	})
+
+	AvoidRake = ScrapFarm:CreateToggle({
+		Name = "Avoid Rake",
+		Default = true,
+		Function = function(callback)
+			if not Farming then
+				return
+			end
+
+			if callback then
+				EnableRakeAvoidance()
+			else
+				DisableRakeAvoidance()
+			end
+		end,
+		Tooltip = "Treats the Rake as a moving solid obstacle so pathfinding routes around its current position.",
 	})
 end)
 
