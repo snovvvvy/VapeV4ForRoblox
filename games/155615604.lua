@@ -1330,6 +1330,7 @@ end)
 run(function()
 	local Killaura
 	local Range
+	local AnyonePossible
 	
 	Killaura = vape.Categories.Blatant:CreateModule({
 		Name = 'Killaura',
@@ -1340,7 +1341,7 @@ run(function()
 						Range = Range.Value,
 						Players = true,
 						Part = 'RootPart',
-						AttackCheck = true
+						AttackCheck = AnyonePossible.Enabled and true or false
 					})
 	
 					for _, ent in entities do
@@ -1357,6 +1358,7 @@ run(function()
 		end,
 		Tooltip = 'Punch hostile enemies around you'
 	})
+
 	Range = Killaura:CreateSlider({
 		Name = 'Attack range',
 		Min = 1,
@@ -1365,6 +1367,12 @@ run(function()
 		Suffix = function(val)
 			return val == 1 and 'stud' or 'studs'
 		end
+	})
+
+	AnyonePossible = Killaura:CreateToggle({
+		Name = "Anyone Possible",
+		Function = function(val) end
+		Tooltip = "Punches anyone possible."
 	})
 end)
 	
