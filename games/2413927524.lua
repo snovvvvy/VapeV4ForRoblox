@@ -1835,12 +1835,15 @@ run(function()
 					humanoid.WalkSpeed = OriginalWalkSpeed * SpeedMultiplier.Value
 				end
 
-				AntiRakeChase:Clean(runService.Heartbeat:Connect(function()
+				repeat
 					local targetRoot = GetRakeRoot()
+
 					if targetRoot then
 						RunAwayFromTarget(targetRoot)
 					end
-				end))
+
+					task.wait(0.1)
+				until not AntiRakeChase.Enabled
 
 				AntiRakeChase:Clean(entitylib.Events.LocalAdded:Connect(function()
 					if entitylib.isAlive and OriginalWalkSpeed then
