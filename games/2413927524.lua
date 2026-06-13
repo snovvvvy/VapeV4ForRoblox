@@ -1382,8 +1382,8 @@ run(function()
 		params.FilterDescendantsInstances = {character}
 	
 		local result = workspace:Raycast(
-			position + Vector3.new(0, 50, 0),
-			Vector3.new(0, -200, 0),
+			position + Vector3.new(0, 20, 0),
+			Vector3.new(0, -100, 0),
 			params
 		)
 	
