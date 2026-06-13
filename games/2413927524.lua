@@ -1006,7 +1006,7 @@ run(function()
 	local FailedScraps = {}
 	local FailCooldown = 5
 	local TrapAvoidRadius = 8
-	local RakeAvoidRadius = 12
+	local RakeAvoidRadius = 30
 
 	local TrapModifiers = {}
 	local ModifierFolder = Instance.new("Folder")
