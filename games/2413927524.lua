@@ -1379,115 +1379,97 @@ run(function()
 	local function WalkTweenTo(targetPos, token)
 		local character = lplr.Character
 		if not character then return false end
-
+	
 		local root = character:FindFirstChild("HumanoidRootPart")
 		local humanoid = character:FindFirstChildOfClass("Humanoid")
 		if not root or not humanoid then return false end
-
+	
 		local obstacles = {}
-
+	
 		if AvoidTraps.Enabled then
 			for _, obstacle in ipairs(GetLiveObstaclePositions("Trap", TrapAvoidRadius)) do
 				obstacles[#obstacles + 1] = obstacle
 			end
 		end
-
+	
 		if AvoidRake.Enabled then
 			for _, obstacle in ipairs(GetLiveObstaclePositions("Rake", RakeAvoidRadius)) do
 				obstacles[#obstacles + 1] = obstacle
 			end
 		end
-
+	
 		local startPos = root.Position
-
+	
 		if LineIsBlocked(startPos, targetPos, obstacles) then
 			return false
 		end
-
+	
 		local distance = (targetPos - startPos).Magnitude
+	
 		if distance <= 0 then
 			return true
 		end
-
-		local duration = distance / TweenSpeed
-		local startCFrame = root.CFrame
-		local targetCFrame = CFrame.new(targetPos, targetPos + (startCFrame.LookVector * Vector3.new(1, 0, 1)))
-
-		if (targetPos - startPos) * Vector3.new(1, 0, 1) ~= Vector3.zero then
-			targetCFrame = CFrame.lookAt(targetPos, targetPos + (targetPos - startPos) * Vector3.new(1, 0, 1))
-		end
-
+	
+		local direction = (targetPos - startPos).Unit
+	
 		local wasAnchored = root.Anchored
-
+	
 		if vape.ThreadFix then
 			setthreadidentity(8)
 		end
-
+	
 		root.Anchored = true
-
-		local tween = tweenService:Create(root, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
-			CFrame = targetCFrame
-		})
-
-		local finished = false
-		local connection = tween.Completed:Connect(function()
-			finished = true
-		end)
-
-		tween:Play()
-
-		while not finished do
+	
+		local stepDistance = 2
+		local steps = math.max(1, math.ceil(distance / stepDistance))
+	
+		for i = 1, steps do
 			if not Farming or token ~= CurrentToken then
-				tween:Cancel()
-
-				if vape.ThreadFix then
-					setthreadidentity(8)
-				end
-
 				root.Anchored = wasAnchored
-				connection:Disconnect()
 				return false
 			end
-
+	
+			local alpha = i / steps
+	
+			local horizontalPos = startPos:Lerp(targetPos, alpha)
+	
+			local groundPos = GetGroundPosition(horizontalPos, character)
+	
+			local desiredPos = groundPos + Vector3.new(0, 3, 0)
+	
 			if AvoidTraps.Enabled or AvoidRake.Enabled then
 				local liveObstacles = {}
-
+	
 				if AvoidTraps.Enabled then
 					for _, obstacle in ipairs(GetLiveObstaclePositions("Trap", TrapAvoidRadius)) do
 						liveObstacles[#liveObstacles + 1] = obstacle
 					end
 				end
-
+	
 				if AvoidRake.Enabled then
 					for _, obstacle in ipairs(GetLiveObstaclePositions("Rake", RakeAvoidRadius)) do
 						liveObstacles[#liveObstacles + 1] = obstacle
 					end
 				end
-
-				if LineIsBlocked(root.Position, targetPos, liveObstacles) then
-					tween:Cancel()
-
-					if vape.ThreadFix then
-						setthreadidentity(8)
+	
+				for _, obstacle in ipairs(liveObstacles) do
+					if (desiredPos - obstacle.Position).Magnitude <= obstacle.Radius then
+						root.Anchored = wasAnchored
+						return false
 					end
-
-					root.Anchored = wasAnchored
-					connection:Disconnect()
-					return false
 				end
 			end
-
-			task.wait(0.05)
+	
+			root.CFrame = CFrame.lookAt(
+				desiredPos,
+				desiredPos + Vector3.new(direction.X, 0, direction.Z)
+			)
+	
+			task.wait(stepDistance / TweenSpeed)
 		end
-
-		connection:Disconnect()
-
-		if vape.ThreadFix then
-			setthreadidentity(8)
-		end
-
+	
 		root.Anchored = wasAnchored
-
+	
 		return true
 	end
 
