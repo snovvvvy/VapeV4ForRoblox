@@ -1565,7 +1565,7 @@ run(function()
 
 	MoveMode = ScrapFarm:CreateDropdown({
 		Name = "Move Mode",
-		List = { "Pathfinding", "Tweening" },
+		List = { "Pathfinding" },
 		Function = function(val)
 			if not Farming then
 				return
