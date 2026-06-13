@@ -1840,6 +1840,7 @@ run(function()
 				repeat
 					lplr.CameraMode = "Classic"
 					lplr.CameraMaxZoomDistance = 10
+					task.wait()
 				until not ThirdPersonPOV.Enabled
 			else
 				lplr.CameraMode = oldCameraMode or "LockFirstPerson"
