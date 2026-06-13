@@ -1255,8 +1255,7 @@ run(function()
 	end
 
 	local function GetClosestScrap()
-		local character = lplr.Character
-		local root = character and character:FindFirstChild("HumanoidRootPart")
+		local root = entitylib.character.RootPart
 		if not root then return nil end
 
 		local closest, closestDist = nil, math.huge
@@ -1327,12 +1326,11 @@ run(function()
 	end
 
 	local function WalkPathTo(targetPos, token)
-		local character = lplr.Character
-		if not character then return false end
+		local character = entitylib.character
+		local humanoid = entitylib.character.Humanoid
+		local root = entitylib.character.RootPart
 
-		local humanoid = character:FindFirstChildOfClass("Humanoid")
-		local root = character:FindFirstChild("HumanoidRootPart")
-		if not humanoid or not root then return false end
+		if not humanoid or not root or not character then return false end
 
 		local path = pathfindingService:CreatePath({
 			AgentRadius = 1.5,
@@ -1346,7 +1344,7 @@ run(function()
 		end)
 
 		if not ok then
-			notif("ScrapFarm", "ComputeAsync error:" .. err, 10, "warningup")
+			notif("ScrapFarm", "ComputeAsync error:" .. err, 10, "warning")
 			return false
 		end
 
@@ -1405,12 +1403,11 @@ run(function()
 	end
 
 	local function WalkTweenTo(targetPos, token)
-		local character = lplr.Character
-		if not character then return false end
-	
-		local root = character:FindFirstChild("HumanoidRootPart")
-		local humanoid = character:FindFirstChildOfClass("Humanoid")
-		if not root or not humanoid then return false end
+		local character = entitylib.character
+		local humanoid = entitylib.character.Humanoid
+		local root = entitylib.character.RootPart
+
+		if not humanoid or not root or not character then return false end
 	
 		local obstacles = {}
 	
@@ -1552,10 +1549,8 @@ run(function()
 				table.clear(FailedScraps)
 				DisableTrapAvoidance()
 				DisableRakeAvoidance()
-
-				local character = lplr.Character
-				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-				local root = character and character:FindFirstChild("HumanoidRootPart")
+				local root = entitylib.character.RootPart
+				local humanoid = entitylib.character.Humanoid
 
 				if root and root.Anchored then
 					if vape.ThreadFix then
@@ -1570,7 +1565,7 @@ run(function()
 				end
 			end
 		end,
-		Tooltip = "Automatically walks to and collects the nearest tagged Scrap.",
+		Tooltip = "Automatically walks to and collects the nearest scrap.",
 	})
 
 	MoveMode = ScrapFarm:CreateDropdown({
@@ -1594,7 +1589,6 @@ run(function()
 				DisableRakeAvoidance()
 			end
 		end,
-		Tooltip = "Pathfinding routes around obstacles using the navmesh. Tweening moves directly toward the target at a constant speed and aborts if the straight line is blocked.",
 	})
 
 	AvoidTraps = ScrapFarm:CreateToggle({
@@ -1611,7 +1605,7 @@ run(function()
 				DisableTrapAvoidance()
 			end
 		end,
-		Tooltip = "Treats tagged Traps as obstacles. In Pathfinding mode this reroutes around them; in Tweening mode it aborts a straight-line move that would cross one.",
+		Tooltip = "Avoids traps.",
 	})
 
 	AvoidRake = ScrapFarm:CreateToggle({
@@ -1628,7 +1622,180 @@ run(function()
 				DisableRakeAvoidance()
 			end
 		end,
-		Tooltip = "Treats the Rake as an obstacle. In Pathfinding mode this reroutes around it; in Tweening mode it aborts a straight-line move that would cross it.",
+		Tooltip = "Avoids the rake.",
+	})
+end)
+
+run(function()
+	local AntiRakeChase
+	local DetectionRange
+	local SpeedMultiplier
+
+	local OriginalWalkSpeed = nil
+
+	local Config = {
+		MIN_RUN_DISTANCE = 20,
+		MAX_RUN_DISTANCE = 40,
+		CLOSE_RANGE = 10,
+		SMOOTHNESS_CLOSE = 0.05,
+		SMOOTHNESS_FAR = 0.1,
+		RAY_HEIGHT = 5,
+		RAY_DEPTH = -10,
+		ALTERNATIVE_OFFSETS = {
+			Vector3.new(5, 0, 5),
+			Vector3.new(-5, 0, 5),
+			Vector3.new(5, 0, -5),
+			Vector3.new(-5, 0, -5)
+		}
+	}
+
+	local function GetRakeRoot()
+		for _, rake in ipairs(collectionService:GetTagged("Rake")) do
+			if rake.Parent then
+				local root = rake:FindFirstChild("HumanoidRootPart")
+				if root then
+					return root
+				end
+			end
+		end
+
+		return nil
+	end
+
+	local function FindSafePosition(desiredPosition)
+		local rayOrigin = desiredPosition + Vector3.new(0, Config.RAY_HEIGHT, 0)
+		local rayDirection = Vector3.new(0, Config.RAY_DEPTH, 0)
+
+		local collision = workspace:FindPartOnRayWithIgnoreList(
+			Ray.new(rayOrigin, rayDirection),
+			{ entitylib.character.Character }
+		)
+
+		if not collision then
+			return desiredPosition
+		end
+
+		for _, offset in ipairs(Config.ALTERNATIVE_OFFSETS) do
+			local altPosition = desiredPosition + offset
+			local altRayOrigin = altPosition + Vector3.new(0, Config.RAY_HEIGHT, 0)
+
+			local altCollision = workspace:FindPartOnRayWithIgnoreList(
+				Ray.new(altRayOrigin, rayDirection),
+				{ entitylib.character.Character }
+			)
+
+			if not altCollision then
+				return altPosition
+			end
+		end
+
+		return desiredPosition + Vector3.new(0, 2, 0)
+	end
+
+	local function RunAwayFromTarget(targetRoot)
+		if not entitylib.isAlive then return end
+
+		local humanoidRootPart = entitylib.character.RootPart
+		local humanoid = entitylib.character.Humanoid
+		if not (humanoidRootPart and humanoid) then return end
+
+		if humanoid.SeatPart then
+			humanoid.Sit = false
+			task.wait(0.0001)
+		end
+
+		if not targetRoot.Parent then
+			return
+		end
+
+		local targetPosition = targetRoot.Position
+		local currentPosition = humanoidRootPart.Position
+		local distance = (targetPosition - currentPosition).Magnitude
+
+		if distance <= DetectionRange.Value then
+			local runDistance = math.min(
+				Config.MAX_RUN_DISTANCE,
+				math.max(Config.MIN_RUN_DISTANCE, distance * 0.75)
+			)
+
+			local directionAwayFromTarget = (currentPosition - targetPosition).Unit
+			local desiredPosition = currentPosition + (directionAwayFromTarget * runDistance)
+
+			local safePosition = FindSafePosition(desiredPosition)
+
+			local targetLook = CFrame.new(safePosition, targetPosition)
+			local smoothness = distance < Config.CLOSE_RANGE and Config.SMOOTHNESS_CLOSE or Config.SMOOTHNESS_FAR
+
+			if vape.ThreadFix then
+				setthreadidentity(8)
+			end
+
+			humanoidRootPart.CFrame = humanoidRootPart.CFrame:Lerp(targetLook, smoothness)
+			humanoid:MoveTo(safePosition)
+		end
+	end
+
+	AntiRakeChase = vape.Categories.Blatant:CreateModule({
+		Name = "AntiRakeChase",
+		Function = function(callback)
+			if callback then
+				if entitylib.isAlive then
+					local humanoid = entitylib.character.Humanoid
+					OriginalWalkSpeed = humanoid.WalkSpeed
+					humanoid.WalkSpeed = OriginalWalkSpeed * SpeedMultiplier.Value
+				end
+
+				AntiRakeChase:Clean(runService.Heartbeat:Connect(function()
+					local targetRoot = GetRakeRoot()
+					if targetRoot then
+						RunAwayFromTarget(targetRoot)
+					end
+				end))
+
+				AntiRakeChase:Clean(entitylib.Events.LocalAdded:Connect(function()
+					if entitylib.isAlive and OriginalWalkSpeed then
+						entitylib.character.Humanoid.WalkSpeed = OriginalWalkSpeed * SpeedMultiplier.Value
+					end
+				end))
+			else
+				if entitylib.isAlive and OriginalWalkSpeed then
+					entitylib.character.Humanoid.WalkSpeed = OriginalWalkSpeed
+				end
+
+				OriginalWalkSpeed = nil
+			end
+		end,
+		Tooltip = "Automatically runs away from the Rake whenever it's within range, like an invisible barrier.",
+	})
+
+	DetectionRange = AntiRakeChase:CreateSlider({
+		Name = "Detection Range",
+		Min = 10,
+		Max = 100,
+		Default = 50,
+		Suffix = function(val)
+			return val == 1 and "stud" or "studs"
+		end,
+		Tooltip = "How close the Rake needs to be before you start running away.",
+	})
+
+	SpeedMultiplier = AntiRakeChase:CreateSlider({
+		Name = "Speed Multiplier",
+		Min = 1,
+		Max = 4,
+		Default = 2,
+		Decimal = 10,
+		Suffix = "x",
+		Function = function(val)
+			if not AntiRakeChase.Enabled then
+				return
+			end
+
+			if entitylib.isAlive and OriginalWalkSpeed then
+				entitylib.character.Humanoid.WalkSpeed = OriginalWalkSpeed * val
+			end
+		end,
+		Tooltip = "How much faster you move while running from the Rake.",
 	})
 end)
 
