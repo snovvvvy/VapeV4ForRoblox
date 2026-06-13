@@ -1000,6 +1000,7 @@ run(function()
 	local ScrapFarm
 	local AvoidTraps
 	local AvoidRake
+	local MoveMode
 
 	local Farming = false
 	local CurrentToken = 0
@@ -1007,6 +1008,8 @@ run(function()
 	local FailCooldown = 5
 	local TrapAvoidRadius = 8
 	local RakeAvoidRadius = 30
+	local TweenSpeed = 30
+	local LineSampleSpacing = 4
 
 	local TrapModifiers = {}
 	local ModifierFolder = Instance.new("Folder")
@@ -1264,6 +1267,55 @@ run(function()
 		return closest
 	end
 
+	local function GetLiveObstaclePositions(tag, radius)
+		local positions = {}
+
+		for _, obj in ipairs(collectionService:GetTagged(tag)) do
+			if obj.Parent then
+				local pos
+				if tag == "Trap" then
+					pos = GetTrapPosition(obj)
+				else
+					pos = GetRakePosition(obj)
+				end
+
+				if pos then
+					positions[#positions + 1] = { Position = pos, Radius = radius }
+				end
+			end
+		end
+
+		return positions
+	end
+
+	local function LineIsBlocked(startPos, endPos, obstacles)
+		if #obstacles == 0 then
+			return false
+		end
+
+		local delta = endPos - startPos
+		local distance = delta.Magnitude
+
+		if distance <= 0 then
+			return false
+		end
+
+		local direction = delta / distance
+		local steps = math.max(1, math.ceil(distance / LineSampleSpacing))
+
+		for i = 0, steps do
+			local samplePos = startPos + direction * math.min(i * LineSampleSpacing, distance)
+
+			for _, obstacle in ipairs(obstacles) do
+				if (samplePos - obstacle.Position).Magnitude <= obstacle.Radius then
+					return true
+				end
+			end
+		end
+
+		return false
+	end
+
 	local function WalkPathTo(targetPos, token)
 		local character = lplr.Character
 		if not character then return false end
@@ -1324,6 +1376,121 @@ run(function()
 		return true
 	end
 
+	local function WalkTweenTo(targetPos, token)
+		local character = lplr.Character
+		if not character then return false end
+
+		local root = character:FindFirstChild("HumanoidRootPart")
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if not root or not humanoid then return false end
+
+		local obstacles = {}
+
+		if AvoidTraps.Enabled then
+			for _, obstacle in ipairs(GetLiveObstaclePositions("Trap", TrapAvoidRadius)) do
+				obstacles[#obstacles + 1] = obstacle
+			end
+		end
+
+		if AvoidRake.Enabled then
+			for _, obstacle in ipairs(GetLiveObstaclePositions("Rake", RakeAvoidRadius)) do
+				obstacles[#obstacles + 1] = obstacle
+			end
+		end
+
+		local startPos = root.Position
+
+		if LineIsBlocked(startPos, targetPos, obstacles) then
+			return false
+		end
+
+		local distance = (targetPos - startPos).Magnitude
+		if distance <= 0 then
+			return true
+		end
+
+		local duration = distance / TweenSpeed
+		local startCFrame = root.CFrame
+		local targetCFrame = CFrame.new(targetPos, targetPos + (startCFrame.LookVector * Vector3.new(1, 0, 1)))
+
+		if (targetPos - startPos) * Vector3.new(1, 0, 1) ~= Vector3.zero then
+			targetCFrame = CFrame.lookAt(targetPos, targetPos + (targetPos - startPos) * Vector3.new(1, 0, 1))
+		end
+
+		local wasAnchored = root.Anchored
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		root.Anchored = true
+
+		local tween = tweenService:Create(root, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+			CFrame = targetCFrame
+		})
+
+		local finished = false
+		local connection = tween.Completed:Connect(function()
+			finished = true
+		end)
+
+		tween:Play()
+
+		while not finished do
+			if not Farming or token ~= CurrentToken then
+				tween:Cancel()
+
+				if vape.ThreadFix then
+					setthreadidentity(8)
+				end
+
+				root.Anchored = wasAnchored
+				connection:Disconnect()
+				return false
+			end
+
+			if AvoidTraps.Enabled or AvoidRake.Enabled then
+				local liveObstacles = {}
+
+				if AvoidTraps.Enabled then
+					for _, obstacle in ipairs(GetLiveObstaclePositions("Trap", TrapAvoidRadius)) do
+						liveObstacles[#liveObstacles + 1] = obstacle
+					end
+				end
+
+				if AvoidRake.Enabled then
+					for _, obstacle in ipairs(GetLiveObstaclePositions("Rake", RakeAvoidRadius)) do
+						liveObstacles[#liveObstacles + 1] = obstacle
+					end
+				end
+
+				if LineIsBlocked(root.Position, targetPos, liveObstacles) then
+					tween:Cancel()
+
+					if vape.ThreadFix then
+						setthreadidentity(8)
+					end
+
+					root.Anchored = wasAnchored
+					connection:Disconnect()
+					return false
+				end
+			end
+
+			task.wait(0.05)
+		end
+
+		connection:Disconnect()
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		root.Anchored = wasAnchored
+
+		return true
+	end
+
 	ScrapFarm = vape.Categories.Blatant:CreateModule({
 		Name = "ScrapFarm",
 		Function = function(callback)
@@ -1332,12 +1499,14 @@ run(function()
 				CurrentToken += 1
 				local token = CurrentToken
 
-				if AvoidTraps.Enabled then
-					EnableTrapAvoidance()
-				end
+				if MoveMode.Value == "Pathfinding" then
+					if AvoidTraps.Enabled then
+						EnableTrapAvoidance()
+					end
 
-				if AvoidRake.Enabled then
-					EnableRakeAvoidance()
+					if AvoidRake.Enabled then
+						EnableRakeAvoidance()
+					end
 				end
 
 				task.spawn(function()
@@ -1348,7 +1517,13 @@ run(function()
 							local pos = GetScrapPosition(scrap)
 
 							if pos then
-								local success = WalkPathTo(pos, token)
+								local success
+
+								if MoveMode.Value == "Tweening" then
+									success = WalkTweenTo(pos, token)
+								else
+									success = WalkPathTo(pos, token)
+								end
 
 								if not success and Farming and token == CurrentToken then
 									if scrap.Parent then
@@ -1370,6 +1545,15 @@ run(function()
 
 				local character = lplr.Character
 				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+				local root = character and character:FindFirstChild("HumanoidRootPart")
+
+				if root and root.Anchored then
+					if vape.ThreadFix then
+						setthreadidentity(8)
+					end
+
+					root.Anchored = false
+				end
 
 				if humanoid then
 					humanoid:Move(Vector3.zero)
@@ -1379,11 +1563,35 @@ run(function()
 		Tooltip = "Automatically walks to and collects the nearest tagged Scrap.",
 	})
 
+	MoveMode = ScrapFarm:CreateDropdown({
+		Name = "Move Mode",
+		List = { "Pathfinding", "Tweening" },
+		Function = function(val)
+			if not Farming then
+				return
+			end
+
+			if val == "Pathfinding" then
+				if AvoidTraps.Enabled then
+					EnableTrapAvoidance()
+				end
+
+				if AvoidRake.Enabled then
+					EnableRakeAvoidance()
+				end
+			else
+				DisableTrapAvoidance()
+				DisableRakeAvoidance()
+			end
+		end,
+		Tooltip = "Pathfinding routes around obstacles using the navmesh. Tweening moves directly toward the target at a constant speed and aborts if the straight line is blocked.",
+	})
+
 	AvoidTraps = ScrapFarm:CreateToggle({
 		Name = "Avoid Traps",
 		Default = true,
 		Function = function(callback)
-			if not Farming then
+			if not Farming or MoveMode.Value ~= "Pathfinding" then
 				return
 			end
 
@@ -1393,14 +1601,14 @@ run(function()
 				DisableTrapAvoidance()
 			end
 		end,
-		Tooltip = "Treats tagged Traps as solid obstacles so pathfinding routes around them instead of through.",
+		Tooltip = "Treats tagged Traps as obstacles. In Pathfinding mode this reroutes around them; in Tweening mode it aborts a straight-line move that would cross one.",
 	})
 
 	AvoidRake = ScrapFarm:CreateToggle({
 		Name = "Avoid Rake",
 		Default = true,
 		Function = function(callback)
-			if not Farming then
+			if not Farming or MoveMode.Value ~= "Pathfinding" then
 				return
 			end
 
@@ -1410,7 +1618,7 @@ run(function()
 				DisableRakeAvoidance()
 			end
 		end,
-		Tooltip = "Treats the Rake as a moving solid obstacle so pathfinding routes around its current position.",
+		Tooltip = "Treats the Rake as an obstacle. In Pathfinding mode this reroutes around it; in Tweening mode it aborts a straight-line move that would cross it.",
 	})
 end)
 
