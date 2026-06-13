@@ -1008,7 +1008,7 @@ run(function()
 	local FailCooldown = 5
 	local TrapAvoidRadius = 8
 	local RakeAvoidRadius = 30
-	local TweenSpeed = 30
+	local TweenSpeed = 20
 	local LineSampleSpacing = 4
 
 	local TrapModifiers = {}
