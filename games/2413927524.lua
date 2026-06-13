@@ -1643,6 +1643,7 @@ run(function()
 			if callback then 
 				repeat
 					SafehouseDoor:WaitForChild("RemoteEvent"):FireServer("Door")
+					task.wait()
 				until not SpamSafehouseDoor.Enabled
 			end
 		end
