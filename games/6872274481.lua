@@ -1573,13 +1573,6 @@ run(function()
 	TargetCheck = Velocity:CreateToggle({Name = 'Only when targeting'})
 end)
 
-
-	Sorts = PlayerAttach:CreateDropdown({
-		Name = "Sorts",
-		List = {'Damage','Threat','Kit','Health','Angle'}
-	})
-end)
-
 run(function()
 	if role ~= "owner" and role ~= "coowner" and role ~= "admin" and role ~= "friend" and role ~= "premium" then
 		return
