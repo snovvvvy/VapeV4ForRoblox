@@ -56,6 +56,8 @@ local groupService = cloneref(game:GetService("GroupService"))
 local textChatService = cloneref(game:GetService("TextChatService"))
 local contextService = cloneref(game:GetService("ContextActionService"))
 local collectionService = cloneref(game:GetService("CollectionService"))
+local teamsService = cloneref(game:GetService("Teams"))
+local pathfindingService = cloneref(game:GetService("PathfindingService"))
 local coreGui = cloneref(game:GetService("CoreGui"))
 
 local isnetworkowner = identifyexecutor
@@ -68,6 +70,8 @@ local gameCamera = workspace.CurrentCamera or workspace:FindFirstChildWhichIsA("
 local lplr = playersService.LocalPlayer
 local playerGui = lplr:WaitForChild("PlayerGui")
 
+local map = workspace:WaitForChild("Map")
+
 local assetfunction = getcustomasset
 
 local vape = shared.vape
@@ -75,6 +79,9 @@ local tween = vape.Libraries.tween
 local targetinfo = vape.Libraries.targetinfo
 local getfontsize = vape.Libraries.getfontsize
 local getcustomasset = vape.Libraries.getcustomasset
+local uipallet = vape.Libraries.uipallet
+local entitylib = vape.Libraries.entity
+local sessioninfo = vape.Libraries.sessioninfo
 
 local function notif(...)
 	return vape:CreateNotification(...)
@@ -88,79 +95,67 @@ local function randomString()
 	return table.concat(array)
 end
 
-local function SafeTag(obj, tag)
-	if collectionService:HasTag(obj, tag) then
-		return
+entitylib.start()
+
+-- granny multiplayer chapter 1
+
+run(function() 
+	local function tag(obj, tag)
+		if collectionService:HasTag(obj, tag) then
+			return
+		end
+	
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+	
+		pcall(function()
+			collectionService:AddTag(obj, tag)
+		end)
 	end
-
-	if vape.ThreadFix then
-		setthreadidentity(8)
-	end
-
-	pcall(function()
-		collectionService:AddTag(obj, tag)
-	end)
-end
-
-for _, obj in ipairs(playerGui:GetDescendants()) do
-	if obj.Name == "FallSystem" and obj:FindFirstChild("FallSignal") then
-		SafeTag(obj, "NoFall")
-	end
-end
-
-playerGui.DescendantAdded:Connect(function(obj)
-	if obj.Name == "FallSystem" and obj:FindFirstChild("FallSignal") then
-		SafeTag(obj, "NoFall")
-	end
-end)
-
-for _, obj in ipairs(workspace:GetDescendants()) do
-	if obj.Name == "Granny" then
-		SafeTag(obj, "GrannyESP")
-	end
-
-	if obj.Name == "Open" and obj:FindFirstChild("BeartrapHumanoid") then
-		SafeTag(obj, "BearTrap")
-	end
-
-	if obj:FindFirstChildWhichIsA("ParticleEmitter") then
-		local current = obj.Parent
-
-		while current do
-			if current:IsA("Model") and current.Name:lower():find("preset") then
-				SafeTag(obj, "ItemESP")
-				break
+	
+	local function tagObj(obj)
+		local current
+	
+		if obj.Name == "Granny" then
+			current = obj.Parent
+	
+			while current do
+				if current:IsA("Model") and current.Name == "Locks" then
+					tag(obj, "Granny")
+					break
+				end
+	
+				current = current.Parent
 			end
-
-			current = current.Parent
+		end
+	
+		if obj.Name == "Open" and obj:FindFirstChild("BeartrapHumanoid") then
+			tag(obj, "Trap")
+		end
+	
+		if obj:FindFirstChild("InteractRemote") then
+			local current = obj.Parent
+	
+			while current do
+				if current:IsA("Model") and current.Name:lower():find("preset") then
+					SafeTag(obj, "Item")
+					break
+				end
+	
+				current = current.Parent
+			end
 		end
 	end
-end
-
-workspace.DescendantAdded:Connect(function(obj)
-	if obj.Name == "Granny" then
-		SafeTag(obj, "GrannyESP")
+	
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		tagObj(obj)
 	end
-
-	if obj.Name == "Open" and obj:FindFirstChild("BeartrapHumanoid") then
-		SafeTag(obj, "BearTrap")
-	end
-
-	if obj:FindFirstChildWhichIsA("ParticleEmitter") then
-		local current = obj.Parent
-
-		while current do
-			if current:IsA("Model") and current.Name:lower():find("preset") then
-				SafeTag(obj, "ItemESP")
-				break
-			end
-
-			current = current.Parent
-		end
-	end
+	
+	vape:Clean(workspace.DescendantAdded:Connect(tagObj))
 end)
 
-for _, v in { "Reach", "Invisible", "Disabler", "Jesus", "Killaura", "MurderMystery", "SilentAim", "AimAssist" } do
+for _, v in { "Reach", "Disabler", "Jesus", "Killaura", "MurderMystery", "SilentAim", "AimAssist" } do
 	vape:Remove(v)
 end
 
@@ -170,10 +165,18 @@ run(function()
 	local OutlineColor
 	local FillTransparency
 	local OutlineTransparency
+	local ShowLabels
+	local FontOption
+	local LabelColor
+	local LabelScale
+	local LabelBackground
 
 	local Reference = {}
 	local Folder = Instance.new("Folder")
 	Folder.Parent = vape.gui
+
+	local LabelFolder = Instance.new("Folder")
+	LabelFolder.Parent = vape.gui
 
 	local function IsGranny(obj)
 		if not obj then
@@ -184,7 +187,45 @@ run(function()
 			return false
 		end
 
-		return true
+		local current = obj.Parent
+
+		while current do
+			if current:IsA("Model") and current.Name == "Locks" then
+				return true
+				break
+			end
+
+			current = current.Parent
+		end
+
+		return false
+	end
+
+	local function CreateLabel(obj)
+		local text = "Granny"
+		local tagSize = getfontsize(text, 14 * LabelScale.Value, FontOption.Value, Vector2.new(100000, 100000))
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Size = UDim2.fromOffset(tagSize.X + 8, tagSize.Y + 7)
+		billboard.StudsOffset = Vector3.new(0, 5, 0)
+		billboard.AlwaysOnTop = true
+		billboard.Adornee = obj
+		billboard.Parent = LabelFolder
+
+		local tag = Instance.new("TextLabel")
+		tag.BackgroundColor3 = Color3.new()
+		tag.BorderSizePixel = 0
+		tag.Visible = true
+		tag.RichText = true
+		tag.FontFace = FontOption.Value
+		tag.TextSize = 14 * LabelScale.Value
+		tag.BackgroundTransparency = LabelBackground.Value
+		tag.Size = billboard.Size
+		tag.Text = text
+		tag.TextColor3 = Color3.fromHSV(LabelColor.Hue, LabelColor.Sat, LabelColor.Value)
+		tag.Parent = billboard
+
+		return billboard
 	end
 
 	local function Added(obj)
@@ -201,53 +242,63 @@ run(function()
 		cham.OutlineTransparency = OutlineTransparency.Value
 		cham.Parent = Folder
 
-		Reference[obj] = cham
+		local label = ShowLabels.Enabled and CreateLabel(obj) or nil
+
+		Reference[obj] = {
+			Cham = cham,
+			Label = label,
+		}
 	end
 
 	local function Removed(obj)
-		if Reference[obj] then
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
-
-			Reference[obj]:Destroy()
-			Reference[obj] = nil
+		local data = Reference[obj]
+		if not data then
+			return
 		end
-	end
 
-	local function Scan()
-		for _, obj in workspace:GetDescendants() do
-			if IsGranny(obj) then
-				task.spawn(Added, obj)
-			end
+		if vape.ThreadFix then
+			setthreadidentity(8)
 		end
+
+		data.Cham:Destroy()
+
+		if data.Label then
+			data.Label:Destroy()
+		end
+
+		Reference[obj] = nil
 	end
 
 	GrannyESP = vape.Categories.Render:CreateModule({
 		Name = "GrannyESP",
 		Function = function(callback)
 			if callback then
-				GrannyESP:Clean(collectionService:GetInstanceAddedSignal("GrannyESP"):Connect(Added))
-				GrannyESP:Clean(collectionService:GetInstanceRemovedSignal("GrannyESP"):Connect(Removed))
+				GrannyESP:Clean(collectionService:GetInstanceAddedSignal("Granny"):Connect(Added))
+				GrannyESP:Clean(collectionService:GetInstanceRemovedSignal("Granny"):Connect(Removed))
 
-				for _, obj in ipairs(collectionService:GetTagged("GrannyESP")) do
+				for _, obj in ipairs(collectionService:GetTagged("Granny")) do
 					Added(obj)
 				end
 			else
-				for _, v in pairs(Reference) do
-					v:Destroy()
+				for _, data in pairs(Reference) do
+					data.Cham:Destroy()
+
+					if data.Label then
+						data.Label:Destroy()
+					end
 				end
 
 				table.clear(Reference)
 			end
 		end,
+		Tooltip = "Adds a cham to granny."
 	})
 
 	FillColor = GrannyESP:CreateColorSlider({
 		Name = "Color",
 		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.FillColor = Color3.fromHSV(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Cham.FillColor = Color3.fromHSV(hue, sat, val)
 			end
 		end,
 	})
@@ -256,8 +307,8 @@ run(function()
 		Name = "Outline Color",
 		DefaultSat = 0,
 		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.OutlineColor = Color3.fromHSV(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Cham.OutlineColor = Color3.fromHSV(hue, sat, val)
 			end
 		end,
 	})
@@ -268,8 +319,8 @@ run(function()
 		Max = 1,
 		Default = 0.5,
 		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.FillTransparency = val
+			for _, data in pairs(Reference) do
+				data.Cham.FillTransparency = val
 			end
 		end,
 		Decimal = 10,
@@ -281,271 +332,87 @@ run(function()
 		Max = 1,
 		Default = 0.5,
 		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.OutlineTransparency = val
+			for _, data in pairs(Reference) do
+				data.Cham.OutlineTransparency = val
 			end
 		end,
 		Decimal = 10,
 	})
-end)
 
-run(function()
-	local ItemESP
-	local FillColor
-	local OutlineColor
-	local FillTransparency
-	local OutlineTransparency
-
-	local Reference = {}
-	local Folder = Instance.new("Folder")
-	Folder.Parent = vape.gui
-
-	local function IsAnItem(obj)
-		if not obj then
-			return false
-		end
-
-		if not obj:FindFirstChild("InteractRemote") then
-			return false
-		end
-
-		local current = obj.Parent
-
-		while current do
-			if current:IsA("Model") and (current.Name:lower():find("preset") or current.Name:lower() == "general items") then
-				return true
-			end
-
-			current = current.Parent
-		end
-
-		return false
-	end
-
-	local function Added(obj)
-        if Reference[obj] or not IsAnItem(obj) then
-            return
-        end
-
-        local cham = Instance.new('Highlight')
-        cham.Adornee = obj
-        cham.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        cham.FillColor = Color3.fromHSV(FillColor.Hue, FillColor.Sat, FillColor.Value)
-        cham.OutlineColor = Color3.fromHSV(OutlineColor.Hue, OutlineColor.Sat, OutlineColor.Value)
-        cham.FillTransparency = FillTransparency.Value
-        cham.OutlineTransparency = OutlineTransparency.Value
-        cham.Parent = Folder
-
-        local billboard = Instance.new("BillboardGui")
-        billboard.Name = randomString()
-        billboard.Adornee = obj
-        billboard.AlwaysOnTop = true
-        billboard.Size = UDim2.fromOffset(200, 50)
-        billboard.StudsOffset = Vector3.new(0, 2, 0)
-        billboard.MaxDistance = 150
-        billboard.Parent = cham
-
-        local text = Instance.new("TextLabel")
-        text.BackgroundTransparency = 1
-        text.Size = UDim2.fromScale(1, 1)
-        text.Font = Enum.Font.SourceSansBold
-        text.Text = obj.Name
-        text.TextColor3 = Color3.new(1, 1, 1)
-        text.TextStrokeTransparency = 0
-        text.TextScaled = true
-        text.Parent = billboard
-
-        Reference[obj] = cham
-    end
-
-	local function Removed(obj)
-		if Reference[obj] then
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
-
-			Reference[obj]:Destroy()
-			Reference[obj] = nil
-		end
-	end
-
-	local function Scan()
-		for _, obj in workspace:GetDescendants() do
-			if IsAnItem(obj) then
-				task.spawn(Added, obj)
-			end
-		end
-	end
-
-	ItemESP = vape.Categories.Render:CreateModule({
-		Name = "ItemESP",
+	ShowLabels = GrannyESP:CreateToggle({
+		Name = "Nametags",
+		Default = true,
 		Function = function(callback)
-			if callback then
-				ItemESP:Clean(collectionService:GetInstanceAddedSignal("ItemESP"):Connect(Added))
-				ItemESP:Clean(collectionService:GetInstanceRemovedSignal("ItemESP"):Connect(Removed))
+			if not GrannyESP.Enabled then
+				return
+			end
 
-				for _, obj in ipairs(collectionService:GetTagged("ItemESP")) do
-					Added(obj)
+			for obj, data in pairs(Reference) do
+				if callback then
+					if not data.Label then
+						data.Label = CreateLabel(obj)
+					end
+				else
+					if data.Label then
+						data.Label:Destroy()
+						data.Label = nil
+					end
 				end
-			else
-				for _, v in pairs(Reference) do
-					v:Destroy()
+			end
+			FontOption.Object.Visible = callback
+			LabelColor.Object.Visible = callback
+			LabelScale.Object.Visible = callback
+			LabelBackground.Object.Visible = callback
+		end,
+		Tooltip = "Shows a nametag on granny.",
+	})
+
+	FontOption = GrannyESP:CreateFont({
+		Name = "Label Font",
+		Blacklist = "Arial",
+		Function = function()
+			if GrannyESP.Enabled then
+				GrannyESP:Toggle()
+				GrannyESP:Toggle()
+			end
+		end,
+	})
+
+	LabelColor = GrannyESP:CreateColorSlider({
+		Name = "Label Color",
+		Function = function(hue, sat, val)
+			for _, data in pairs(Reference) do
+				if data.Label then
+					data.Label.TextLabel.TextColor3 = Color3.fromHSV(hue, sat, val)
 				end
-
-				table.clear(Reference)
 			end
 		end,
 	})
 
-	FillColor = ItemESP:CreateColorSlider({
-		Name = "Color",
-		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.FillColor = Color3.fromHSV(hue, sat, val)
+	LabelScale = GrannyESP:CreateSlider({
+		Name = "Label Scale",
+		Default = 1,
+		Min = 0.1,
+		Max = 1.5,
+		Decimal = 10,
+		Function = function()
+			if GrannyESP.Enabled then
+				GrannyESP:Toggle()
+				GrannyESP:Toggle()
 			end
 		end,
 	})
 
-	OutlineColor = ItemESP:CreateColorSlider({
-		Name = "Outline Color",
-		DefaultSat = 0,
-		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.OutlineColor = Color3.fromHSV(hue, sat, val)
-			end
-		end,
-	})
-
-	FillTransparency = ItemESP:CreateSlider({
-		Name = "Transparency",
+	LabelBackground = GrannyESP:CreateSlider({
+		Name = "Label Transparency",
+		Default = 0.5,
 		Min = 0,
 		Max = 1,
-		Default = 0.5,
-		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.FillTransparency = val
-			end
-		end,
 		Decimal = 10,
-	})
-
-	OutlineTransparency = ItemESP:CreateSlider({
-		Name = "Outline Transparency",
-		Min = 0,
-		Max = 1,
-		Default = 0.5,
-		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.OutlineTransparency = val
-			end
-		end,
-		Decimal = 10,
-	})
-end)
-
-run(function()
-	local AntiBearTrap
-
-	local Reference = {}
-
-	local function IsABearTrap(obj)
-		if not obj then
-			return false
-		end
-
-		if obj.Name ~= "Open" then
-			return false
-		end
-
-		return obj:FindFirstChild("BeartrapHumanoid") and true or false
-	end
-
-	local function Added(obj)
-		if Reference[obj] or not IsABearTrap(obj) then
-			return
-		end
-
-		obj.CanCollide = false
-		obj.CanTouch = false
-
-		Reference[obj] = obj
-	end
-
-	local function Removed(obj)
-		if Reference[obj] then
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
-
-			Reference[obj].CanCollide = true
-			Reference[obj].CanTouch = true
-
-			Reference[obj] = nil
-		end
-	end
-
-	AntiBearTrap = vape.Categories.Blatant:CreateModule({
-		Name = "AntiBearTrap",
-		Function = function(callback)
-			if callback then
-				AntiBearTrap:Clean(collectionService:GetInstanceAddedSignal("BearTrap"):Connect(Added))
-				AntiBearTrap:Clean(collectionService:GetInstanceRemovedSignal("BearTrap"):Connect(Removed))
-
-				for _, obj in ipairs(collectionService:GetTagged("BearTrap")) do
-					Added(obj)
-				end
-			else
-				for _, v in pairs(Reference) do
-					v.CanCollide = true
-					v.CanTouch = true
-				end
-
-				table.clear(Reference)
-			end
-		end,
-	})
-end)
-
-run(function()
-	local NoFall
-
-	local Reference = {}
-
-	local function Added(obj)
-		if Reference[obj] then
-			return
-		end
-
-		obj.Enabled = false
-		Reference[obj] = obj
-	end
-
-	local function Removed(obj)
-		if not Reference[obj] then
-			return
-		end
-
-		obj.Enabled = true
-		Reference[obj] = nil
-	end
-
-	NoFall = vape.Categories.Blatant:CreateModule({
-		Name = "NoFall",
-		Function = function(callback)
-			if callback then
-				NoFall:Clean(collectionService:GetInstanceAddedSignal("NoFall"):Connect(Added))
-
-				NoFall:Clean(collectionService:GetInstanceRemovedSignal("NoFall"):Connect(Removed))
-
-				for _, obj in ipairs(collectionService:GetTagged("NoFall")) do
-					Added(obj)
-				end
-			else
-				for _, obj in pairs(Reference) do
-					obj.Enabled = true
-				end
-
-				table.clear(Reference)
+		Function = function()
+			if GrannyESP.Enabled then
+				GrannyESP:Toggle()
+				GrannyESP:Toggle()
 			end
 		end,
 	})

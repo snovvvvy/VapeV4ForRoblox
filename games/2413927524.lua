@@ -99,81 +99,83 @@ entitylib.start()
 
 -- rake remastered
 
-local function tag(obj, tag)
-	if collectionService:HasTag(obj, tag) then
-		return
+run(function() 
+	local function tag(obj, tag)
+		if collectionService:HasTag(obj, tag) then
+			return
+		end
+	
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+	
+		pcall(function()
+			collectionService:AddTag(obj, tag)
+		end)
 	end
-
-	if vape.ThreadFix then
-		setthreadidentity(8)
-	end
-
-	pcall(function()
-		collectionService:AddTag(obj, tag)
-	end)
-end
-
-local function tagObj(obj)
-	local current
-
-	if obj.Name == "RakeTrapModel" then
-		current = obj.Parent
-
-		while current do
-			if current:IsA("Folder") and current.Name == "Traps" then
-				tag(obj, "Trap")
-				break
+	
+	local function tagObj(obj)
+		local current
+	
+		if obj.Name == "RakeTrapModel" then
+			current = obj.Parent
+	
+			while current do
+				if current:IsA("Folder") and current.Name == "Traps" then
+					tag(obj, "Trap")
+					break
+				end
+	
+				current = current.Parent
 			end
-
-			current = current.Parent
+		end
+	
+		if obj.Name == "Rake" then
+			current = obj.Parent
+	
+			while current do
+				if current == workspace then
+					tag(obj, "Rake")
+					break
+				end
+	
+				current = current.Parent
+			end
+		end
+	
+		if obj.Name:find("Scrap") then 
+			current = obj.Parent
+	
+			while current do
+				if current.Name:find("ItemSpawn") then
+					tag(obj, "Scrap")
+					break
+				end
+	
+				current = current.Parent
+			end
+		end
+	
+		if obj.Name == "Box" then 
+			current = obj.Parent
+	
+			while current do
+				if current.Name == "SupplyCrates" then
+					tag(obj, "SupplyCrate")
+					break
+				end
+	
+				current = current.Parent
+			end
 		end
 	end
-
-	if obj.Name == "Rake" then
-		current = obj.Parent
-
-		while current do
-			if current == workspace then
-				tag(obj, "Rake")
-				break
-			end
-
-			current = current.Parent
-		end
+	
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		tagObj(obj)
 	end
-
-	if obj.Name:find("Scrap") then 
-		current = obj.Parent
-
-		while current do
-			if current.Name:find("ItemSpawn") then
-				tag(obj, "Scrap")
-				break
-			end
-
-			current = current.Parent
-		end
-	end
-
-	if obj.Name == "Box" then 
-		current = obj.Parent
-
-		while current do
-			if current.Name == "SupplyCrates" then
-				tag(obj, "SupplyCrate")
-				break
-			end
-
-			current = current.Parent
-		end
-	end
-end
-
-for _, obj in ipairs(workspace:GetDescendants()) do
-	tagObj(obj)
-end
-
-vape:Clean(workspace.DescendantAdded:Connect(tagObj))
+	
+	vape:Clean(workspace.DescendantAdded:Connect(tagObj))
+end)
 
 for _, v in { "Reach", "Invisible", "Disabler", "Jesus", "Killaura", "MurderMystery", "SilentAim", "AimAssist" } do
 	vape:Remove(v)
