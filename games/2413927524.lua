@@ -214,10 +214,18 @@ run(function()
 	local OutlineColor
 	local FillTransparency
 	local OutlineTransparency
+	local ShowLabels
+	local FontOption
+	local LabelColor
+	local LabelScale
+	local LabelBackground
 
 	local Reference = {}
 	local Folder = Instance.new("Folder")
 	Folder.Parent = vape.gui
+
+	local LabelFolder = Instance.new("Folder")
+	LabelFolder.Parent = vape.gui
 
 	local function IsRake(obj)
 		if not obj then
@@ -241,6 +249,33 @@ run(function()
 		return false
 	end
 
+	local function CreateLabel(obj)
+		local text = "Rake"
+		local tagSize = getfontsize(text, 14 * LabelScale.Value, FontOption.Value, Vector2.new(100000, 100000))
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Size = UDim2.fromOffset(tagSize.X + 8, tagSize.Y + 7)
+		billboard.StudsOffset = Vector3.new(0, 4, 0)
+		billboard.AlwaysOnTop = true
+		billboard.Adornee = obj
+		billboard.Parent = LabelFolder
+
+		local tag = Instance.new("TextLabel")
+		tag.BackgroundColor3 = Color3.new()
+		tag.BorderSizePixel = 0
+		tag.Visible = true
+		tag.RichText = true
+		tag.FontFace = FontOption.Value
+		tag.TextSize = 14 * LabelScale.Value
+		tag.BackgroundTransparency = LabelBackground.Value
+		tag.Size = billboard.Size
+		tag.Text = text
+		tag.TextColor3 = Color3.fromHSV(LabelColor.Hue, LabelColor.Sat, LabelColor.Value)
+		tag.Parent = billboard
+
+		return billboard
+	end
+
 	local function Added(obj)
 		if Reference[obj] or not IsRake(obj) then
 			return
@@ -255,18 +290,31 @@ run(function()
 		cham.OutlineTransparency = OutlineTransparency.Value
 		cham.Parent = Folder
 
-		Reference[obj] = cham
+		local label = ShowLabels.Enabled and CreateLabel(obj) or nil
+
+		Reference[obj] = {
+			Cham = cham,
+			Label = label,
+		}
 	end
 
 	local function Removed(obj)
-		if Reference[obj] then
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
-
-			Reference[obj]:Destroy()
-			Reference[obj] = nil
+		local data = Reference[obj]
+		if not data then
+			return
 		end
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		data.Cham:Destroy()
+
+		if data.Label then
+			data.Label:Destroy()
+		end
+
+		Reference[obj] = nil
 	end
 
 	RakeESP = vape.Categories.Render:CreateModule({
@@ -280,20 +328,25 @@ run(function()
 					Added(obj)
 				end
 			else
-				for _, v in pairs(Reference) do
-					v:Destroy()
+				for _, data in pairs(Reference) do
+					data.Cham:Destroy()
+
+					if data.Label then
+						data.Label:Destroy()
+					end
 				end
 
 				table.clear(Reference)
 			end
 		end,
+		Tooltip = "Adds a cham to the rake."
 	})
 
 	FillColor = RakeESP:CreateColorSlider({
 		Name = "Color",
 		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.FillColor = Color3.fromHSV(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Cham.FillColor = Color3.fromHSV(hue, sat, val)
 			end
 		end,
 	})
@@ -302,8 +355,8 @@ run(function()
 		Name = "Outline Color",
 		DefaultSat = 0,
 		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.OutlineColor = Color3.fromHSV(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Cham.OutlineColor = Color3.fromHSV(hue, sat, val)
 			end
 		end,
 	})
@@ -314,8 +367,8 @@ run(function()
 		Max = 1,
 		Default = 0.5,
 		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.FillTransparency = val
+			for _, data in pairs(Reference) do
+				data.Cham.FillTransparency = val
 			end
 		end,
 		Decimal = 10,
@@ -327,11 +380,85 @@ run(function()
 		Max = 1,
 		Default = 0.5,
 		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.OutlineTransparency = val
+			for _, data in pairs(Reference) do
+				data.Cham.OutlineTransparency = val
 			end
 		end,
 		Decimal = 10,
+	})
+
+	ShowLabels = RakeESP:CreateToggle({
+		Name = "Nametags",
+		Default = true,
+		Function = function(callback)
+			if not RakeESP.Enabled then
+				return
+			end
+
+			for obj, data in pairs(Reference) do
+				if callback then
+					if not data.Label then
+						data.Label = CreateLabel(obj)
+					end
+				else
+					if data.Label then
+						data.Label:Destroy()
+						data.Label = nil
+					end
+				end
+			end
+		end,
+		Tooltip = "Shows a nametag on the Rake.",
+	})
+
+	FontOption = RakeESP:CreateFont({
+		Name = "Label Font",
+		Blacklist = "Arial",
+		Function = function()
+			if RakeESP.Enabled then
+				RakeESP:Toggle()
+				RakeESP:Toggle()
+			end
+		end,
+	})
+
+	LabelColor = RakeESP:CreateColorSlider({
+		Name = "Label Color",
+		Function = function(hue, sat, val)
+			for _, data in pairs(Reference) do
+				if data.Label then
+					data.Label.TextLabel.TextColor3 = Color3.fromHSV(hue, sat, val)
+				end
+			end
+		end,
+	})
+
+	LabelScale = RakeESP:CreateSlider({
+		Name = "Label Scale",
+		Default = 1,
+		Min = 0.1,
+		Max = 1.5,
+		Decimal = 10,
+		Function = function()
+			if RakeESP.Enabled then
+				RakeESP:Toggle()
+				RakeESP:Toggle()
+			end
+		end,
+	})
+
+	LabelBackground = RakeESP:CreateSlider({
+		Name = "Label Transparency",
+		Default = 0.5,
+		Min = 0,
+		Max = 1,
+		Decimal = 10,
+		Function = function()
+			if RakeESP.Enabled then
+				RakeESP:Toggle()
+				RakeESP:Toggle()
+			end
+		end,
 	})
 end)
 
@@ -341,10 +468,18 @@ run(function()
 	local OutlineColor
 	local FillTransparency
 	local OutlineTransparency
+	local ShowLabels
+	local FontOption
+	local LabelColor
+	local LabelScale
+	local LabelBackground
 
 	local Reference = {}
 	local Folder = Instance.new("Folder")
 	Folder.Parent = vape.gui
+
+	local LabelFolder = Instance.new("Folder")
+	LabelFolder.Parent = vape.gui
 
 	local function IsASupplyCrate(obj)
 		if not obj then
@@ -368,6 +503,33 @@ run(function()
 		return false
 	end
 
+	local function CreateLabel(obj)
+		local text = "Supply Crate"
+		local tagSize = getfontsize(text, 14 * LabelScale.Value, FontOption.Value, Vector2.new(100000, 100000))
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Size = UDim2.fromOffset(tagSize.X + 8, tagSize.Y + 7)
+		billboard.StudsOffset = Vector3.new(0, 4, 0)
+		billboard.AlwaysOnTop = true
+		billboard.Adornee = obj
+		billboard.Parent = LabelFolder
+
+		local tag = Instance.new("TextLabel")
+		tag.BackgroundColor3 = Color3.new()
+		tag.BorderSizePixel = 0
+		tag.Visible = true
+		tag.RichText = true
+		tag.FontFace = FontOption.Value
+		tag.TextSize = 14 * LabelScale.Value
+		tag.BackgroundTransparency = LabelBackground.Value
+		tag.Size = billboard.Size
+		tag.Text = text
+		tag.TextColor3 = Color3.fromHSV(LabelColor.Hue, LabelColor.Sat, LabelColor.Value)
+		tag.Parent = billboard
+
+		return billboard
+	end
+
 	local function Added(obj)
 		if Reference[obj] or not IsASupplyCrate(obj) then
 			return
@@ -382,18 +544,31 @@ run(function()
 		cham.OutlineTransparency = OutlineTransparency.Value
 		cham.Parent = Folder
 
-		Reference[obj] = cham
+		local label = ShowLabels.Enabled and CreateLabel(obj) or nil
+
+		Reference[obj] = {
+			Cham = cham,
+			Label = label,
+		}
 	end
 
 	local function Removed(obj)
-		if Reference[obj] then
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
-
-			Reference[obj]:Destroy()
-			Reference[obj] = nil
+		local data = Reference[obj]
+		if not data then
+			return
 		end
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		data.Cham:Destroy()
+
+		if data.Label then
+			data.Label:Destroy()
+		end
+
+		Reference[obj] = nil
 	end
 
 	SupplyCrateESP = vape.Categories.Render:CreateModule({
@@ -407,8 +582,12 @@ run(function()
 					Added(obj)
 				end
 			else
-				for _, v in pairs(Reference) do
-					v:Destroy()
+				for _, data in pairs(Reference) do
+					data.Cham:Destroy()
+
+					if data.Label then
+						data.Label:Destroy()
+					end
 				end
 
 				table.clear(Reference)
@@ -419,8 +598,8 @@ run(function()
 	FillColor = SupplyCrateESP:CreateColorSlider({
 		Name = "Color",
 		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.FillColor = Color3.fromHSV(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Cham.FillColor = Color3.fromHSV(hue, sat, val)
 			end
 		end,
 	})
@@ -429,8 +608,8 @@ run(function()
 		Name = "Outline Color",
 		DefaultSat = 0,
 		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.OutlineColor = Color3.fromHSV(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Cham.OutlineColor = Color3.fromHSV(hue, sat, val)
 			end
 		end,
 	})
@@ -441,8 +620,8 @@ run(function()
 		Max = 1,
 		Default = 0.5,
 		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.FillTransparency = val
+			for _, data in pairs(Reference) do
+				data.Cham.FillTransparency = val
 			end
 		end,
 		Decimal = 10,
@@ -454,11 +633,85 @@ run(function()
 		Max = 1,
 		Default = 0.5,
 		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.OutlineTransparency = val
+			for _, data in pairs(Reference) do
+				data.Cham.OutlineTransparency = val
 			end
 		end,
 		Decimal = 10,
+	})
+
+	ShowLabels = SupplyCrateESP:CreateToggle({
+		Name = "Nametags",
+		Default = true,
+		Function = function(callback)
+			if not SupplyCrateESP.Enabled then
+				return
+			end
+
+			for obj, data in pairs(Reference) do
+				if callback then
+					if not data.Label then
+						data.Label = CreateLabel(obj)
+					end
+				else
+					if data.Label then
+						data.Label:Destroy()
+						data.Label = nil
+					end
+				end
+			end
+		end,
+		Tooltip = "Shows a nametag on each Supply Crate.",
+	})
+
+	FontOption = SupplyCrateESP:CreateFont({
+		Name = "Label Font",
+		Blacklist = "Arial",
+		Function = function()
+			if SupplyCrateESP.Enabled then
+				SupplyCrateESP:Toggle()
+				SupplyCrateESP:Toggle()
+			end
+		end,
+	})
+
+	LabelColor = SupplyCrateESP:CreateColorSlider({
+		Name = "Label Color",
+		Function = function(hue, sat, val)
+			for _, data in pairs(Reference) do
+				if data.Label then
+					data.Label.TextLabel.TextColor3 = Color3.fromHSV(hue, sat, val)
+				end
+			end
+		end,
+	})
+
+	LabelScale = SupplyCrateESP:CreateSlider({
+		Name = "Label Scale",
+		Default = 1,
+		Min = 0.1,
+		Max = 1.5,
+		Decimal = 10,
+		Function = function()
+			if SupplyCrateESP.Enabled then
+				SupplyCrateESP:Toggle()
+				SupplyCrateESP:Toggle()
+			end
+		end,
+	})
+
+	LabelBackground = SupplyCrateESP:CreateSlider({
+		Name = "Label Transparency",
+		Default = 0.5,
+		Min = 0,
+		Max = 1,
+		Decimal = 10,
+		Function = function()
+			if SupplyCrateESP.Enabled then
+				SupplyCrateESP:Toggle()
+				SupplyCrateESP:Toggle()
+			end
+		end,
 	})
 end)
 
@@ -468,10 +721,18 @@ run(function()
 	local OutlineColor
 	local FillTransparency
 	local OutlineTransparency
+	local ShowLabels
+	local FontOption
+	local LabelColor
+	local LabelScale
+	local LabelBackground
 
 	local Reference = {}
 	local Folder = Instance.new("Folder")
 	Folder.Parent = vape.gui
+
+	local LabelFolder = Instance.new("Folder")
+	LabelFolder.Parent = vape.gui
 
 	local function IsAScrap(obj)
 		if not obj then
@@ -495,6 +756,33 @@ run(function()
 		return false
 	end
 
+	local function CreateLabel(obj)
+		local text = obj.Name
+		local tagSize = getfontsize(text, 14 * LabelScale.Value, FontOption.Value, Vector2.new(100000, 100000))
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Size = UDim2.fromOffset(tagSize.X + 8, tagSize.Y + 7)
+		billboard.StudsOffset = Vector3.new(0, 4, 0)
+		billboard.AlwaysOnTop = true
+		billboard.Adornee = obj
+		billboard.Parent = LabelFolder
+
+		local tag = Instance.new("TextLabel")
+		tag.BackgroundColor3 = Color3.new()
+		tag.BorderSizePixel = 0
+		tag.Visible = true
+		tag.RichText = true
+		tag.FontFace = FontOption.Value
+		tag.TextSize = 14 * LabelScale.Value
+		tag.BackgroundTransparency = LabelBackground.Value
+		tag.Size = billboard.Size
+		tag.Text = text
+		tag.TextColor3 = Color3.fromHSV(LabelColor.Hue, LabelColor.Sat, LabelColor.Value)
+		tag.Parent = billboard
+
+		return billboard
+	end
+
 	local function Added(obj)
 		if Reference[obj] or not IsAScrap(obj) then
 			return
@@ -509,18 +797,31 @@ run(function()
 		cham.OutlineTransparency = OutlineTransparency.Value
 		cham.Parent = Folder
 
-		Reference[obj] = cham
+		local label = ShowLabels.Enabled and CreateLabel(obj) or nil
+
+		Reference[obj] = {
+			Cham = cham,
+			Label = label,
+		}
 	end
 
 	local function Removed(obj)
-		if Reference[obj] then
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
-
-			Reference[obj]:Destroy()
-			Reference[obj] = nil
+		local data = Reference[obj]
+		if not data then
+			return
 		end
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		data.Cham:Destroy()
+
+		if data.Label then
+			data.Label:Destroy()
+		end
+
+		Reference[obj] = nil
 	end
 
 	ScrapESP = vape.Categories.Render:CreateModule({
@@ -534,8 +835,12 @@ run(function()
 					Added(obj)
 				end
 			else
-				for _, v in pairs(Reference) do
-					v:Destroy()
+				for _, data in pairs(Reference) do
+					data.Cham:Destroy()
+
+					if data.Label then
+						data.Label:Destroy()
+					end
 				end
 
 				table.clear(Reference)
@@ -546,8 +851,8 @@ run(function()
 	FillColor = ScrapESP:CreateColorSlider({
 		Name = "Color",
 		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.FillColor = Color3.fromHSV(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Cham.FillColor = Color3.fromHSV(hue, sat, val)
 			end
 		end,
 	})
@@ -556,8 +861,8 @@ run(function()
 		Name = "Outline Color",
 		DefaultSat = 0,
 		Function = function(hue, sat, val)
-			for _, v in pairs(Reference) do
-				v.OutlineColor = Color3.fromHSV(hue, sat, val)
+			for _, data in pairs(Reference) do
+				data.Cham.OutlineColor = Color3.fromHSV(hue, sat, val)
 			end
 		end,
 	})
@@ -568,8 +873,8 @@ run(function()
 		Max = 1,
 		Default = 0.5,
 		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.FillTransparency = val
+			for _, data in pairs(Reference) do
+				data.Cham.FillTransparency = val
 			end
 		end,
 		Decimal = 10,
@@ -581,11 +886,85 @@ run(function()
 		Max = 1,
 		Default = 0.5,
 		Function = function(val)
-			for _, v in pairs(Reference) do
-				v.OutlineTransparency = val
+			for _, data in pairs(Reference) do
+				data.Cham.OutlineTransparency = val
 			end
 		end,
 		Decimal = 10,
+	})
+
+	ShowLabels = ScrapESP:CreateToggle({
+		Name = "Nametags",
+		Default = true,
+		Function = function(callback)
+			if not ScrapESP.Enabled then
+				return
+			end
+
+			for obj, data in pairs(Reference) do
+				if callback then
+					if not data.Label then
+						data.Label = CreateLabel(obj)
+					end
+				else
+					if data.Label then
+						data.Label:Destroy()
+						data.Label = nil
+					end
+				end
+			end
+		end,
+		Tooltip = "Shows a nametag on each scrap.",
+	})
+
+	FontOption = ScrapESP:CreateFont({
+		Name = "Label Font",
+		Blacklist = "Arial",
+		Function = function()
+			if ScrapESP.Enabled then
+				ScrapESP:Toggle()
+				ScrapESP:Toggle()
+			end
+		end,
+	})
+
+	LabelColor = ScrapESP:CreateColorSlider({
+		Name = "Label Color",
+		Function = function(hue, sat, val)
+			for _, data in pairs(Reference) do
+				if data.Label then
+					data.Label.TextLabel.TextColor3 = Color3.fromHSV(hue, sat, val)
+				end
+			end
+		end,
+	})
+
+	LabelScale = ScrapESP:CreateSlider({
+		Name = "Label Scale",
+		Default = 1,
+		Min = 0.1,
+		Max = 1.5,
+		Decimal = 10,
+		Function = function()
+			if ScrapESP.Enabled then
+				ScrapESP:Toggle()
+				ScrapESP:Toggle()
+			end
+		end,
+	})
+
+	LabelBackground = ScrapESP:CreateSlider({
+		Name = "Label Transparency",
+		Default = 0.5,
+		Min = 0,
+		Max = 1,
+		Decimal = 10,
+		Function = function()
+			if ScrapESP.Enabled then
+				ScrapESP:Toggle()
+				ScrapESP:Toggle()
+			end
+		end,
 	})
 end)
 
@@ -595,6 +974,7 @@ run(function()
 	local OutlineColor
 	local FillTransparency
 	local OutlineTransparency
+	local ShowLabels
 	local FontOption
 	local LabelColor
 	local LabelScale
@@ -670,7 +1050,7 @@ run(function()
 		cham.OutlineTransparency = OutlineTransparency.Value
 		cham.Parent = Folder
 
-		local label = CreateLabel(obj)
+		local label = ShowLabels.Enabled and CreateLabel(obj) or nil
 
 		Reference[obj] = {
 			Cham = cham,
@@ -680,15 +1060,21 @@ run(function()
 
 	local function Removed(obj)
 		local data = Reference[obj]
-		if data then
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
-
-			data.Cham:Destroy()
-			data.Label:Destroy()
-			Reference[obj] = nil
+		if not data then
+			return
 		end
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		data.Cham:Destroy()
+
+		if data.Label then
+			data.Label:Destroy()
+		end
+
+		Reference[obj] = nil
 	end
 
 	TrapESP = vape.Categories.Render:CreateModule({
@@ -704,7 +1090,10 @@ run(function()
 			else
 				for _, data in pairs(Reference) do
 					data.Cham:Destroy()
-					data.Label:Destroy()
+
+					if data.Label then
+						data.Label:Destroy()
+					end
 				end
 
 				table.clear(Reference)
@@ -757,6 +1146,30 @@ run(function()
 		Decimal = 10,
 	})
 
+	ShowLabels = TrapESP:CreateToggle({
+		Name = "Nametags",
+		Default = true,
+		Function = function(callback)
+			if not TrapESP.Enabled then
+				return
+			end
+
+			for obj, data in pairs(Reference) do
+				if callback then
+					if not data.Label then
+						data.Label = CreateLabel(obj)
+					end
+				else
+					if data.Label then
+						data.Label:Destroy()
+						data.Label = nil
+					end
+				end
+			end
+		end,
+		Tooltip = "Shows a nametag on each trap.",
+	})
+
 	FontOption = TrapESP:CreateFont({
 		Name = "Label Font",
 		Blacklist = "Arial",
@@ -772,7 +1185,9 @@ run(function()
 		Name = "Label Color",
 		Function = function(hue, sat, val)
 			for _, data in pairs(Reference) do
-				data.Label.TextLabel.TextColor3 = Color3.fromHSV(hue, sat, val)
+				if data.Label then
+					data.Label.TextLabel.TextColor3 = Color3.fromHSV(hue, sat, val)
+				end
 			end
 		end,
 	})
@@ -1096,802 +1511,6 @@ run(function()
 	})
 end)
 
---[[run(function()
-	local ScrapFarm
-	local AvoidTraps
-	local AvoidRake
-	local MoveMode
-
-	local Farming = false
-	local CurrentToken = 0
-	local FailedScraps = {}
-	local FailCooldown = 5
-	local TrapAvoidRadius = 8
-	local RakeAvoidRadius = 30
-	local TweenSpeed = 20
-	local LineSampleSpacing = 4
-
-	local TrapModifiers = {}
-	local ModifierFolder = Instance.new("Folder")
-	ModifierFolder.Name = "ScrapFarm_TrapAvoidance"
-
-	local RakeModifiers = {}
-	local RakeModifierFolder = Instance.new("Folder")
-	RakeModifierFolder.Name = "ScrapFarm_RakeAvoidance"
-	local RakeUpdateConnection
-
-	local function GetScrapPosition(scrap)
-		if scrap:IsA("BasePart") then
-			return scrap.Position
-		end
-
-		if scrap:IsA("Model") or scrap:IsA("Folder") then
-			local part = (scrap.PrimaryPart) or scrap:FindFirstChildWhichIsA("BasePart", true)
-			if part then
-				return part.Position
-			end
-		end
-
-		return nil
-	end
-
-	local function GetTrapPosition(trap)
-		if trap:IsA("BasePart") then
-			return trap.Position
-		end
-
-		if trap:IsA("Model") or trap:IsA("Folder") then
-			local part = trap.PrimaryPart or trap:FindFirstChildWhichIsA("BasePart", true)
-			if part then
-				return part.Position
-			end
-		end
-
-		return nil
-	end
-
-	local function GetRakePosition(rake)
-		if rake:IsA("BasePart") then
-			return rake.Position
-		end
-
-		if rake:IsA("Model") or rake:IsA("Folder") then
-			local part = rake.PrimaryPart or rake:FindFirstChildWhichIsA("BasePart", true)
-			if part then
-				return part.Position
-			end
-		end
-
-		return nil
-	end
-
-	local function CreateTrapModifier(trap)
-		if TrapModifiers[trap] then
-			return
-		end
-
-		local pos = GetTrapPosition(trap)
-		if not pos then
-			return
-		end
-
-		if vape.ThreadFix then
-			setthreadidentity(8)
-		end
-
-		local zone = Instance.new("Part")
-		zone.Name = "TrapAvoidanceZone"
-		zone.Shape = Enum.PartType.Block
-		zone.Size = Vector3.new(TrapAvoidRadius * 2, 12, TrapAvoidRadius * 2)
-		zone.CFrame = CFrame.new(pos)
-		zone.Anchored = true
-		zone.CanCollide = false
-		zone.CanQuery = false
-		zone.CanTouch = false
-		zone.Transparency = 1
-		zone.Parent = ModifierFolder
-
-		local modifier = Instance.new("PathfindingModifier")
-		modifier.PassThrough = false
-		modifier.Parent = zone
-
-		TrapModifiers[trap] = zone
-	end
-
-	local function RemoveTrapModifier(trap)
-		local zone = TrapModifiers[trap]
-		if not zone then
-			return
-		end
-
-		if vape.ThreadFix then
-			setthreadidentity(8)
-		end
-
-		zone:Destroy()
-		TrapModifiers[trap] = nil
-	end
-
-	local function ClearAllTrapModifiers()
-		for trap in pairs(TrapModifiers) do
-			RemoveTrapModifier(trap)
-		end
-
-		table.clear(TrapModifiers)
-	end
-
-	local function EnableTrapAvoidance()
-		ModifierFolder.Parent = workspace
-
-		for _, trap in ipairs(collectionService:GetTagged("Trap")) do
-			if trap.Parent then
-				CreateTrapModifier(trap)
-			end
-		end
-
-		ScrapFarm:Clean(collectionService:GetInstanceAddedSignal("Trap"):Connect(CreateTrapModifier))
-		ScrapFarm:Clean(collectionService:GetInstanceRemovedSignal("Trap"):Connect(RemoveTrapModifier))
-	end
-
-	local function DisableTrapAvoidance()
-		ClearAllTrapModifiers()
-		ModifierFolder.Parent = nil
-	end
-
-	local function CreateRakeModifier(rake)
-		if RakeModifiers[rake] then
-			return
-		end
-
-		local pos = GetRakePosition(rake)
-
-		if vape.ThreadFix then
-			setthreadidentity(8)
-		end
-
-		local zone = Instance.new("Part")
-		zone.Name = "RakeAvoidanceZone"
-		zone.Shape = Enum.PartType.Block
-		zone.Size = Vector3.new(RakeAvoidRadius * 2, 12, RakeAvoidRadius * 2)
-		zone.CFrame = CFrame.new(pos or Vector3.zero)
-		zone.Anchored = true
-		zone.CanCollide = false
-		zone.CanQuery = false
-		zone.CanTouch = false
-		zone.Transparency = 1
-		zone.Parent = RakeModifierFolder
-
-		local modifier = Instance.new("PathfindingModifier")
-		modifier.PassThrough = false
-		modifier.Parent = zone
-
-		RakeModifiers[rake] = zone
-	end
-
-	local function RemoveRakeModifier(rake)
-		local zone = RakeModifiers[rake]
-		if not zone then
-			return
-		end
-
-		if vape.ThreadFix then
-			setthreadidentity(8)
-		end
-
-		zone:Destroy()
-		RakeModifiers[rake] = nil
-	end
-
-	local function ClearAllRakeModifiers()
-		for rake in pairs(RakeModifiers) do
-			RemoveRakeModifier(rake)
-		end
-
-		table.clear(RakeModifiers)
-	end
-
-	local function UpdateRakeModifierPositions()
-		for rake, zone in pairs(RakeModifiers) do
-			if rake.Parent then
-				local pos = GetRakePosition(rake)
-				if pos then
-					zone.CFrame = CFrame.new(pos)
-				end
-			else
-				RemoveRakeModifier(rake)
-			end
-		end
-	end
-
-	local function EnableRakeAvoidance()
-		RakeModifierFolder.Parent = workspace
-
-		for _, rake in ipairs(collectionService:GetTagged("Rake")) do
-			if rake.Parent then
-				CreateRakeModifier(rake)
-			end
-		end
-
-		ScrapFarm:Clean(collectionService:GetInstanceAddedSignal("Rake"):Connect(CreateRakeModifier))
-		ScrapFarm:Clean(collectionService:GetInstanceRemovedSignal("Rake"):Connect(RemoveRakeModifier))
-
-		RakeUpdateConnection = runService.Heartbeat:Connect(UpdateRakeModifierPositions)
-		ScrapFarm:Clean(RakeUpdateConnection)
-	end
-
-	local function DisableRakeAvoidance()
-		if RakeUpdateConnection then
-			RakeUpdateConnection:Disconnect()
-			RakeUpdateConnection = nil
-		end
-
-		ClearAllRakeModifiers()
-		RakeModifierFolder.Parent = nil
-	end
-
-	local function IsValidScrap(obj)
-		if not obj or not obj.Parent then
-			return false
-		end
-
-		local expiry = FailedScraps[obj]
-		if expiry and os.clock() < expiry then
-			return false
-		elseif expiry then
-			FailedScraps[obj] = nil
-		end
-
-		return true
-	end
-
-	local function GetClosestScrap()
-		local root = entitylib.character.RootPart
-		if not root then return nil end
-
-		local closest, closestDist = nil, math.huge
-
-		for _, obj in ipairs(collectionService:GetTagged("Scrap")) do
-			if IsValidScrap(obj) then
-				local pos = GetScrapPosition(obj)
-				if pos then
-					local dist = (root.Position - pos).Magnitude
-					if dist < closestDist then
-						closestDist = dist
-						closest = obj
-					end
-				end
-			end
-		end
-
-		return closest
-	end
-
-	local function GetLiveObstaclePositions(tag, radius)
-		local positions = {}
-
-		for _, obj in ipairs(collectionService:GetTagged(tag)) do
-			if obj.Parent then
-				local pos
-				if tag == "Trap" then
-					pos = GetTrapPosition(obj)
-				else
-					pos = GetRakePosition(obj)
-				end
-
-				if pos then
-					positions[#positions + 1] = { Position = pos, Radius = radius }
-				end
-			end
-		end
-
-		return positions
-	end
-
-	local function LineIsBlocked(startPos, endPos, obstacles)
-		if #obstacles == 0 then
-			return false
-		end
-
-		local delta = endPos - startPos
-		local distance = delta.Magnitude
-
-		if distance <= 0 then
-			return false
-		end
-
-		local direction = delta / distance
-		local steps = math.max(1, math.ceil(distance / LineSampleSpacing))
-
-		for i = 0, steps do
-			local samplePos = startPos + direction * math.min(i * LineSampleSpacing, distance)
-
-			for _, obstacle in ipairs(obstacles) do
-				if (samplePos - obstacle.Position).Magnitude <= obstacle.Radius then
-					return true
-				end
-			end
-		end
-
-		return false
-	end
-
-	local function WalkPathTo(targetPos, token)
-		local character = entitylib.character
-		local humanoid = entitylib.character.Humanoid
-		local root = entitylib.character.RootPart
-
-		if not humanoid or not root or not character then return false end
-
-		local path = pathfindingService:CreatePath({
-			AgentRadius = 1.5,
-			AgentHeight = 5,
-			AgentCanJump = true,
-			WaypointSpacing = 6
-		})
-
-		local ok, err = pcall(function()
-			path:ComputeAsync(root.Position, targetPos)
-		end)
-
-		if not ok then
-			notif("ScrapFarm", "ComputeAsync error:" .. err, 10, "warning")
-			return false
-		end
-
-		if path.Status ~= Enum.PathStatus.Success then
-			return false
-		end
-
-		local waypoints = path:GetWaypoints()
-
-		for i = 1, #waypoints do
-			if not Farming or token ~= CurrentToken then
-				return false
-			end
-
-			local wp = waypoints[i]
-
-			if wp.Action == Enum.PathWaypointAction.Jump then
-				humanoid.Jump = true
-			end
-
-			humanoid:MoveTo(wp.Position)
-
-			local start = os.clock()
-			while (root.Position - wp.Position).Magnitude > 3 do
-				if not Farming or token ~= CurrentToken then
-					return false
-				end
-
-				if os.clock() - start > 1.5 then
-					break
-				end
-
-				task.wait(0.05)
-			end
-		end
-
-		return true
-	end
-
-	local function GetGroundPosition(position, character)
-		local params = RaycastParams.new()
-		params.FilterType = Enum.RaycastFilterType.Blacklist
-		params.FilterDescendantsInstances = {character}
-	
-		local result = workspace:Raycast(
-			position + Vector3.new(0, 20, 0),
-			Vector3.new(0, -100, 0),
-			params
-		)
-	
-		if result then
-			return result.Position
-		end
-	
-		return position
-	end
-
-	local function WalkTweenTo(targetPos, token)
-		local character = entitylib.character
-		local humanoid = entitylib.character.Humanoid
-		local root = entitylib.character.RootPart
-
-		if not humanoid or not root or not character then return false end
-	
-		local obstacles = {}
-	
-		if AvoidTraps.Enabled then
-			for _, obstacle in ipairs(GetLiveObstaclePositions("Trap", TrapAvoidRadius)) do
-				obstacles[#obstacles + 1] = obstacle
-			end
-		end
-	
-		if AvoidRake.Enabled then
-			for _, obstacle in ipairs(GetLiveObstaclePositions("Rake", RakeAvoidRadius)) do
-				obstacles[#obstacles + 1] = obstacle
-			end
-		end
-	
-		local startPos = root.Position
-	
-		if LineIsBlocked(startPos, targetPos, obstacles) then
-			return false
-		end
-	
-		local distance = (targetPos - startPos).Magnitude
-	
-		if distance <= 0 then
-			return true
-		end
-	
-		local direction = (targetPos - startPos).Unit
-	
-		local wasAnchored = root.Anchored
-	
-		if vape.ThreadFix then
-			setthreadidentity(8)
-		end
-	
-		root.Anchored = true
-	
-		local stepDistance = 2
-		local steps = math.max(1, math.ceil(distance / stepDistance))
-	
-		for i = 1, steps do
-			if not Farming or token ~= CurrentToken then
-				root.Anchored = wasAnchored
-				return false
-			end
-	
-			local alpha = i / steps
-	
-			local horizontalPos = startPos:Lerp(targetPos, alpha)
-	
-			local groundPos = GetGroundPosition(horizontalPos, character)
-	
-			local desiredPos = groundPos + Vector3.new(0, 3, 0)
-	
-			if AvoidTraps.Enabled or AvoidRake.Enabled then
-				local liveObstacles = {}
-	
-				if AvoidTraps.Enabled then
-					for _, obstacle in ipairs(GetLiveObstaclePositions("Trap", TrapAvoidRadius)) do
-						liveObstacles[#liveObstacles + 1] = obstacle
-					end
-				end
-	
-				if AvoidRake.Enabled then
-					for _, obstacle in ipairs(GetLiveObstaclePositions("Rake", RakeAvoidRadius)) do
-						liveObstacles[#liveObstacles + 1] = obstacle
-					end
-				end
-	
-				for _, obstacle in ipairs(liveObstacles) do
-					if (desiredPos - obstacle.Position).Magnitude <= obstacle.Radius then
-						root.Anchored = wasAnchored
-						return false
-					end
-				end
-			end
-	
-			root.CFrame = CFrame.lookAt(
-				desiredPos,
-				desiredPos + Vector3.new(direction.X, 0, direction.Z)
-			)
-	
-			task.wait(stepDistance / TweenSpeed)
-		end
-	
-		root.Anchored = wasAnchored
-	
-		return true
-	end
-
-	ScrapFarm = vape.Categories.Blatant:CreateModule({
-		Name = "ScrapFarm",
-		Function = function(callback)
-			if callback then
-				Farming = true
-				CurrentToken += 1
-				local token = CurrentToken
-
-				if MoveMode.Value == "Pathfinding" then
-					if AvoidTraps.Enabled then
-						EnableTrapAvoidance()
-					end
-
-					if AvoidRake.Enabled then
-						EnableRakeAvoidance()
-					end
-				end
-
-				task.spawn(function()
-					while Farming and token == CurrentToken do
-						local scrap = GetClosestScrap()
-
-						if scrap then
-							local pos = GetScrapPosition(scrap)
-
-							if pos then
-								local success
-
-								if MoveMode.Value == "Tweening" then
-									success = WalkTweenTo(pos, token)
-								else
-									success = WalkPathTo(pos, token)
-								end
-
-								if not success and Farming and token == CurrentToken then
-									if scrap.Parent then
-										FailedScraps[scrap] = os.clock() + FailCooldown
-									end
-								end
-							end
-						end
-
-						task.wait(0.1)
-					end
-				end)
-			else
-				Farming = false
-				CurrentToken += 1
-				table.clear(FailedScraps)
-				DisableTrapAvoidance()
-				DisableRakeAvoidance()
-				local root = entitylib.character.RootPart
-				local humanoid = entitylib.character.Humanoid
-
-				if root and root.Anchored then
-					if vape.ThreadFix then
-						setthreadidentity(8)
-					end
-
-					root.Anchored = false
-				end
-
-				if humanoid then
-					humanoid:Move(Vector3.zero)
-				end
-			end
-		end,
-		Tooltip = "Automatically walks to and collects the nearest scrap.",
-	})
-
-	MoveMode = ScrapFarm:CreateDropdown({
-		Name = "Move Mode",
-		List = { "Pathfinding" },
-		Function = function(val)
-			if not Farming then
-				return
-			end
-
-			if val == "Pathfinding" then
-				if AvoidTraps.Enabled then
-					EnableTrapAvoidance()
-				end
-
-				if AvoidRake.Enabled then
-					EnableRakeAvoidance()
-				end
-			else
-				DisableTrapAvoidance()
-				DisableRakeAvoidance()
-			end
-		end,
-	})
-
-	AvoidTraps = ScrapFarm:CreateToggle({
-		Name = "Avoid Traps",
-		Default = true,
-		Function = function(callback)
-			if not Farming or MoveMode.Value ~= "Pathfinding" then
-				return
-			end
-
-			if callback then
-				EnableTrapAvoidance()
-			else
-				DisableTrapAvoidance()
-			end
-		end,
-		Tooltip = "Avoids traps.",
-	})
-
-	AvoidRake = ScrapFarm:CreateToggle({
-		Name = "Avoid Rake",
-		Default = true,
-		Function = function(callback)
-			if not Farming or MoveMode.Value ~= "Pathfinding" then
-				return
-			end
-
-			if callback then
-				EnableRakeAvoidance()
-			else
-				DisableRakeAvoidance()
-			end
-		end,
-		Tooltip = "Avoids the rake.",
-	})
-end)]]
-
-run(function()
-	local AntiRakeChase
-	local DetectionRange
-	local SpeedMultiplier
-
-	local OriginalWalkSpeed = nil
-
-	local Config = {
-		MIN_RUN_DISTANCE = 20,
-		MAX_RUN_DISTANCE = 40,
-		CLOSE_RANGE = 10,
-		SMOOTHNESS_CLOSE = 0.05,
-		SMOOTHNESS_FAR = 0.1,
-		RAY_HEIGHT = 5,
-		RAY_DEPTH = -10,
-		ALTERNATIVE_OFFSETS = {
-			Vector3.new(5, 0, 5),
-			Vector3.new(-5, 0, 5),
-			Vector3.new(5, 0, -5),
-			Vector3.new(-5, 0, -5)
-		}
-	}
-
-	local function GetRakeRoot()
-		for _, rake in ipairs(collectionService:GetTagged("Rake")) do
-			if rake.Parent then
-				local root = rake:FindFirstChild("HumanoidRootPart")
-				if root then
-					return root
-				end
-			end
-		end
-
-		return nil
-	end
-
-	local function FindSafePosition(desiredPosition)
-		local rayOrigin = desiredPosition + Vector3.new(0, Config.RAY_HEIGHT, 0)
-		local rayDirection = Vector3.new(0, Config.RAY_DEPTH, 0)
-
-		local collision = workspace:FindPartOnRayWithIgnoreList(
-			Ray.new(rayOrigin, rayDirection),
-			{ entitylib.character.Character }
-		)
-
-		if not collision then
-			return desiredPosition
-		end
-
-		for _, offset in ipairs(Config.ALTERNATIVE_OFFSETS) do
-			local altPosition = desiredPosition + offset
-			local altRayOrigin = altPosition + Vector3.new(0, Config.RAY_HEIGHT, 0)
-
-			local altCollision = workspace:FindPartOnRayWithIgnoreList(
-				Ray.new(altRayOrigin, rayDirection),
-				{ entitylib.character.Character }
-			)
-
-			if not altCollision then
-				return altPosition
-			end
-		end
-
-		return desiredPosition + Vector3.new(0, 2, 0)
-	end
-
-	local function RunAwayFromTarget(targetRoot)
-		if not entitylib.isAlive then return end
-
-		local humanoidRootPart = entitylib.character.RootPart
-		local humanoid = entitylib.character.Humanoid
-		if not (humanoidRootPart and humanoid) then return end
-
-		if humanoid.SeatPart then
-			humanoid.Sit = false
-			task.wait(0.0001)
-		end
-
-		if not targetRoot.Parent then
-			return
-		end
-
-		local targetPosition = targetRoot.Position
-		local currentPosition = humanoidRootPart.Position
-		local distance = (targetPosition - currentPosition).Magnitude
-
-		if distance <= DetectionRange.Value then
-			local runDistance = math.min(
-				Config.MAX_RUN_DISTANCE,
-				math.max(Config.MIN_RUN_DISTANCE, distance * 0.75)
-			)
-
-			local directionAwayFromTarget = (currentPosition - targetPosition).Unit
-			local desiredPosition = currentPosition + (directionAwayFromTarget * runDistance)
-
-			local safePosition = FindSafePosition(desiredPosition)
-
-			local targetLook = CFrame.new(safePosition, targetPosition)
-			local smoothness = distance < Config.CLOSE_RANGE and Config.SMOOTHNESS_CLOSE or Config.SMOOTHNESS_FAR
-
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
-
-			humanoidRootPart.CFrame = humanoidRootPart.CFrame:Lerp(targetLook, smoothness)
-			humanoid:MoveTo(safePosition)
-		end
-	end
-
-	AntiRakeChase = vape.Categories.Blatant:CreateModule({
-		Name = "AntiRakeChase",
-		Function = function(callback)
-			if callback then
-				if entitylib.isAlive then
-					local humanoid = entitylib.character.Humanoid
-					OriginalWalkSpeed = humanoid.WalkSpeed
-					humanoid.WalkSpeed = OriginalWalkSpeed * SpeedMultiplier.Value
-				end
-
-				repeat
-					local targetRoot = GetRakeRoot()
-
-					if targetRoot then
-						RunAwayFromTarget(targetRoot)
-					end
-
-					task.wait(0.1)
-				until not AntiRakeChase.Enabled
-
-				AntiRakeChase:Clean(entitylib.Events.LocalAdded:Connect(function()
-					if entitylib.isAlive and OriginalWalkSpeed then
-						entitylib.character.Humanoid.WalkSpeed = OriginalWalkSpeed * SpeedMultiplier.Value
-					end
-				end))
-			else
-				if entitylib.isAlive and OriginalWalkSpeed then
-					entitylib.character.Humanoid.WalkSpeed = OriginalWalkSpeed
-				end
-
-				OriginalWalkSpeed = nil
-			end
-		end,
-		Tooltip = "Automatically runs away from the Rake whenever it's within range, like an invisible barrier.",
-	})
-
-	DetectionRange = AntiRakeChase:CreateSlider({
-		Name = "Detection Range",
-		Min = 10,
-		Max = 100,
-		Default = 50,
-		Suffix = function(val)
-			return val == 1 and "stud" or "studs"
-		end,
-		Tooltip = "How close the Rake needs to be before you start running away.",
-	})
-
-	SpeedMultiplier = AntiRakeChase:CreateSlider({
-		Name = "Speed Multiplier",
-		Min = 1,
-		Max = 4,
-		Default = 2,
-		Decimal = 10,
-		Suffix = "x",
-		Function = function(val)
-			if not AntiRakeChase.Enabled then
-				return
-			end
-
-			if entitylib.isAlive and OriginalWalkSpeed then
-				entitylib.character.Humanoid.WalkSpeed = OriginalWalkSpeed * val
-			end
-		end,
-		Tooltip = "How much faster you move while running from the Rake.",
-	})
-end)
-
 run(function() 
 	local NoFall
 	local event
@@ -1916,23 +1535,42 @@ run(function()
 					folder:FindFirstChild("FD_Event").Parent = replicatedStorage
 				end
 			end
-		end
+		end,
+		Tooltip = "Disables fall damage."
 	})
 end)
 
 run(function() 
-	local SpamSafehouseDoor
+	local SafehouseDoor
+	local Mode
 
-	local SafehouseDoor = map:WaitForChild("SafeHouse"):WaitForChild("Door")
+	local safehouseDoor = map:WaitForChild("SafeHouse"):WaitForChild("Door")
 
-	SpamSafehouseDoor = vape.Categories.Troll:CreateModule({
-		Name = "SpamSafehouseDoor",
+	SafehouseDoor = vape.Categories.Troll:CreateModule({
+		Name = "SafehouseDoor",
 		Function = function(callback) 
 			if callback then 
-				repeat
-					SafehouseDoor:WaitForChild("RemoteEvent"):FireServer("Door")
-					task.wait()
-				until not SpamSafehouseDoor.Enabled
+				if Mode.Value == "Spam" then 
+					repeat
+						safehouseDoor:WaitForChild("RemoteEvent"):FireServer("Door")
+						task.wait()
+					until not SafehouseDoor.Enabled
+				else
+					safehouseDoor:WaitForChild("RemoteEvent"):FireServer("Door")
+					SafehouseDoor:Toggle()
+				end
+			end
+		end,
+		Tooltip = "Toggles/spams the safehouse door, even when you are outside the safehouse.\n(only works when you are near the safehouse)"
+	})
+
+	Mode = SafehouseDoor:CreateDropdown({
+		Name = "Mode",
+		List = {"Toggle", "Spam"},
+		Function = function(val) 
+			if SafehouseDoor.Enabled then 
+				SafehouseDoor:Toggle()
+				SafehouseDoor:Toggle()
 			end
 		end
 	})
