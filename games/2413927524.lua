@@ -204,7 +204,7 @@ run(function()
 	vape:CreateCategory({
 		Name = 'Troll',
 		Icon = getcustomasset('newvape/assets/new/troll.png'),
-		Size = UDim2.fromOffset(13, 14)
+		Size = UDim2.fromOffset(14, 15)
 	})
 end)
 
@@ -1915,29 +1915,6 @@ run(function()
 				if folder:FindFirstChild("FD_Event") then 
 					folder:FindFirstChild("FD_Event").Parent = replicatedStorage
 				end
-			end
-		end
-	})
-end)
-
-run(function() 
-	local ThirdPersonPOV
-	local oldCameraMode, oldCameraMaxZoomDistance
-
-	ThirdPersonPOV = vape.Legit:CreateModule({
-		Name = "ThirdPersonPOV",
-		Function = function(callback) 
-			if callback then 
-				oldCameraMode = lplr.CameraMode
-				oldCameraMaxZoomDistance = lplr.CameraMaxZoomDistance
-				repeat
-					lplr.CameraMode = "Classic"
-					lplr.CameraMaxZoomDistance = 10
-					task.wait()
-				until not ThirdPersonPOV.Enabled
-			else
-				lplr.CameraMode = oldCameraMode or "LockFirstPerson"
-				lplr.CameraMaxZoomDistance = oldCameraMaxZoomDistance or 0.5
 			end
 		end
 	})

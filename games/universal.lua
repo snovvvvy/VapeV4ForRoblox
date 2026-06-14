@@ -8120,6 +8120,35 @@ run(function()
 			end
 		end
 	})
-	
 end)
-	
+
+run(function() 
+	local ThirdPersonPOV
+	local MaxZoomDistance
+	local oldCameraMode, oldCameraMaxZoomDistance
+
+	ThirdPersonPOV = vape.Legit:CreateModule({
+		Name = "ThirdPersonPOV",
+		Function = function(callback) 
+			if callback then 
+				oldCameraMode = lplr.CameraMode
+				oldCameraMaxZoomDistance = lplr.CameraMaxZoomDistance
+
+				repeat
+					lplr.CameraMode = "Classic"
+					lplr.CameraMaxZoomDistance = MaxZoomDistance.Value
+					task.wait(0.5) -- had to optimize
+				until not ThirdPersonPOV.Enabled
+			else
+				lplr.CameraMode = oldCameraMode or "LockFirstPerson"
+				lplr.CameraMaxZoomDistance = oldCameraMaxZoomDistance or 0.5
+			end
+		end
+	})
+
+	MaxZoomDistance = ThirdPersonPOV:CreateSlider({
+		Name = "MaxZoomDistance",
+		Min = 5,
+    	Max = 100,
+	})
+end)
