@@ -764,7 +764,7 @@ run(function()
 		local name = string.match(obj.Name, "%a+")
 		local level = string.match(obj.Name, "%d+")
 
-		local text = name .. "(Lv. " .. level .. ")"
+		local text = name .. " (Lv. " .. level .. ")"
 		local tagSize = getfontsize(text, 14 * LabelScale.Value, FontOption.Value, Vector2.new(100000, 100000))
 
 		local billboard = Instance.new("BillboardGui")
