@@ -137,7 +137,7 @@ run(function()
 	
 			while current do
 				if current:IsA("Model") and current.Name:lower():find("preset") then
-					SafeTag(obj, "Item")
+					tag(obj, "Item")
 					break
 				end
 	
