@@ -99,7 +99,7 @@ entitylib.start()
 
 -- rake remastered
 
-local function safeTag(obj, tag)
+local function tag(obj, tag)
 	if collectionService:HasTag(obj, tag) then
 		return
 	end
@@ -121,7 +121,7 @@ local function tagObj(obj)
 
 		while current do
 			if current:IsA("Folder") and current.Name == "Traps" then
-				safeTag(obj, "Trap")
+				tag(obj, "Trap")
 				break
 			end
 
@@ -134,7 +134,7 @@ local function tagObj(obj)
 
 		while current do
 			if current == workspace then
-				safeTag(obj, "Rake")
+				tag(obj, "Rake")
 				break
 			end
 
@@ -147,7 +147,7 @@ local function tagObj(obj)
 
 		while current do
 			if current.Name:find("ItemSpawn") then
-				safeTag(obj, "Scrap")
+				tag(obj, "Scrap")
 				break
 			end
 
@@ -160,7 +160,7 @@ local function tagObj(obj)
 
 		while current do
 			if current.Name == "SupplyCrates" then
-				safeTag(obj, "SupplyCrate")
+				tag(obj, "SupplyCrate")
 				break
 			end
 
