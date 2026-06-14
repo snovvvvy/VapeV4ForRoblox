@@ -192,7 +192,6 @@ run(function()
 		while current do
 			if current:IsA("Model") and current.Name == "Locks" then
 				return true
-				break
 			end
 
 			current = current.Parent
