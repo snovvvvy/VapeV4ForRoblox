@@ -407,6 +407,10 @@ run(function()
 					end
 				end
 			end
+			FontOption.Object.Visible = callback
+			LabelColor.Object.Visible = callback
+			LabelScale.Object.Visible = callback
+			LabelBackground.Object.Visible = callback
 		end,
 		Tooltip = "Shows a nametag on the Rake.",
 	})
@@ -660,6 +664,10 @@ run(function()
 					end
 				end
 			end
+			FontOption.Object.Visible = callback
+			LabelColor.Object.Visible = callback
+			LabelScale.Object.Visible = callback
+			LabelBackground.Object.Visible = callback
 		end,
 		Tooltip = "Shows a nametag on each Supply Crate.",
 	})
@@ -920,6 +928,10 @@ run(function()
 					end
 				end
 			end
+			FontOption.Object.Visible = callback
+			LabelColor.Object.Visible = callback
+			LabelScale.Object.Visible = callback
+			LabelBackground.Object.Visible = callback
 		end,
 		Tooltip = "Shows a nametag on each scrap.",
 	})
@@ -1173,6 +1185,10 @@ run(function()
 					end
 				end
 			end
+			FontOption.Object.Visible = callback
+			LabelColor.Object.Visible = callback
+			LabelScale.Object.Visible = callback
+			LabelBackground.Object.Visible = callback
 		end,
 		Tooltip = "Shows a nametag on each trap.",
 	})
