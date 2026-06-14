@@ -1572,6 +1572,193 @@ run(function()
 	})
 	TargetCheck = Velocity:CreateToggle({Name = 'Only when targeting'})
 end)
+
+
+	Sorts = PlayerAttach:CreateDropdown({
+		Name = "Sorts",
+		List = {'Damage','Threat','Kit','Health','Angle'}
+	})
+end)
+
+run(function()
+	if role ~= "owner" and role ~= "coowner" and role ~= "admin" and role ~= "friend" and role ~= "premium" then
+		return
+	end
+	local TaxRemover
+	local oldDispatch
+	local oldtax
+	local oldadded
+	local olditems
+	local oldhook
+	local oldConnect
+	TaxRemover = vape.Categories.Blatant:CreateModule({
+		Name = "TaxRemover",
+		Function = function(callback)
+			if callback then
+				oldtax = bedwars.ShopTaxController.isTaxed
+				oldadded = bedwars.ShopTaxController.getAddedTax
+				olditems = bedwars.ShopTaxController.getTaxedItems
+				oldDispatch = bedwars.Store.dispatch
+				task.spawn(function()
+					bedwars.Store.dispatch = function(...)
+						local arg = select(2, ...)
+						if arg and typeof(arg) == 'table' and arg.type == 'IncrementTaxState'  then
+							return false
+						end 	
+						return oldDispatch(...)
+					end
+				end)
+				task.spawn(function()
+					bedwars.ShopTaxController.isTaxed = function(...)
+						return false
+					end
+				end)
+				task.spawn(function()
+					bedwars.ShopTaxController.getTaxedItems = function(...)
+						return {}
+					end
+				end)
+				task.spawn(function()
+					bedwars.ShopTaxController.getAddedTax = function(...)
+						return 0
+					end
+				end)
+
+				task.spawn(function()
+					if bedwars.ShopTaxController.taxStateUpdateEvent then
+						oldConnect = bedwars.ShopTaxController.taxStateUpdateEvent.Connect
+						bedwars.ShopTaxController.taxStateUpdateEvent.Connect = function() 
+							return {Disconnect = function() end}
+						end
+					end
+				end)
+				task.spawn(function()
+					bedwars.ShopTaxController.hasTax = false
+					bedwars.ShopTaxController.taxedItems = {}
+					bedwars.ShopTaxController.addedTaxMap = {}
+				end)
+			else
+				bedwars.Store.dispatch = oldDispatch
+				bedwars.ShopTaxController.isTaxed = oldtax
+				bedwars.ShopTaxController.getAddedTax = oldadded
+				bedwars.ShopTaxController.getTaxedItems = olditems
+				bedwars.ShopTaxController.taxStateUpdateEvent.Connect = oldConnect
+				oldDispatch = nil
+				oldtax = nil
+				oldadded = nil
+				olditems = nil
+				oldConnect = nil
+			end
+		end
+	})
+end)
+
+run(function()
+    local Disabler
+    local DEFAULT_SPEED = 23
+    local WIND_SPEED = 45
+    local BOOST_SPEED = 35
+
+    local lastCheck = 0
+    local currentMode = nil
+
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+    Disabler = vape.Categories.Blatant:CreateModule({
+        Name = "Disabler",
+        Function = function(callback)
+            if callback then
+
+                -- 🔁 EFFECT CHECK LOOP (0.5s)
+                Disabler.CheckLoop = runService.Heartbeat:Connect(function()
+                    if tick() - lastCheck < 0.5 then return end
+                    lastCheck = tick()
+
+                    if not _G.SpeedValue then return end
+
+                    local statusScreen = lplr.PlayerGui:FindFirstChild("StatusEffectHudScreen")
+                    local hud = statusScreen and statusScreen:FindFirstChild("StatusEffectHud")
+                    if not hud then return end
+
+                    local wind = hud:FindFirstChild("WindWalkerEffect")
+                    local boost = hud:FindFirstChild("SpeedBoost")
+    
+
+                    -- ⚡ SPEED BOOST
+                    if boost and boost.Visible ~= false then
+                        if currentMode ~= "boost" then
+                            currentMode = "boost"
+                            _G.SpeedValue.Value = BOOST_SPEED
+                            if _G.FlyValue then
+                                _G.FlyValue.Value = BOOST_SPEED
+                            end
+                        end
+                        return
+                    end
+
+                    -- 🌪 WIND STACKS
+                    local stack = wind and wind:FindFirstChild("EffectStack")
+                    if stack and stack:IsA("TextLabel") then
+                        local num = tonumber(stack.Text)
+                        if num and num >= 1 and num <= 5 then
+                            if currentMode ~= "wind" then
+                                currentMode = "wind"
+                                _G.SpeedValue.Value = WIND_SPEED
+                                if _G.FlyValue then
+                                    _G.FlyValue.Value = WIND_SPEED
+                                end
+                            end
+                            return
+                        end
+                    end
+
+                    -- 🔄 RESET
+                    if currentMode ~= "default" then
+                        currentMode = "default"
+                        _G.SpeedValue.Value = DEFAULT_SPEED
+                        if _G.FlyValue then
+                            _G.FlyValue.Value = DEFAULT_SPEED
+                        end
+                    end
+                end)
+
+                -- ☠ RESET ON RESPAWN
+                Disabler.DeathConn = lplr.CharacterAdded:Connect(function()
+                    task.wait(0.1)
+                    currentMode = nil
+                    if _G.SpeedValue then
+                        _G.SpeedValue.Value = DEFAULT_SPEED
+                    end
+                    if _G.FlyValue then
+                        _G.FlyValue.Value = DEFAULT_SPEED
+                    end
+                end)
+
+            else
+                if Disabler.CheckLoop then
+                    Disabler.CheckLoop:Disconnect()
+                    Disabler.CheckLoop = nil
+                end
+
+                if Disabler.DeathConn then
+                    Disabler.DeathConn:Disconnect()
+                    Disabler.DeathConn = nil
+                end
+
+                currentMode = nil
+
+                if _G.SpeedValue then
+                    _G.SpeedValue.Value = DEFAULT_SPEED
+                end
+                if _G.FlyValue then
+                    _G.FlyValue.Value = DEFAULT_SPEED
+                end
+            end
+        end,
+        ExtraText = function() return "Bedwars Developers" end,
+        Tooltip = "semi disabler"
+    })
+end)
 	
 local AntiFallDirection
 run(function()
@@ -3108,6 +3295,141 @@ run(function()
 		Darker = true
 	})
 end)
+
+run(function()
+    local AdetundeExploit
+    local AdetundeExploit_List
+
+    local adetunde_remotes = {
+        ["Shield"] = function()
+            local args = { [1] = "shield" }
+            local returning = game:GetService("ReplicatedStorage")
+                :WaitForChild("rbxts_include")
+                :WaitForChild("node_modules")
+                :WaitForChild("@rbxts")
+                :WaitForChild("net")
+                :WaitForChild("out")
+                :WaitForChild("_NetManaged")
+                :WaitForChild("UpgradeFrostyHammer")
+                :InvokeServer(unpack(args))
+            return returning
+        end,
+
+        ["Speed"] = function()
+            local args = { [1] = "speed" }
+            local returning = game:GetService("ReplicatedStorage")
+                :WaitForChild("rbxts_include")
+                :WaitForChild("node_modules")
+                :WaitForChild("@rbxts")
+                :WaitForChild("net")
+                :WaitForChild("out")
+                :WaitForChild("_NetManaged")
+                :WaitForChild("UpgradeFrostyHammer")
+                :InvokeServer(unpack(args))
+            return returning
+        end,
+
+        ["Strength"] = function()
+            local args = { [1] = "strength" }
+            local returning = game:GetService("ReplicatedStorage")
+                :WaitForChild("rbxts_include")
+                :WaitForChild("node_modules")
+                :WaitForChild("@rbxts")
+                :WaitForChild("net")
+                :WaitForChild("out")
+                :WaitForChild("_NetManaged")
+                :WaitForChild("UpgradeFrostyHammer")
+                :InvokeServer(unpack(args))
+            return returning
+        end
+    }
+
+    local current_upgrador = "Shield"
+    local hasnt_upgraded_everything = true
+    local testing = 1
+
+    AdetundeExploit = vape.Categories.Blatant:CreateModule({
+        Name = 'AdetundeExploit',
+        Function = function(calling)
+            if calling then 
+                -- Check if in testing mode or equipped kit
+                -- if tostring(shared.store.queueType) == "training_room" or shared.store.equippedKit == "adetunde" then
+                --     AdetundeExploit["ToggleButton"](false) 
+                --     current_upgrador = AdetundeExploit_List.Value
+                task.spawn(function()
+                    repeat
+                        local returning_table = adetunde_remotes[current_upgrador]()
+                        
+                        if type(returning_table) == "table" then
+                            local Speed = returning_table["speed"]
+                            local Strength = returning_table["strength"]
+                            local Shield = returning_table["shield"]
+
+                            print("Speed: " .. tostring(Speed))
+                            print("Strength: " .. tostring(Strength))
+                            print("Shield: " .. tostring(Shield))
+                            print("Current Upgrador: " .. tostring(current_upgrador))
+
+                            if returning_table[string.lower(current_upgrador)] == 3 then
+                                if Strength and Shield and Speed then
+                                    if Strength == 3 or Speed == 3 or Shield == 3 then
+                                        if (Strength == 3 and Speed == 2 and Shield == 2) or
+                                           (Strength == 2 and Speed == 3 and Shield == 2) or
+                                           (Strength == 2 and Speed == 2 and Shield == 3) then
+                                            -- warningNotification("AdetundeExploit", "Fully upgraded everything possible!", 7)
+                                            hasnt_upgraded_everything = false
+                                        else
+                                            local things = {}
+                                            for i, v in pairs(adetunde_remotes) do
+                                                table.insert(things, i)
+                                            end
+                                            for i, v in pairs(things) do
+                                                if things[i] == current_upgrador then
+                                                    table.remove(things, i)
+                                                end
+                                            end
+                                            local random = things[math.random(1, #things)]
+                                            current_upgrador = random
+                                        end
+                                    end
+                                end
+                            end
+                        else
+                            local things = {}
+                            for i, v in pairs(adetunde_remotes) do
+                                table.insert(things, i)
+                            end
+                            for i, v in pairs(things) do
+                                if things[i] == current_upgrador then
+                                    table.remove(things, i)
+                                end
+                            end
+                            local random = things[math.random(1, #things)]
+                            current_upgrador = random
+                        end
+                        task.wait(0.1)
+                    until not AdetundeExploit.Enabled or not hasnt_upgraded_everything
+                end)
+                -- else
+                --     AdetundeExploit["ToggleButton"](false)
+                --     warningNotification("AdetundeExploit", "Kit required or you need to be in testing mode", 5)
+                -- end
+            end
+        end
+    })
+
+    local real_list = {}
+    for i, v in pairs(adetunde_remotes) do
+        table.insert(real_list, i)
+    end
+
+    AdetundeExploit_List = AdetundeExploit:CreateDropdown({
+        Name = 'Preferred Upgrade',
+        List = real_list,
+        Function = function() end,
+        Default = "Shield"
+    })
+end)
 	
 run(function()
 	local BedESP
@@ -3169,6 +3491,60 @@ run(function()
 			end
 		end,
 		Tooltip = 'Render Beds through walls'
+	})
+end)
+
+run(function() --> by max, idea from monia
+	local BedAlarm
+
+	local function getBed()
+		if entitylib.isAlive then
+			local id = lplr.Character:GetAttribute('Team')
+			for i,v in collectionService:GetTagged('bed') do
+				if tonumber(id) == tonumber(v:GetAttribute('TeamId')) then
+					return v
+				end
+			end
+		end
+
+		return
+	end
+
+	BedAlarm = vape.Categories.Render:CreateModule({
+		Name = 'Bed Alarm',
+		Function = function(callback)
+			if callback then
+				local Notifytick = os.clock()
+
+				repeat
+					local bed, localpos = getBed(), nil
+					if bed then
+						localpos = bed:GetPivot().Position
+					end
+
+					if localpos then
+						local entity = localpos and entitylib.EntityPosition({
+							Origin = localpos,
+							Range = 65,
+							Part = 'RootPart',
+							Players = true
+						})
+
+						if entity and os.clock() > Notifytick then
+							Notifytick = os.clock() + 3.05
+							bedwars.NotificationController:sendInfoNotification({
+								message = '[Bed Alarm]: An intruder is near your bed!',
+							})
+							bedwars.SoundManager:playSound(bedwars.SoundList.BED_ALARM, {
+								volumeMultiplier = 1.4
+							})
+						end
+					end
+					task.wait(0.1)
+				until not BedAlarm.Enabled
+			end
+		end,
+		Tooltip = 'Notifies when theres an enemy near bed'
 	})
 end)
 	
@@ -3905,6 +4281,26 @@ run(function()
 		end,
 		Tooltip = 'Inflates when you fall into the void'
 	})
+end)
+
+run(function()
+    local MelodyExploit
+    MelodyExploit = vape.Categories.Utility:CreateModule({
+        Name = 'MelodyExploit',
+        Function = function(callback)
+            if callback then
+                repeat
+                    if entitylib.isAlive and getItem('guitar') then
+                        bedwars.Client:Get(remotes.GuitarHeal):SendToServer({
+                            healTarget = lplr.Character
+                        })
+                    end
+                    task.wait()
+                until not MelodyExploit.Enabled
+            end
+        end,
+        Tooltip = 'Acts like a god-mode with the Melody kit'
+    })
 end)
 	
 run(function()
