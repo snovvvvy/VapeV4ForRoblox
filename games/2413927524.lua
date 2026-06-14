@@ -206,7 +206,7 @@ run(function()
 			local humanoid = obj:FindFirstChildOfClass("Humanoid")
 
 			if humanoid then
-				return humanoid.Health .. "/" .. humanoid.MaxHealth
+				return math.round(humanoid.Health) .. "/" .. math.round(humanoid.MaxHealth)
 			end
 		end
 
