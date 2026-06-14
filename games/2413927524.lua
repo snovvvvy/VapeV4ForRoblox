@@ -198,6 +198,20 @@ run(function()
 	local distanceTravelled = sessioninfo:AddItem("Distance Travelled", 0, function(val) 
 		return DistanceTravelled.Value
 	end, false)
+
+	local RakeHealth = sessioninfo:AddItem("Rake Health", 0, function(val) 
+		local tagged = collectionService:GetTagged("Rake")
+
+		for _, obj in tagged do
+			local humanoid = obj:FindFirstChildOfClass("Humanoid")
+
+			if humanoid then
+				return humanoid.Health .. "/" .. humanoid.MaxHealth
+			end
+		end
+
+		return 0
+	end, false)
 end)
 
 run(function() 
