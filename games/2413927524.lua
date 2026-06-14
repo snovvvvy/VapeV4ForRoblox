@@ -255,7 +255,7 @@ run(function()
 
 		local billboard = Instance.new("BillboardGui")
 		billboard.Size = UDim2.fromOffset(tagSize.X + 8, tagSize.Y + 7)
-		billboard.StudsOffset = Vector3.new(0, 4, 0)
+		billboard.StudsOffset = Vector3.new(0, 5, 0)
 		billboard.AlwaysOnTop = true
 		billboard.Adornee = obj
 		billboard.Parent = LabelFolder
@@ -509,7 +509,7 @@ run(function()
 
 		local billboard = Instance.new("BillboardGui")
 		billboard.Size = UDim2.fromOffset(tagSize.X + 8, tagSize.Y + 7)
-		billboard.StudsOffset = Vector3.new(0, 4, 0)
+		billboard.StudsOffset = Vector3.new(0, 3, 0)
 		billboard.AlwaysOnTop = true
 		billboard.Adornee = obj
 		billboard.Parent = LabelFolder
@@ -743,6 +743,10 @@ run(function()
 			return false
 		end
 
+		if not obj:IsA("Model") then 
+			return false
+		end
+
 		local current = obj.Parent
 
 		while current do
@@ -757,12 +761,15 @@ run(function()
 	end
 
 	local function CreateLabel(obj)
-		local text = obj.Name
+		local name = string.match(obj.Name, "%a+")
+		local level = string.match(obj.Name, "%d+")
+
+		local text = name .. "(Lv. " .. level .. ")"
 		local tagSize = getfontsize(text, 14 * LabelScale.Value, FontOption.Value, Vector2.new(100000, 100000))
 
 		local billboard = Instance.new("BillboardGui")
 		billboard.Size = UDim2.fromOffset(tagSize.X + 8, tagSize.Y + 7)
-		billboard.StudsOffset = Vector3.new(0, 4, 0)
+		billboard.StudsOffset = Vector3.new(0, 3, 0)
 		billboard.AlwaysOnTop = true
 		billboard.Adornee = obj
 		billboard.Parent = LabelFolder
