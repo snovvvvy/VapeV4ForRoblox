@@ -70,8 +70,6 @@ local gameCamera = workspace.CurrentCamera or workspace:FindFirstChildWhichIsA("
 local lplr = playersService.LocalPlayer
 local playerGui = lplr:WaitForChild("PlayerGui")
 
-local map = workspace:WaitForChild("Map")
-
 local assetfunction = getcustomasset
 
 local vape = shared.vape
