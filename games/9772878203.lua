@@ -58,6 +58,20 @@ end)
 
 entitylib.start()
 
+run(function()
+    local Play = raf2.Sound.Play
+    print("type:", type(Play))
+    print("value:", tostring(Play))
+    
+    local i = 1
+    while true do
+        local name, value = debug.getupvalue(Play, i)
+        if name == nil then break end
+        print(i, name, type(value), tostring(value))
+        i += 1
+    end
+end)
+
 run(function() 
 	local PlaySound
 	local Sound
