@@ -48,7 +48,7 @@ end
 
 run(function()
 	raf2 = {
-		
+		Sound = require(modules.Sound)
 	}
 
 	vape:Clean(function()
