@@ -41,6 +41,7 @@ local sessioninfo = vape.Libraries.sessioninfo
 local raf2 = {}
 
 local modules = replicatedStorage:FindFirstChild("Modules")
+local remoteEvents = replicatedStorage:FindFirstChild("Events")
 
 local floppa = workspace:FindFirstChild("Floppa")
 
@@ -79,7 +80,35 @@ run(function()
 				until not AutoClicker.Enabled
 			end
 		end,
-		Tooltip = "Autoclicks the floppa"
+		Tooltip = "Autoclicks the floppa."
+	})
+end)
+
+run(function() 
+	local AutoSave
+	local Interval
+
+	AutoSave = vape.Categories.Blatant:CreateModule({
+		Name = "AutoSave",
+		Function = function(callback)
+			if callback then 
+				repeat
+					remoteEvents:FindFirstChild("Save"):FireServer()
+					task.wait(Interval.Value)
+				until not AutoSave.Enabled
+			end
+		end,
+		Tooltip = "Automatically saves your game after x amount of seconds."
+	})
+
+	Interval = AutoSave:CreateSlider({
+		Name = "Interval",
+		Min = 1,
+		Max = 60,
+		Suffix = function(val)
+			return val == 1 and 'second' or 'seconds'
+		end,
+		Tooltip = "The interval to save every x amount of seconds"
 	})
 end)
 
