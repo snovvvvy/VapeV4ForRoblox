@@ -63,13 +63,15 @@ run(function()
 	local Sound
 
 	local name, soundsTable = debug.getupvalue(raf2.Sound.Play, 1)
+	
+	print("Name:", name)
+	print("Type:", typeof(soundsTable))
+	print(soundsTable)
 
 	local soundNames = {}
 
 	for name in pairs(soundsTable) do
-		print("Name:", name)
-		print("Type:", typeof(soundsTable))
-		print(soundsTable)
+		
 		table.insert(soundNames, name)
 	end
 
