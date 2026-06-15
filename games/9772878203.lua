@@ -176,7 +176,7 @@ run(function()
 							end
 
 							success = false
-							entitylib.character.RootPart.CFrame = v.CFrame
+							entitylib.character.RootPart.CFrame = v.PrimaryPart.CFrame
 							Collect(v)
 							break
 						end
