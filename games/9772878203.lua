@@ -48,7 +48,7 @@ end
 
 run(function()
 	raf2 = {
-		Sound = require(modules.Sound),
+		
 	}
 
 	vape:Clean(function()
@@ -59,8 +59,11 @@ end)
 entitylib.start()
 
 run(function()
-    local freshModule = getscriptclosure(modules.Sound)()
-	local upvalues = debug.getupvalues(freshModule.Play)
+	local PlaySound
+	local Sound
+
+    local module = getscriptclosure(modules.Sound)()
+	local upvalues = debug.getupvalues(module.Play)
 
     local soundsTable
 
@@ -71,27 +74,23 @@ run(function()
         end
     end
 
-    if type(soundsTable) ~= "table" then
-        warn("Failed to extract sounds table")
-        return
-    end
-
     local soundNames = {}
     for name in pairs(soundsTable) do
         table.insert(soundNames, name)
     end
 
-    local PlaySound = vape.Categories.Utility:CreateModule({
+    PlaySound = vape.Categories.Utility:CreateModule({
         Name = "PlaySound",
         Function = function(callback)
             if callback then
                 raf2.Sound.Play(Sound.Value)
+				PlaySound:Toggle()
             end
         end,
         Tooltip = "Plays a specific sound of choice (from the game)."
     })
 
-    local Sound = PlaySound:CreateDropdown({
+    Sound = PlaySound:CreateDropdown({
         Name = "Sound",
         List = soundNames
     })
