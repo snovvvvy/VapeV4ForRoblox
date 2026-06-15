@@ -66,6 +66,9 @@ run(function()
 
 	local n, soundsTable = debug.getupvalue(raf2.Sound.Play, 1)
 
+	print(n)
+	print(soundsTable)
+
 	local soundNames = {}
 
 	for name in pairs(soundsTable) do
