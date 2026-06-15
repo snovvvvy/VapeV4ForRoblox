@@ -59,43 +59,40 @@ end)
 entitylib.start()
 
 run(function()
-    local Play = raf2.Sound.Play
-    print("type:", type(Play))
-    print("value:", tostring(Play))
-    
-    local i = 1
-    while true do
-        local name, value = debug.getupvalue(Play, i)
-        if name == nil then break end
-        print(i, name, type(value), tostring(value))
-        i += 1
+    local freshModule = getscriptclosure(modules.Sound)()
+	local upvalues = debug.getupvalues(freshModule.Play)
+
+    local soundsTable
+
+    for i, v in pairs(upvalues) do
+        if type(v) == "table" then
+            soundsTable = v
+            break
+        end
     end
-end)
 
-run(function() 
-	local PlaySound
-	local Sound
+    if type(soundsTable) ~= "table" then
+        warn("Failed to extract sounds table")
+        return
+    end
 
-	local n, soundsTable = debug.getupvalue(raf2.Sound.Play, 1)
+    local soundNames = {}
+    for name in pairs(soundsTable) do
+        table.insert(soundNames, name)
+    end
 
-	local soundNames = {}
+    local PlaySound = vape.Categories.Utility:CreateModule({
+        Name = "PlaySound",
+        Function = function(callback)
+            if callback then
+                raf2.Sound.Play(Sound.Value)
+            end
+        end,
+        Tooltip = "Plays a specific sound of choice (from the game)."
+    })
 
-	for name in pairs(soundsTable) do
-		table.insert(soundNames, name)
-	end
-
-	PlaySound = vape.Categories.Utility:CreateModule({
-		Name = "PlaySound",
-		Function = function(callback)
-			if callback then 
-				raf2.Sound.Play(Sound.Value)
-			end
-		end,
-		Tooltip = "Plays a specific sound of choice (from the game)."
-	})
-
-	Sound = PlaySound:CreateDropdown({
-		Name = "Sound",
-		List = soundNames
-	})
+    local Sound = PlaySound:CreateDropdown({
+        Name = "Sound",
+        List = soundNames
+    })
 end)
