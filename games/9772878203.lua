@@ -53,6 +53,45 @@ local function getTool()
 	return lplr.Character and lplr.Character:FindFirstChildWhichIsA('Tool', true) or nil
 end
 
+run(function() 
+	local function tag(obj, tag)
+		if collectionService:HasTag(obj, tag) then
+			return
+		end
+	
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+	
+		pcall(function()
+			collectionService:AddTag(obj, tag)
+		end)
+	end
+	
+	local function tagObj(obj)
+		local current
+	
+		if obj.Name == "Milk Delivery" then
+			current = obj.Parent
+	
+			while current do
+				if current == workspace then
+					tag(obj, "MilkDelivery")
+					break
+				end
+	
+				current = current.Parent
+			end
+		end
+	end
+	
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		tagObj(obj)
+	end
+	
+	vape:Clean(workspace.DescendantAdded:Connect(tagObj))
+end)
+
 run(function()
 	raf2 = {
 		Sound = require(modules.Sound)
@@ -109,6 +148,32 @@ run(function()
 			return val == 1 and 'second' or 'seconds'
 		end,
 		Tooltip = "The interval to save every x amount of seconds"
+	})
+end)
+
+run(function() 
+	local AutoCollectMilkDelivery
+
+	local function Collect(obj)
+		local prompt = obj.Crate:FindFirstChildWhichIsA("ProximityPrompt")
+
+		if prompt then 
+			fireproximityprompt(prompt)
+		end
+	end
+
+	AutoCollectMilkDelivery = vape.Categories.Blatant:CreateModule({
+		Name = "AutoCollectMilkDelivery",
+		Function = function(callback)
+			if callback then 
+				AutoCollectMilkDelivery:Clean(collectionService:GetInstanceAddedSignal("MilkDelivery"):Connect(Collect))
+		
+				for _, obj in ipairs(collectionService:GetTagged("MilkDelivery")) do
+					Collect(obj)
+				end
+			end
+		end,
+		Tooltip = "Auto collects the milk delivery."
 	})
 end)
 
