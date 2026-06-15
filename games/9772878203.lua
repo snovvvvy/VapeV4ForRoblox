@@ -189,7 +189,7 @@ run(function()
 						old = nil
 					end
 	
-					task.wait(1)
+					task.wait(0.4)
 				until not AutoCollectMilkDelivery.Enabled
 			end
 		end,
