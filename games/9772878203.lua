@@ -166,11 +166,31 @@ run(function()
 		Name = "AutoCollectMilkDelivery",
 		Function = function(callback)
 			if callback then 
-				AutoCollectMilkDelivery:Clean(collectionService:GetInstanceAddedSignal("MilkDelivery"):Connect(Collect))
-		
-				for _, obj in ipairs(collectionService:GetTagged("MilkDelivery")) do
-					Collect(obj)
-				end
+				local old
+				repeat
+					if entitylib.isAlive then
+						local success = true
+						for _, v in collectionService:GetTagged("MilkDelivery") do
+							if not old then
+								old = entitylib.character.RootPart.CFrame
+							end
+
+							success = false
+							entitylib.character.RootPart.CFrame = v.CFrame
+							Collect(v)
+							break
+						end
+	
+						if success and old then
+							entitylib.character.RootPart.CFrame = old
+							old = nil
+						end
+					else
+						old = nil
+					end
+	
+					task.wait(1)
+				until not AutoCollectMilkDelivery.Enabled
 			end
 		end,
 		Tooltip = "Auto collects the milk delivery."
