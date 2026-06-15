@@ -40,13 +40,13 @@ local sessioninfo = vape.Libraries.sessioninfo
 
 local raf2 = {}
 
+local modules = replicatedStorage:FindFirstChild("Modules")
+
 local function notif(...)
 	return vape:CreateNotification(...)
 end
 
 run(function()
-	local modules = replicatedStorage:FindFirstChild("Modules")
-
 	raf2 = {
 		Sound = require(modules.Sound),
 	}
