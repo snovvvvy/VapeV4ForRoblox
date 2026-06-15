@@ -76,12 +76,7 @@ run(function()
 	local PlaySound
 	local Sound
 
-	print(raf2.Sound)
-
 	local n, soundsTable = debug.getupvalue(raf2.Sound.Play, 1)
-
-	print(n)
-	print(soundsTable)
 
 	local soundNames = {}
 
