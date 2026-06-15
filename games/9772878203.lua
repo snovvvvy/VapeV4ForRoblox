@@ -42,8 +42,14 @@ local raf2 = {}
 
 local modules = replicatedStorage:FindFirstChild("Modules")
 
+local floppa = workspace:FindFirstChild("Floppa")
+
 local function notif(...)
 	return vape:CreateNotification(...)
+end
+
+local function getTool()
+	return lplr.Character and lplr.Character:FindFirstChildWhichIsA('Tool', true) or nil
 end
 
 run(function()
@@ -57,6 +63,25 @@ run(function()
 end)
 
 entitylib.start()
+
+run(function() 
+	local AutoClicker
+
+	local clickDetector = floppa:FindFirstChildWhichIsA("ClickDetector")
+
+	AutoClicker = vape.Categories.Blatant:CreateModule({
+		Name = "AutoClicker",
+		Function = function(callback)
+			if callback then 
+				repeat
+					fireclickdetector(clickDetector)
+					task.wait()
+				until not AutoClicker.Enabled
+			end
+		end,
+		Tooltip = "Autoclicks the floppa"
+	})
+end)
 
 run(function()
 	local PlaySound
