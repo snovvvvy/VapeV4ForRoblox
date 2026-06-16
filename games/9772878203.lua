@@ -550,6 +550,7 @@ run(function()
                     local failed = false
 
                     for _, ingredient in ipairs(recipe.Ingredients) do
+						print("Ingredient:", ingredient)
                         local tool = getTool(ingredient)
 
                         if not tool and inventoryOnly[ingredient] then
