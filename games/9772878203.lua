@@ -452,13 +452,11 @@ run(function()
 								old = entitylib.character.RootPart.CFrame
 							end
 
-							local prompt = BowlPart:FindFirstChildWhichIsA("ProximityPrompt")
-
 							success = false
 
 							entitylib.character.RootPart.CFrame = BowlPart.CFrame
 							entitylib.character.Humanoid:EquipTool(getTool("Floppa Food"))
-							fireproximityprompt(prompt)
+							fireproximityprompt(BowlPart:FindFirstChildWhichIsA("ProximityPrompt"))
 							break
 						end
 
