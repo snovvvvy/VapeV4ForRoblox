@@ -53,10 +53,8 @@ local function notif(...)
 	return vape:CreateNotification(...)
 end
 
-local function getTool(tool)
-	local t = lplr.Backpack:FindFirstChild(tool) or entitylib.character:FindFirstChild(tool)
-
-	return (not t) and false or t
+local function getTool(toolName)
+	return lplr.Backpack:FindFirstChild(toolName) or (entitylib.character and entitylib.character:FindFirstChild(toolName)) or false
 end
 
 run(function() 
@@ -170,7 +168,7 @@ run(function()
 end)
 
 entitylib.start()
-
+print(entitylib.character)
 run(function() 
 	local AutoClicker
 
@@ -473,8 +471,6 @@ run(function()
 					end
 					task.wait(0.4)
 				until not AutoFillBowl.Enabled
-			else
-
 			end
 		end,
 		Tooltip = "Automatically fills the floppa's bowl"
