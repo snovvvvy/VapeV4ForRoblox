@@ -450,7 +450,7 @@ run(function()
 		entitylib.character.RootPart.CFrame = BowlPart.CFrame
 		task.wait(0.1)
 		fireproximityprompt(BowlPart:FindFirstChildWhichIsA("ProximityPrompt"))
-		task.wait(0.4)
+		task.wait(0.1)
 		entitylib.character.RootPart.CFrame = old
 	end
 
