@@ -448,26 +448,22 @@ run(function()
 			if callback then 
 				local old
 				repeat
-					if entitylib.isAlive then 
+					if entitylib.isAlive then
 						local success = true
 						if BowlPart.Transparency == 1 then 
 							if not old then
 								old = entitylib.character.RootPart.CFrame
 							end
-
 							success = false
-							local tool = getTool("Floppa Food")
-
-							if not tool then
+							if not getTool("Floppa Food") then 
 								Unlock:FireServer("Floppa Food", "the_interwebs")
 							end
-
+							entitylib.character.Humanoid:EquipTool(getTool("Floppa Food"))
 							entitylib.character.RootPart.CFrame = BowlPart.CFrame
-							entitylib.character.Humanoid:EquipTool(tool)
 							fireproximityprompt(BowlPart:FindFirstChildWhichIsA("ProximityPrompt"))
 							break
 						end
-
+	
 						if success and old then
 							entitylib.character.RootPart.CFrame = old
 							old = nil
@@ -475,6 +471,7 @@ run(function()
 					else
 						old = nil
 					end
+	
 					task.wait(0.4)
 				until not AutoFillBowl.Enabled
 			end
