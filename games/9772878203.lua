@@ -524,6 +524,7 @@ run(function()
         if item == "Sugar" or item == "Bread" or item == "Flour" then
             prompt = FoodMarket[item .. " Crate"].Crate["Empty Display Crate"].Primary:FindFirstChildWhichIsA("ProximityPrompt")
         else
+			print(item)
             prompt = FoodMarket:FindFirstChild(item):FindFirstChildWhichIsA("ProximityPrompt")
         end
         local old = entitylib.character.RootPart.CFrame
