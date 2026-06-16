@@ -44,6 +44,10 @@ local modules = replicatedStorage:FindFirstChild("Modules")
 local remoteEvents = replicatedStorage:FindFirstChild("Events")
 
 local floppa = workspace:FindFirstChild("Floppa")
+local roommate = workspace.Unlocks:FindFirstChild("Roommate")
+
+local RentAmount = roommate:FindFirstChild("Amt")
+
 
 local function notif(...)
 	return vape:CreateNotification(...)
@@ -346,13 +350,14 @@ end)
 run(function() 
 	local LandLord
 
-	local roommate = workspace.Unlocks:FindFirstChild("Roommate")
 	local CanRaise = roommate:FindFirstChild("Can Raise")
 	local CanCollect = roommate:FindFirstChild("Can Collect")
 
 	local function Raise()
 		if CanRaise.Value then 
 			remoteEvents:FindFirstChild("Raise Rent"):FireServer()
+			task.wait(0.1)
+			notif("LandLord", "Raised the Roommate's rent to $" .. RentAmount.Value .. ".")
 		end
 	end
 
@@ -365,6 +370,8 @@ run(function()
 	local function RentSpawned(obj)
 		firetouchinterest(entitylib.character.RootPart, obj, 0)
 		firetouchinterest(entitylib.character.RootPart, obj, 1)
+
+		notif("LandLord", "Collected the Roommate's rent: $" .. RentAmount.Value .. ".")
 	end
 
 	LandLord = vape.Categories.Blatant:CreateModule({
