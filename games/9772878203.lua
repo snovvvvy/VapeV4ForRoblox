@@ -362,7 +362,7 @@ run(function()
 		end
 	end
 
-	local RentSpawned(obj)
+	local function RentSpawned(obj)
 		firetouchinterest(entitylib.character.RootPart, obj, 0)
 		firetouchinterest(entitylib.character.RootPart, obj, 1)
 	end
