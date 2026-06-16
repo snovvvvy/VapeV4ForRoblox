@@ -382,6 +382,9 @@ run(function()
 				LandLord:Clean(CanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
 				LandLord:Clean(collectionService:GetInstanceAddedSignal("Rent"):Connect(RentSpawned))
 
+				Raise()
+				Collect()
+
 				for _, obj in ipairs(collectionService:GetTagged("Rent")) do
 					RentSpawned(obj)
 				end
