@@ -169,10 +169,18 @@ run(function()
 		Sound = require(modules.Sound),
 		Recipes = require(modules.Recipes)
 	}
-	print(raf2.Recipes)
-	print(type(raf2.Recipes))
-	for k, v in pairs(raf2.Recipes) do
-		print(k, v)
+	for key, _ in pairs(raf2.Recipes) do
+		print(string.len(key), key)
+	end
+
+	for key, _ in pairs(raf2.Recipes) do
+		if string.find(key, "Vegetable") then
+			print("exact key is:", key, "len:", #key)
+			for i = 1, #key do
+				io.write(string.byte(key, i) .. " ")
+			end
+			print()
+		end
 	end
 
 	vape:Clean(function()
