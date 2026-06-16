@@ -50,7 +50,7 @@ local function notif(...)
 end
 
 local function getTool(tool)
-	local t = lplr.Backpack:FindFirstChild(tool)
+	local t = lplr.Backpack:FindFirstChild(tool) or entitylib.character:FindFirstChildWhichIsA("Tool")
 
 	return (not t) and false or t
 end
@@ -129,6 +129,14 @@ run(function()
 	vape:Clean(function()
 		table.clear(raf2)
 	end)
+end)
+
+run(function() 
+	vape:CreateCategory({
+		Name = 'Troll',
+		Icon = getcustomasset('newvape/assets/new/troll.png'),
+		Size = UDim2.fromOffset(14, 15)
+	})
 end)
 
 entitylib.start()
@@ -358,4 +366,43 @@ run(function()
         Name = "Sound",
         List = soundNames
     })
+end)
+
+run(function() 
+	local THEOVENISONFIRE
+
+	local oldHeat, oldSize, oldEnabled
+
+	local oven = workspace["Key Parts"].Stove:FindFirstChild("Oven")
+
+	local function bigFire(fire) 
+		fire.Enabled = true
+		fire.Heat = 25
+		fire.Size = 30
+	end
+
+	THEOVENISONFIRE = vape.Categories.Troll:CreateModule({
+		Name = "THEOVENISONFIRE",
+		Function = function(callback)
+			if callback then 
+				local fire = oven:FindFirstChildWhichIsA("Fire")
+
+				if fire then
+					oldHeat = fire.Heat
+					oldSize = fire.Size
+					oldEnabled = fire.Enabled
+
+					bigFire(fire)
+					THEOVENISONFIRE:Clean(fire:GetPropertyChangedSignal("Enabled"):Connect(function() 
+						bigFire(fire)
+					end))
+				end
+			else
+				fire.Enabled = oldEnabled or false
+				fire.Heat = oldHeat or 2
+				fire.Size = oldSize or 5
+			end
+		end,
+		Tooltip = "THE OVEN IS ON FIRE"
+	})
 end)
