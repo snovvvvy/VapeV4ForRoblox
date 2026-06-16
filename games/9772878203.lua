@@ -500,7 +500,7 @@ run(function()
         Flopptonium = true,
         Bomb = true,
         Carrot = true,
-		Lettuce = true
+        Lettuce = true
     }
 
     local temperatures = {
@@ -525,7 +525,12 @@ run(function()
         if item == "Sugar" or item == "Bread" or item == "Flour" then
             prompt = FoodMarket[item .. " Crate"].Crate["Empty Display Crate"].Primary:FindFirstChildWhichIsA("ProximityPrompt")
         else
-            prompt = FoodMarket:FindFirstChild(item):FindFirstChildWhichIsA("ProximityPrompt")
+            local marketItem = FoodMarket:FindFirstChild(item)
+            if not marketItem then
+                notif("Chef", item .. " could not be found in the Food Market.", 10, "warning")
+                return false
+            end
+            prompt = marketItem:FindFirstChildWhichIsA("ProximityPrompt")
         end
         local old = entitylib.character.RootPart.CFrame
         entitylib.character.RootPart.CFrame = prompt.Parent.CFrame * CFrame.new(1, 0, 0)
@@ -533,6 +538,17 @@ run(function()
         fireproximityprompt(prompt)
         task.wait(0.5)
         entitylib.character.RootPart.CFrame = old
+        return true
+    end
+
+    local function checkInventoryRequirements(ingredients)
+        local missing = {}
+        for _, ingredient in ipairs(ingredients) do
+            if inventoryOnly[ingredient] and not getTool(ingredient) then
+                missing[#missing + 1] = ingredient
+            end
+        end
+        return #missing == 0, missing
     end
 
     Chef = vape.Categories.Blatant:CreateModule({
@@ -543,6 +559,17 @@ run(function()
                 local recipe = raf2.Recipes[selectedRecipe]
 
                 if recipe and recipe.Ingredients then
+                    local ready, missing = checkInventoryRequirements(recipe.Ingredients)
+
+                    if not ready then
+                        for _, ingredient in ipairs(missing) do
+                            local suffix = (ingredient == "Milk") and " (Get this from the milk man)" or ""
+                            notif("Chef", ingredient .. " is required to be in your inventory for this recipe." .. suffix, 10, "warning")
+                        end
+                        Chef:Toggle()
+                        return
+                    end
+
                     for i = 1, 4 do
                         Cooking:FireServer("Remove Ingredient", i)
                     end
@@ -553,13 +580,12 @@ run(function()
                     for _, ingredient in ipairs(recipe.Ingredients) do
                         local tool = getTool(ingredient)
 
-                        if not tool and inventoryOnly[ingredient] then
-                            local suffix = (ingredient == "Milk") and " (Get this from the milk man)" or ""
-                            notif("Chef", ingredient .. " is required to be in your inventory for this recipe." .. suffix, 10, "warning")
-                            failed = true
-                            break
-                        elseif not tool then
-                            buyItem(ingredient)
+                        if not tool then
+                            local bought = buyItem(ingredient)
+                            if not bought then
+                                failed = true
+                                break
+                            end
                             tool = getTool(ingredient)
                         end
 
