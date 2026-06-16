@@ -357,7 +357,7 @@ run(function()
 		if CanRaise.Value then 
 			remoteEvents:FindFirstChild("Raise Rent"):FireServer()
 			task.wait(0.1)
-			notif("LandLord", "Raised the Roommate's rent to $" .. RentAmount.Value .. ".")
+			notif("LandLord", "Raised the Roommate's rent to $" .. RentAmount.Value .. ".", 3)
 		end
 	end
 
@@ -371,7 +371,7 @@ run(function()
 		firetouchinterest(entitylib.character.RootPart, obj, 0)
 		firetouchinterest(entitylib.character.RootPart, obj, 1)
 
-		notif("LandLord", "Collected the Roommate's rent: $" .. RentAmount.Value .. ".")
+		notif("LandLord", "Collected the Roommate's rent: $" .. RentAmount.Value .. ".", 3)
 	end
 
 	LandLord = vape.Categories.Blatant:CreateModule({
