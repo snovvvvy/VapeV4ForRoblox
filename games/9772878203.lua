@@ -415,20 +415,21 @@ end
 run(function() 
 	local AutoCollectMoney
 
-	local function CollectMoney(money) 
-		firetouchinterest(entitylib.character.RootPart, money, true)
-		firetouchinterest(entitylib.character.RootPart, money, false)
-	end
-
 	AutoCollectMoney = vape.Categories.Blatant:CreateModule({
 		Name = "AutoCollectMoney",
 		Function = function(callback)
 			if callback then 
-				AutoCollectMoney:Clean(collectionService:GetInstanceAddedSignal("Money"):Connect(CollectMoney))
-
-				for _, v in collectionService:GetTagged("Money") do
-					CollectMoney(v)
-				end
+				repeat
+					if entitylib.isAlive then
+						for _, v in collectionService:GetTagged("Money") do
+							firetouchinterest(entitylib.character.RootPart, v, true)
+							firetouchinterest(entitylib.character.RootPart, v, false)
+							break
+						end
+					end
+	
+					task.wait(0.1)
+				until not AutoCollectMoney.Enabled
 			end
 		end,
 		Tooltip = "Automatically collects money."
