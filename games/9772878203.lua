@@ -442,6 +442,18 @@ run(function()
 	local Unlock = remoteEvents:FindFirstChild("Unlock")
 	local BowlPart = workspace["Key Parts"].Bowl:FindFirstChild("Part")
 
+	local function FillBowl(old) 
+		if not getTool("Floppa Food") then 
+			Unlock:FireServer("Floppa Food", "the_interwebs")
+		end
+		entitylib.character.Humanoid:EquipTool(getTool("Floppa Food"))
+		entitylib.character.RootPart.CFrame = BowlPart.CFrame
+		task.wait()
+		fireproximityprompt(BowlPart:FindFirstChildWhichIsA("ProximityPrompt"))
+		task.wait()
+		entitylib.character.RootPart.CFrame = old
+	end
+
 	AutoFillBowl = vape.Categories.Blatant:CreateModule({
 		Name = "AutoFillBowl",
 		Function = function(callback)
@@ -449,28 +461,13 @@ run(function()
 				local old
 				repeat
 					if entitylib.isAlive then
-						local success = true
-						if BowlPart.Transparency == 1 then 
-							if not old then
-								old = entitylib.character.RootPart.CFrame
-							end
-							success = false
-							if not getTool("Floppa Food") then 
-								Unlock:FireServer("Floppa Food", "the_interwebs")
-							end
-							entitylib.character.Humanoid:EquipTool(getTool("Floppa Food"))
-							entitylib.character.RootPart.CFrame = BowlPart.CFrame
-							fireproximityprompt(BowlPart:FindFirstChildWhichIsA("ProximityPrompt"))
-						end
-	
-						if success and old then
-							entitylib.character.RootPart.CFrame = old
-							old = nil
+						if BowlPart.Transparency ~= 0 then 
+							old = entitylib.RootPart.CFrame
+							FillBowl(old)
 						end
 					else
 						old = nil
 					end
-	
 					task.wait(0.4)
 				until not AutoFillBowl.Enabled
 			end
