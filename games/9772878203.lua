@@ -403,8 +403,7 @@ run(function()
 					if entitylib.isAlive then
 						for _, v in collectionService:GetTagged("Meteorite") do
 							local handle = v:FindFirstChildOfClass("UnionOperation")
-							firetouchinterest(entitylib.character:FindFirstChild("Right Leg"), handle, 0)
-							firetouchinterest(entitylib.character:FindFirstChild("Right Leg"), handle, 1)
+							handle.CFrame = entitylib.character.RootPart.CFrame
 							break
 						end
 					end
