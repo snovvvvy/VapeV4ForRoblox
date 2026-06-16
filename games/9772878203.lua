@@ -499,7 +499,8 @@ run(function()
         ["Dragon Egg"] = true,
         Flopptonium = true,
         Bomb = true,
-        Carrot = true
+        Carrot = true,
+		Lettuce = true
     }
 
     local temperatures = {
@@ -550,7 +551,6 @@ run(function()
                     local failed = false
 
                     for _, ingredient in ipairs(recipe.Ingredients) do
-						print("Ingredient:", ingredient)
                         local tool = getTool(ingredient)
 
                         if not tool and inventoryOnly[ingredient] then
