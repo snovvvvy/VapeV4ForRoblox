@@ -462,7 +462,7 @@ run(function()
 				repeat
 					if entitylib.isAlive then
 						if BowlPart.Transparency ~= 0 then 
-							old = entitylib.RootPart.CFrame
+							old = entitylib.character.RootPart.CFrame
 							FillBowl(old)
 						end
 					else
