@@ -169,19 +169,6 @@ run(function()
 		Sound = require(modules.Sound),
 		Recipes = require(modules.Recipes)
 	}
-	for key, _ in pairs(raf2.Recipes) do
-		print(string.len(key), key)
-	end
-
-	for key, _ in pairs(raf2.Recipes) do
-		if string.find(key, "Vegetable") then
-			print("exact key is:", key, "len:", #key)
-			for i = 1, #key do
-				print(string.byte(key, i) .. " ")
-			end
-			print()
-		end
-	end
 
 	vape:Clean(function()
 		table.clear(raf2)
