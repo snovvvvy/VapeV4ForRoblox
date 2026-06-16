@@ -69,17 +69,30 @@ run(function()
 	end
 	
 	local function tagObj(obj)
+		local current
+
 		if obj.Name == "Milk Delivery" then
-			if obj.Parent == workspace then
-				tag(obj, "MilkDelivery")
-				break
+			current = obj.Parent
+			while current do 
+				if obj.Parent == workspace then
+					tag(obj, "MilkDelivery")
+					break
+				end
+				
+				current = current.Parent
 			end
 		end
 
 		if obj.Name == "Poop" then 
-			if obj.Parent.Name == "Litter Box" then
-				tag(obj, "Poop")
-				break
+			current = obj.Parent
+
+			while current do
+				if obj.Parent.Name == "Litter Box" then
+					tag(obj, "Poop")
+					break
+				end
+
+				current = current.Parent
 			end
 		end
 	end
