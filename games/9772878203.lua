@@ -374,6 +374,7 @@ run(function()
 	local oldHeat, oldSize, oldEnabled
 
 	local oven = workspace["Key Parts"].Stove:FindFirstChild("Oven")
+	local fire = oven:FindFirstChildWhichIsA("Fire")
 
 	local function bigFire(fire) 
 		fire.Enabled = true
@@ -385,8 +386,6 @@ run(function()
 		Name = "THEOVENISONFIRE",
 		Function = function(callback)
 			if callback then 
-				local fire = oven:FindFirstChildWhichIsA("Fire")
-
 				if fire then
 					oldHeat = fire.Heat
 					oldSize = fire.Size
