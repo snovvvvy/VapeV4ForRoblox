@@ -402,8 +402,9 @@ run(function()
 				repeat
 					if entitylib.isAlive then
 						for _, v in collectionService:GetTagged("Meteorite") do
-							firetouchinterest(entitylib.character.RootPart, v:FindFirstChild("Handle"), 0)
-							firetouchinterest(entitylib.character.RootPart, v:FindFirstChild("Handle"), 1)
+							local handle = v:FindFirstChildOfClass("UnionOperation")
+							firetouchinterest(handle, entitylib.character.RootPart, 0)
+							firetouchinterest(handle, entitylib.character.RootPart, 1)
 							break
 						end
 					end
