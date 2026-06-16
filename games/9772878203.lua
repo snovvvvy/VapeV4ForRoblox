@@ -103,7 +103,7 @@ run(function()
 			end
 		end
 
-		if obj.Name == "Money" then 
+		if obj.Name == "Money" or obj.Name == "Money Bag" then 
 			current = obj.Parent
 
 			while current do 
