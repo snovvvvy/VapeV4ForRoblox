@@ -49,8 +49,10 @@ local function notif(...)
 	return vape:CreateNotification(...)
 end
 
-local function getTool()
-	return lplr.Character and lplr.Character:FindFirstChildWhichIsA('Tool', true) or nil
+local function getTool(tool)
+	local t = lplr.Backpack:FindFirstChild(tool)
+
+	return (not t) and false or t
 end
 
 run(function() 
@@ -73,12 +75,26 @@ run(function()
 
 		if obj.Name == "Milk Delivery" then
 			current = obj.Parent
+			
 			while current do 
 				if obj.Parent == workspace then
 					tag(obj, "MilkDelivery")
 					break
 				end
-				
+
+				current = current.Parent
+			end
+		end
+
+		if obj.Name == "Meteorite" then
+			current = obj.Parent
+
+			while current do 
+				if obj.Parent == workspace then
+					tag(obj, "Meteorite")
+					break
+				end
+
 				current = current.Parent
 			end
 		end
@@ -106,7 +122,8 @@ end)
 
 run(function()
 	raf2 = {
-		Sound = require(modules.Sound)
+		Sound = require(modules.Sound),
+		Recipes = require(modules.Recipes)
 	}
 
 	vape:Clean(function()
@@ -202,7 +219,7 @@ run(function()
 						old = nil
 					end
 	
-					task.wait(0.4)
+					task.wait(0.2)
 				until not AutoCollectMilkDelivery.Enabled
 			end
 		end,
@@ -242,7 +259,7 @@ run(function()
 					else
 						old = nil
 					end
-					task.wait(0.4)
+					task.wait(0.2)
 				until not AutoPet.Enabled
 			end
 		end,
@@ -260,7 +277,7 @@ end)
 run(function() 
 	local AutoCleanPoop
 
-	local function CleanPoop(poop)
+	local function CleanPoop()
 		local prompt = poop:FindFirstChildWhichIsA("ProximityPrompt")
 
 		if prompt then 
@@ -280,8 +297,10 @@ run(function()
 							if not old then
 								old = entitylib.character.RootPart.CFrame
 							end
-
 							success = false
+							if poop:FindFirstChild("PoopPart") then 
+								PoopPart.CanTouch = false
+							end
 							entitylib.character.RootPart.CFrame = v.PrimaryPart.CFrame
 							CleanPoop(v)
 							break
