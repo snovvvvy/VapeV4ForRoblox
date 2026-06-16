@@ -395,7 +395,7 @@ end)
 run(function() 
 	local AutoCollectMeteorites
 
-	AutoCollectMeteorites = vape.Categories.module:CreateModule({
+	AutoCollectMeteorites = vape.Categories.Blatant:CreateModule({
 		Name = "AutoCollectMeteorites",
 		Function = function(callback)
 			if callback then 
@@ -404,7 +404,7 @@ run(function()
 
 			end
 		end,
-		Tooltip = "module"
+		Tooltip = "Automatically Collects Meteorites"
 	})
 end)
 
