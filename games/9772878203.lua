@@ -347,50 +347,52 @@ run(function()
 	})
 end)
 
-run(function() 
-	local LandLord
-
-	local CanRaise = roommate:FindFirstChild("Can Raise")
-	local CanCollect = roommate:FindFirstChild("Can Collect")
-
-	local function Raise()
-		if CanRaise.Value then 
-			remoteEvents:FindFirstChild("Raise Rent"):FireServer()
-			task.wait(0.1)
-			notif("LandLord", "Raised the Roommate's rent to $" .. RentAmount.Value .. ".", 3)
-		end
-	end
-
-	local function Collect()
-		if CanCollect.Value then 
-			remoteEvents:FindFirstChild("Collect Rent"):FireServer()
-		end
-	end
-
-	LandLord = vape.Categories.Blatant:CreateModule({
-		Name = "LandLord",
-		Function = function(callback) 
-			if callback then 
-				LandLord:Clean(CanRaise:GetPropertyChangedSignal("Value"):Connect(Raise))
-				LandLord:Clean(CanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
-				Raise()
-				Collect()
-				repeat
-					if entitylib.isAlive then
-						for _, v in collectionService:GetTagged("Rent") do
-							firetouchinterest(entitylib.character.RootPart, v, 0)
-							firetouchinterest(entitylib.character.RootPart, v, 1)
-							notif("LandLord", "Collected the Roommate's rent: $" .. RentAmount.Value .. ".", 3)
-							break
-						end
-					end
+if roommate then 
+	run(function() 
+		local LandLord
 	
-					task.wait(0.4)
-				until not LandLord.Enabled
+		local CanRaise = roommate:FindFirstChild("Can Raise")
+		local CanCollect = roommate:FindFirstChild("Can Collect")
+	
+		local function Raise()
+			if CanRaise.Value then 
+				remoteEvents:FindFirstChild("Raise Rent"):FireServer()
+				task.wait(0.1)
+				notif("LandLord", "Raised the Roommate's rent to $" .. RentAmount.Value .. ".", 3)
 			end
 		end
-	})
-end)
+	
+		local function Collect()
+			if CanCollect.Value then 
+				remoteEvents:FindFirstChild("Collect Rent"):FireServer()
+			end
+		end
+	
+		LandLord = vape.Categories.Blatant:CreateModule({
+			Name = "LandLord",
+			Function = function(callback) 
+				if callback then 
+					LandLord:Clean(CanRaise:GetPropertyChangedSignal("Value"):Connect(Raise))
+					LandLord:Clean(CanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
+					Raise()
+					Collect()
+					repeat
+						if entitylib.isAlive then
+							for _, v in collectionService:GetTagged("Rent") do
+								firetouchinterest(entitylib.character.RootPart, v, 0)
+								firetouchinterest(entitylib.character.RootPart, v, 1)
+								notif("LandLord", "Collected the Roommate's rent: $" .. RentAmount.Value .. ".", 3)
+								break
+							end
+						end
+		
+						task.wait(0.4)
+					until not LandLord.Enabled
+				end
+			end
+		})
+	end)
+end
 
 run(function() 
 	local AutoCollectMeteorites
