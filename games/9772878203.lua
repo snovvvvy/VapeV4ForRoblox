@@ -448,9 +448,9 @@ run(function()
 		end
 		entitylib.character.Humanoid:EquipTool(getTool("Floppa Food"))
 		entitylib.character.RootPart.CFrame = BowlPart.CFrame
-		task.wait()
+		task.wait(0.1)
 		fireproximityprompt(BowlPart:FindFirstChildWhichIsA("ProximityPrompt"))
-		task.wait()
+		task.wait(0.4)
 		entitylib.character.RootPart.CFrame = old
 	end
 
