@@ -485,96 +485,109 @@ run(function()
 	})
 end)
 
-run(function() 
-	local Chef
-	local Menu
+run(function()
+    local Chef
+    local Menu
+    local FoodMarket = workspace.Village:FindFirstChild("FoodMarket")
+    local Cooking = remoteEvents:FindFirstChild("Cooking")
+    local Stove = Keyparts:FindFirstChild("Stove")
+    local StovePrimary = Stove.Parts:FindFirstChild("Primary")
 
-	local FoodMarket = workspace.Village:FindFirstChild("FoodMarket")
-	local Cooking = remoteEvents:FindFirstChild("Cooking")
-	local Stove = Keyparts:FindFirstChild("Stove")
-	local StovePrimary = Stove.Parts:FindFirstChild("Primary")
+    local inventoryOnly = {
+        Milk = true,
+        Meteorite = true,
+        ["Dragon Egg"] = true,
+        Flopptonium = true,
+        Bomb = true,
+        Carrot = true
+    }
 
-	local function getRecipeNames(recipes)
-		local names = {}
-		for recipeName in pairs(recipes) do
-			names[#names + 1] = recipeName
-		end
+    local temperatures = {
+        ["Grilled Cheese"] = 3,
+        ["Vegetable Soup"] = 1,
+        ["Burger"] = 2,
+        ["Cake"] = 1,
+        ["Space Soup"] = 1,
+        ["Mega Breakfast"] = 3,
+    }
 
-		return names
-	end
+    local function getRecipeNames(recipes)
+        local names = {}
+        for recipeName in pairs(recipes) do
+            names[#names + 1] = recipeName
+        end
+        return names
+    end
 
-	local function buyItem(item)
-		local old
-		local prompt
+    local function buyItem(item)
+        local prompt
+        if item == "Sugar" or item == "Bread" or item == "Flour" then
+            prompt = FoodMarket[item .. " Crate"].Crate["Empty Display Crate"].Primary:FindFirstChildWhichIsA("ProximityPrompt")
+        else
+            prompt = FoodMarket:FindFirstChild(item):FindFirstChildWhichIsA("ProximityPrompt")
+        end
+        local old = entitylib.character.RootPart.CFrame
+        entitylib.character.RootPart.CFrame = prompt.Parent.CFrame * CFrame.new(1, 0, 0)
+        task.wait(0.5)
+        fireproximityprompt(prompt)
+        task.wait(0.5)
+        entitylib.character.RootPart.CFrame = old
+    end
 
-		if item == "Sugar" or item == "Bread" or item == "Flour" then 
-			prompt = FoodMarket[item .. " Crate"].Crate["Empty Display Crate"].Primary:FindFirstChildWhichIsA("ProximityPrompt")
-		else
-			prompt = FoodMarket:FindFirstChild(item):FindFirstChildWhichIsA("ProximityPrompt")
-		end
+    Chef = vape.Categories.Blatant:CreateModule({
+        Name = "Chef",
+        Function = function(callback)
+            if callback then
+                local selectedRecipe = Menu.Value
+                local recipe = raf2.Recipes[selectedRecipe]
 
-		old = entitylib.character.RootPart.CFrame
+                if recipe and recipe.Ingredients then
+                    for i = 1, 4 do
+                        Cooking:FireServer("Remove Ingredient", i)
+                    end
 
-		entitylib.character.RootPart.CFrame = prompt.Parent.CFrame * CFrame.new(1, 0, 0)
-		task.wait(0.5)
-		fireproximityprompt(prompt)
-		task.wait(0.5)
-		entitylib.character.RootPart.CFrame = old
-	end
+                    local old = entitylib.character.RootPart.CFrame
+                    local failed = false
 
-	local temperatures = {
-		["Grilled Cheese"] = 3,
-		["Vegetable Soup"] = 1,
-		["Burger"] = 2,
-		["Cake"] = 1,
-		["Space Soup"] = 1,
-		["Mega Breakfast"] = 3,
-	}
+                    for _, ingredient in ipairs(recipe.Ingredients) do
+                        local tool = getTool(ingredient)
 
-	Chef = vape.Categories.Blatant:CreateModule({
-		Name = "Chef",
-		Function = function(callback)
-			if callback then
-				local selectedRecipe = Menu.Value
-				local recipe = raf2.Recipes[selectedRecipe]
-				
-				local old
-				if recipe and recipe.Ingredients then
-					Cooking:FireServer("Remove Ingredient", 1)
-					Cooking:FireServer("Remove Ingredient", 2)
-					Cooking:FireServer("Remove Ingredient", 3)
-					Cooking:FireServer("Remove Ingredient", 4)
-					
-					for _, ingredient in ipairs(recipe.Ingredients) do
-						if not getTool(ingredient) and ingredient == "Milk" or ingredient == "Meteorite" or ingredient == "Dragon Egg" or ingredient == "Flopptonium" or ingredient == "Bomb" or ingredient == "Carrot" then 
-							notif("Chef", ingredient .. " is required to be in your inventory for this recipe." .. (ingredient == "Milk") and " (Get this from the milk man)", 10, "warning")
-							break
-						elseif not getTool(ingredient) then
-							buyItem(ingredient)
-						end
-						old = entitylib.character.RootPart.CFrame
-						entitylib.character.Humanoid:EquipTool(getTool(ingredient))
-						task.wait(0.5)
-						entitylib.character.RootPart.CFrame = StovePrimary.CFrame * CFrame.new(0, 0, 1)
-						task.wait(0.5)
-						fireproximityprompt(StovePrimary:FindFirstChildWhichIsA("ProximityPrompt"))
-						task.wait(0.5)
-						entitylib.character.RootPart.CFrame = old
-					end
+                        if not tool and inventoryOnly[ingredient] then
+                            local suffix = (ingredient == "Milk") and " (Get this from the milk man)" or ""
+                            notif("Chef", ingredient .. " is required to be in your inventory for this recipe." .. suffix, 10, "warning")
+                            failed = true
+                            break
+                        elseif not tool then
+                            buyItem(ingredient)
+                            tool = getTool(ingredient)
+                        end
 
-					Cooking:FireServer("Change Temperature", temperatures[selectedRecipe])
-					Cooking:FireServer("Cook")
-				end
-				Chef:Toggle()
-			end
-		end,
-		Tooltip = "Cooks any recipe for you."
-	})
+                        entitylib.character.Humanoid:EquipTool(tool)
+                        task.wait(0.5)
+                        entitylib.character.RootPart.CFrame = StovePrimary.CFrame * CFrame.new(0, 0, 1)
+                        task.wait(0.5)
+                        fireproximityprompt(StovePrimary:FindFirstChildWhichIsA("ProximityPrompt"))
+                        task.wait(0.5)
+                    end
 
-	Menu = Chef:CreateDropdown({
-		Name = "Menu",
-		List = getRecipeNames(raf2.Recipes)
-	})
+                    entitylib.character.RootPart.CFrame = old
+
+                    if not failed then
+                        Cooking:FireServer("Change Temperature", temperatures[selectedRecipe])
+                        Cooking:FireServer("Cook")
+                    end
+                end
+
+                Chef:Toggle()
+            end
+        end,
+        Tooltip = "Cooks any recipe for you."
+    })
+
+    Menu = Chef:CreateDropdown({
+        Name = "Menu",
+        List = getRecipeNames(raf2.Recipes)
+    })
 end)
 
 run(function()
