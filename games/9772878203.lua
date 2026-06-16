@@ -48,7 +48,7 @@ local Unlock = remoteEvents:FindFirstChild("Unlock")
 local floppa = workspace:FindFirstChild("Floppa")
 local roommate = workspace.Unlocks:FindFirstChild("Roommate")
 
-local Keyparts = workspace:FindFirstChild("Key Parts")
+local Keyparts = workspace["Key Parts"]
 
 if not roommate then 
 	Unlock:FireServer("Roommate", "the_interwebs")
