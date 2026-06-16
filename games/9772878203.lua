@@ -367,29 +367,44 @@ run(function()
 		end
 	end
 
-	local function RentSpawned(obj)
-		firetouchinterest(entitylib.character.RootPart, obj, 0)
-		firetouchinterest(entitylib.character.RootPart, obj, 1)
-
-		notif("LandLord", "Collected the Roommate's rent: $" .. RentAmount.Value .. ".", 3)
-	end
-
 	LandLord = vape.Categories.Blatant:CreateModule({
 		Name = "LandLord",
 		Function = function(callback) 
 			if callback then 
 				LandLord:Clean(CanRaise:GetPropertyChangedSignal("Value"):Connect(Raise))
 				LandLord:Clean(CanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
-				LandLord:Clean(collectionService:GetInstanceAddedSignal("Rent"):Connect(RentSpawned))
-
 				Raise()
 				Collect()
-
-				for _, obj in ipairs(collectionService:GetTagged("Rent")) do
-					RentSpawned(obj)
-				end
+				repeat
+					if entitylib.isAlive then
+						for _, v in collectionService:GetTagged("Rent") do
+							firetouchinterest(entitylib.character.RootPart, v, 0)
+							firetouchinterest(entitylib.character.RootPart, v, 1)
+							notif("LandLord", "Collected the Roommate's rent: $" .. RentAmount.Value .. ".", 3)
+							break
+						end
+					end
+	
+					task.wait(0.4)
+				until not AutoCleanPoop.Enabled
 			end
 		end
+	})
+end)
+
+run(function() 
+	local AutoCollectMeteorites
+
+	AutoCollectMeteorites = vape.Categories.module:CreateModule({
+		Name = "AutoCollectMeteorites",
+		Function = function(callback)
+			if callback then 
+
+			else
+
+			end
+		end,
+		Tooltip = "module"
 	})
 end)
 
