@@ -447,6 +447,7 @@ run(function()
 			Unlock:FireServer("Floppa Food", "the_interwebs")
 		end
 		entitylib.character.Humanoid:EquipTool(getTool("Floppa Food"))
+		task.wait(0.067) -- funny number because why not
 		entitylib.character.RootPart.CFrame = BowlPart.CFrame
 		task.wait(0.1)
 		fireproximityprompt(BowlPart:FindFirstChildWhichIsA("ProximityPrompt"))
