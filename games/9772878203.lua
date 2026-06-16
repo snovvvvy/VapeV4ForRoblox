@@ -69,18 +69,17 @@ run(function()
 	end
 	
 	local function tagObj(obj)
-		local current
-	
 		if obj.Name == "Milk Delivery" then
-			current = obj.Parent
-	
-			while current do
-				if current == workspace then
-					tag(obj, "MilkDelivery")
-					break
-				end
-	
-				current = current.Parent
+			if obj.Parent == workspace then
+				tag(obj, "MilkDelivery")
+				break
+			end
+		end
+
+		if obj.Name == "Poop" then 
+			if obj.Parent.Name == "Litter Box" then
+				tag(obj, "Poop")
+				break
 			end
 		end
 	end
@@ -213,7 +212,7 @@ run(function()
 				repeat 
 					if entitylib.isAlive then 
 						local success = true
-						if Happiness.Value <= Threshold.Value then 
+						if Happiness.Value <= Threshold.Value then -- should i use rounded version of Happiness? 
 							if not old then
 								old = entitylib.character.RootPart.CFrame
 							end
@@ -242,6 +241,52 @@ run(function()
 		Min = 1,
 		Max = 75,
 		Default = 50
+	})
+end)
+
+run(function() 
+	local AutoCleanPoop
+
+	local function CleanPoop(poop)
+		local prompt = poop:FindFirstChildWhichIsA("ProximityPrompt")
+
+		if prompt then 
+			fireproximityprompt(prompt)
+		end
+	end
+
+	AutoCleanPoop = vape.Categories.Blatant:CreateModule({
+		Name = "AutoCleanPoop",
+		Function = function(callback)
+			if callback then 
+				local old
+				repeat
+					if entitylib.isAlive then
+						local success = true
+						for _, v in collectionService:GetTagged("Poop") do
+							if not old then
+								old = entitylib.character.RootPart.CFrame
+							end
+
+							success = false
+							entitylib.character.RootPart.CFrame = v.PrimaryPart.CFrame
+							CleanPoop(v)
+							break
+						end
+	
+						if success and old then
+							entitylib.character.RootPart.CFrame = old
+							old = nil
+						end
+					else
+						old = nil
+					end
+	
+					task.wait(0.4)
+				until not AutoCleanPoop.Enabled
+			end
+		end,
+		Tooltip = "Automatically cleans poop from the litter box."
 	})
 end)
 
