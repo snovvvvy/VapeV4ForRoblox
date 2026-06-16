@@ -43,11 +43,18 @@ local raf2 = {}
 local modules = replicatedStorage:FindFirstChild("Modules")
 local remoteEvents = replicatedStorage:FindFirstChild("Events")
 
+local Unlock = remoteEvents:FindFirstChild("Unlock")
+
 local floppa = workspace:FindFirstChild("Floppa")
 local roommate = workspace.Unlocks:FindFirstChild("Roommate")
 
-local RentAmount = roommate and roommate:FindFirstChild("Amt") or nil
+if not roommate then 
+	Unlock:FireServer("Roommate", "the_interwebs")
+	notif("Vape", "Bought the roommate for free.", 3)
+	roommate = workspace.Unlocks:FindFirstChild("Roommate")
+end
 
+local RentAmount = roommate and roommate:FindFirstChild("Amt") or nil
 
 local function notif(...)
 	return vape:CreateNotification(...)
@@ -235,7 +242,7 @@ run(function()
 		end
 	end
 
-	AutoCollectMilkDelivery = vape.Categories.Blatant:CreateModule({
+	AutoCollectMilkDelivery = vape.Categories.Minigames:CreateModule({
 		Name = "AutoCollectMilkDelivery",
 		Function = function(callback)
 			if callback then 
@@ -277,7 +284,7 @@ run(function()
 	local Happiness = floppa.Configuration.Happiness
 	local prompt = floppa.HumanoidRootPart.ProximityPrompt
 
-	AutoPet = vape.Categories.Blatant:CreateModule({
+	AutoPet = vape.Categories.Minigames:CreateModule({
 		Name = "AutoPet",
 		Function = function(callback)
 			if callback then 
@@ -328,7 +335,7 @@ run(function()
 		end
 	end
 
-	AutoCleanPoop = vape.Categories.Blatant:CreateModule({
+	AutoCleanPoop = vape.Categories.Minigames:CreateModule({
 		Name = "AutoCleanPoop",
 		Function = function(callback)
 			if callback then 
@@ -415,7 +422,7 @@ end
 run(function() 
 	local AutoCollectMoney
 
-	AutoCollectMoney = vape.Categories.Blatant:CreateModule({
+	AutoCollectMoney = vape.Categories.Minigames:CreateModule({
 		Name = "AutoCollectMoney",
 		Function = function(callback)
 			if callback then 
@@ -439,7 +446,6 @@ end)
 run(function() 
 	local AutoFillBowl
 
-	local Unlock = remoteEvents:FindFirstChild("Unlock")
 	local BowlPart = workspace["Key Parts"].Bowl:FindFirstChild("Part")
 
 	local function FillBowl(old) 
@@ -455,7 +461,7 @@ run(function()
 		entitylib.character.RootPart.CFrame = old
 	end
 
-	AutoFillBowl = vape.Categories.Blatant:CreateModule({
+	AutoFillBowl = vape.Categories.Minigames:CreateModule({
 		Name = "AutoFillBowl",
 		Function = function(callback)
 			if callback then 
