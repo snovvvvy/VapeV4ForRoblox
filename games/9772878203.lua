@@ -169,6 +169,9 @@ run(function()
 		Sound = require(modules.Sound),
 		Recipes = require(modules.Recipes)
 	}
+	for _, ingredient in ipairs(raf2.Recipes["Vegetable Soup"].Ingredients) do
+		print(string.len(ingredient), ingredient, inventoryOnly[ingredient])
+	end
 
 	vape:Clean(function()
 		table.clear(raf2)
@@ -505,8 +508,8 @@ run(function()
     local temperatures = {
         ["Grilled Cheese"] = 3,
         ["Vegetable Soup"] = 1,
-        ["Burger"] = 2,
-        ["Cake"] = 1,
+        Burger = 2,
+        Cake = 1,
         ["Space Soup"] = 1,
         ["Mega Breakfast"] = 3,
     }
@@ -520,7 +523,6 @@ run(function()
     end
 
     local function buyItem(item)
-		print(item)
         local prompt
         if item == "Sugar" or item == "Bread" or item == "Flour" then
             prompt = FoodMarket[item .. " Crate"].Crate["Empty Display Crate"].Primary:FindFirstChildWhichIsA("ProximityPrompt")
