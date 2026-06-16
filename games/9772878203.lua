@@ -423,7 +423,7 @@ run(function()
 						end
 					end
 	
-					task.wait(0.2)
+					task.wait(0.1)
 				until not AutoCollectMoney.Enabled
 			end
 		end,
