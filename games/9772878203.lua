@@ -54,7 +54,14 @@ local function notif(...)
 end
 
 local function getTool(toolName)
-	return entitylib.isAlive and lplr.Backpack:FindFirstChild(toolName) or (lplr.Character:FindFirstChild(toolName)) or false
+	if not entitylib.isAlive then
+		return nil
+	end
+
+	local backpack = lplr:FindFirstChild("Backpack")
+	local character = lplr.Character
+
+	return (backpack and backpack:FindFirstChild(toolName)) or (character and character:FindFirstChild(toolName))
 end
 
 run(function() 
@@ -444,18 +451,20 @@ run(function()
 					if entitylib.isAlive then 
 						local success = true
 						if BowlPart.Transparency == 1 then 
-							if not getTool("Floppa Food") then 
-								Unlock:FireServer("Floppa Food", "the_interwebs")
-							end
-
 							if not old then
 								old = entitylib.character.RootPart.CFrame
 							end
 
 							success = false
+							local tool = getTool("Floppa Food")
+
+							if not tool then
+								Unlock:FireServer("Floppa Food", "the_interwebs")
+								return
+							end
 
 							entitylib.character.RootPart.CFrame = BowlPart.CFrame
-							entitylib.character.Humanoid:EquipTool(getTool("Floppa Food"))
+							entitylib.character.Humanoid:EquipTool(tool)
 							fireproximityprompt(BowlPart:FindFirstChildWhichIsA("ProximityPrompt"))
 							break
 						end
