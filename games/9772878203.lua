@@ -221,7 +221,6 @@ run(function()
 							success = false
 							entitylib.character.RootPart.CFrame = floppa.PrimaryPart.CFrame
 							fireproximityprompt(prompt)
-							break
 						end
 
 						if success and old then
