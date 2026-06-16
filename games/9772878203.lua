@@ -554,11 +554,11 @@ run(function()
 						end
 						old = entitylib.character.RootPart.CFrame
 						entitylib.character.Humanoid:EquipTool(getTool(ingredient))
-						task.wait(0.1)
+						task.wait(0.5)
 						entitylib.character.RootPart.CFrame = StovePrimary.CFrame * CFrame.new(0, 0, 1)
-						task.wait()
+						task.wait(0.5)
 						fireproximityprompt(StovePrimary:FindFirstChildWhichIsA("ProximityPrompt"))
-						task.wait(0.1)
+						task.wait(0.5)
 						entitylib.character.RootPart.CFrame = old
 					end
 
