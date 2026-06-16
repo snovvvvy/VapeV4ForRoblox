@@ -46,7 +46,7 @@ local remoteEvents = replicatedStorage:FindFirstChild("Events")
 local floppa = workspace:FindFirstChild("Floppa")
 local roommate = workspace.Unlocks:FindFirstChild("Roommate")
 
-local RentAmount = roommate:FindFirstChild("Amt")
+local RentAmount = roommate and roommate:FindFirstChild("Amt") or nil
 
 
 local function notif(...)
