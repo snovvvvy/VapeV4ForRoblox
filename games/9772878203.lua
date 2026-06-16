@@ -306,8 +306,8 @@ run(function()
 								old = entitylib.character.RootPart.CFrame
 							end
 							success = false
-							if poop:FindFirstChild("PoopPart") then 
-								PoopPart.CanTouch = false
+							if v:FindFirstChild("PoopPart") then 
+								v:FindFirstChild("PoopPart").CanTouch = false
 							end
 							entitylib.character.RootPart.CFrame = v.PrimaryPart.CFrame
 							CleanPoop(v)
