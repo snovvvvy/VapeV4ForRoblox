@@ -169,8 +169,10 @@ run(function()
 		Sound = require(modules.Sound),
 		Recipes = require(modules.Recipes)
 	}
-	for _, ingredient in ipairs(raf2.Recipes["Vegetable Soup"].Ingredients) do
-		print(string.len(ingredient), ingredient, inventoryOnly[ingredient])
+	print(raf2.Recipes)
+	print(type(raf2.Recipes))
+	for k, v in pairs(raf2.Recipes) do
+		print(k, v)
 	end
 
 	vape:Clean(function()
