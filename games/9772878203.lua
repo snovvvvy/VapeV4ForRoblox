@@ -147,6 +147,7 @@ run(function()
 		Suffix = function(val)
 			return val == 1 and 'second' or 'seconds'
 		end,
+		Default = 10,
 		Tooltip = "The interval to save every x amount of seconds"
 	})
 end)
@@ -194,6 +195,54 @@ run(function()
 			end
 		end,
 		Tooltip = "Auto collects the milk delivery."
+	})
+end)
+
+run(function() 
+	local AutoPet
+	local Threshold
+
+	local Happiness = floppa.Configuration.Happiness
+	local prompt = floppa.HumanoidRootPart.ProximityPrompt
+
+	AutoPet = vape.Categories.module:CreateModule({
+		Name = "AutoPet",
+		Function = function(callback)
+			if callback then 
+				local old
+				repeat 
+					if entitylib.isAlive then 
+						local success = true
+						if Happiness.Value <= Threshold.Value then 
+							if not old then
+								old = entitylib.character.RootPart.CFrame
+							end
+
+							success = false
+							entitylib.character.RootPart.CFrame = floppa.PrimaryPart.CFrame
+							fireproximityprompt(prompt)
+							break
+						end
+
+						if success and old then
+							entitylib.character.RootPart.CFrame = old
+							old = nil
+						end
+					else
+						old = nil
+					end
+					task.wait(0.4)
+				until not AutoPet.Enabled
+			end
+		end,
+		Tooltip = "Automatically pets the floppa when under or equal to a certain threshold."
+	})
+
+	Threshold = AutoPet:CreateSlider({
+		Name = "Threshold",
+		Min = 1,
+		Max = 75,
+		Default = 50
 	})
 end)
 
