@@ -285,7 +285,7 @@ end)
 run(function() 
 	local AutoCleanPoop
 
-	local function CleanPoop()
+	local function CleanPoop(poop)
 		local prompt = poop:FindFirstChildWhichIsA("ProximityPrompt")
 
 		if prompt then 
