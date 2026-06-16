@@ -177,7 +177,7 @@ run(function()
 		if string.find(key, "Vegetable") then
 			print("exact key is:", key, "len:", #key)
 			for i = 1, #key do
-				io.write(string.byte(key, i) .. " ")
+				print(string.byte(key, i) .. " ")
 			end
 			print()
 		end
