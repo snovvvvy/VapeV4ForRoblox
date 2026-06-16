@@ -386,7 +386,7 @@ run(function()
 					end
 	
 					task.wait(0.4)
-				until not AutoCleanPoop.Enabled
+				until not LandLord.Enabled
 			end
 		end
 	})
@@ -404,7 +404,7 @@ run(function()
 
 			end
 		end,
-		Tooltip = "Automatically Collects Meteorites"
+		Tooltip = "Automatically collects meteorites"
 	})
 end)
 
