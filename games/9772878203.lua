@@ -48,7 +48,7 @@ local Unlock = remoteEvents:FindFirstChild("Unlock")
 local floppa = workspace:FindFirstChild("Floppa")
 local roommate = workspace.Unlocks:FindFirstChild("Roommate")
 
-local Keyparts = workspace["Key Parts"]
+local Keyparts = workspace:FindFirstChild("Key Parts")
 
 if not roommate then 
 	Unlock:FireServer("Roommate", "the_interwebs")
@@ -448,7 +448,7 @@ end)
 run(function() 
 	local AutoFillBowl
 
-	local BowlPart = KeyParts.Bowl:FindFirstChild("Part")
+	local BowlPart = Keyparts.Bowl:FindFirstChild("Part")
 
 	local function FillBowl(old) 
 		if not getTool("Floppa Food") then 
@@ -491,7 +491,7 @@ run(function()
 
 	local FoodMarket = workspace.Village:FindFirstChild("FoodMarket")
 	local Cooking = remoteEvents:FindFirstChild("Cooking")
-	local Stove = KeyParts:FindFirstChild("Stove")
+	local Stove = Keyparts:FindFirstChild("Stove")
 	local StovePrimary = Stove.Parts:FindFirstChild("Primary")
 
 	local function getRecipeNames(recipes)
@@ -619,7 +619,7 @@ run(function()
 
 	local oldHeat, oldSize, oldEnabled
 
-	local oven = KeyParts.Stove:FindFirstChild("Oven")
+	local oven = Keyparts.Stove:FindFirstChild("Oven")
 	local fire = oven:FindFirstChildWhichIsA("Fire")
 
 	local function bigFire(fire) 
