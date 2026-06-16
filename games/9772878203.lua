@@ -54,7 +54,7 @@ local function notif(...)
 end
 
 local function getTool(tool)
-	local t = lplr.Backpack:FindFirstChild(tool) or entitylib.character:FindFirstChildWhichIsA("Tool")
+	local t = lplr.Backpack:FindFirstChild(tool) or entitylib.character:FindFirstChild(tool)
 
 	return (not t) and false or t
 end
@@ -428,6 +428,56 @@ run(function()
 			end
 		end,
 		Tooltip = "Automatically collects money."
+	})
+end)
+
+run(function() 
+	local AutoFillBowl
+
+	local Unlock = remoteEvents:FindFirstChild("Unlock")
+	local BowlPart = workspace["Key Parts"].Bowl:FindFirstChild("Part")
+
+	AutoFillBowl = vape.Categories.Blatant:CreateModule({
+		Name = "AutoFillBowl",
+		Function = function(callback)
+			if callback then 
+				local old
+				repeat
+					if entitylib.isAlive then 
+						local success = true
+						if BowlPart.Transparency == 1 then 
+							if not getTool("Floppa Food") then 
+								Unlock:FireServer("Floppa Food", "the_interwebs")
+							end
+
+							if not old then
+								old = entitylib.character.RootPart.CFrame
+							end
+
+							local prompt = BowlPart:FindFirstChildWhichIsA("ProximityPrompt")
+
+							success = false
+
+							entitylib.character.RootPart.CFrame = BowlPart.CFrame
+							entitylib.character.Humanoid:EquipTool(getTool("Floppa Food"))
+							fireproximityprompt(prompt)
+							break
+						end
+
+						if success and old then
+							entitylib.character.RootPart.CFrame = old
+							old = nil
+						end
+					else
+						old = nil
+					end
+					task.wait(0.4)
+				until not AutoFillBowl.Enabled
+			else
+
+			end
+		end,
+		Tooltip = "Automatically fills the floppa's bowl"
 	})
 end)
 
