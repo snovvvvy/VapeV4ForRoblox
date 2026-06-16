@@ -565,6 +565,7 @@ run(function()
 					Cooking:FireServer("Change Temperature", temperatures[selectedRecipe])
 					Cooking:FireServer("Cook")
 				end
+				Chef:Toggle()
 			end
 		end,
 		Tooltip = "Cooks any recipe for you."
