@@ -424,7 +424,7 @@ run(function()
 					end
 	
 					task.wait(0.2)
-				until not AutoCollectMeteorites.Enabled
+				until not AutoCollectMoney.Enabled
 			end
 		end,
 		Tooltip = "Automatically collects money."
