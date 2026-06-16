@@ -546,7 +546,7 @@ run(function()
 					Cooking:FireServer("Remove Ingredient", 4)
 					
 					for _, ingredient in ipairs(recipe.Ingredients) do
-						if not getTool(ingredient) and ingredient == "Milk" or ingredient == "Meteorite" or ingredient == "Dragon Egg" or ingredient == "Flopptonium" or ingredient == "Bomb" then 
+						if not getTool(ingredient) and ingredient == "Milk" or ingredient == "Meteorite" or ingredient == "Dragon Egg" or ingredient == "Flopptonium" or ingredient == "Bomb" or ingredient == "Carrot" then 
 							notif("Chef", ingredient .. " is required to be in your inventory for this recipe." .. (ingredient == "Milk") and " (Get this from the milk man)", 10, "warning")
 							break
 						elseif not getTool(ingredient) then
