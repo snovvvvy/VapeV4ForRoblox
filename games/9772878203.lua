@@ -77,7 +77,7 @@ run(function()
 			current = obj.Parent
 			
 			while current do 
-				if obj.Parent == workspace then
+				if compareinstances(obj.Parent, workspace) then
 					tag(obj, "MilkDelivery")
 					break
 				end
@@ -90,7 +90,7 @@ run(function()
 			current = obj.Parent
 
 			while current do 
-				if obj.Parent == workspace then
+				if compareinstances(obj.Parent, workspace) then
 					tag(obj, "Meteorite")
 					break
 				end
@@ -105,6 +105,19 @@ run(function()
 			while current do
 				if obj.Parent.Name == "Litter Box" then
 					tag(obj, "Poop")
+					break
+				end
+
+				current = current.Parent
+			end
+		end
+
+		if obj.Name == "Rent" then 
+			current = obj.Parent
+
+			while current do
+				if compareinstances(obj.Parent, workspace) then
+					tag(obj, "Rent")
 					break
 				end
 
@@ -327,6 +340,46 @@ run(function()
 			end
 		end,
 		Tooltip = "Automatically cleans poop from the litter box."
+	})
+end)
+
+run(function() 
+	local LandLord
+
+	local roommate = workspace.Unlocks:FindFirstChild("Roommate")
+	local CanRaise = roommate:FindFirstChild("Can Raise")
+	local CanCollect = roommate:FindFirstChild("Can Collect")
+
+	local function Raise()
+		if CanRaise.Value then 
+			remoteEvents:FindFirstChild("Raise Rent"):FireServer()
+		end
+	end
+
+	local function Collect()
+		if CanCollect.Value then 
+			remoteEvents:FindFirstChild("Collect Rent"):FireServer()
+		end
+	end
+
+	local RentSpawned(obj)
+		firetouchinterest(entitylib.character.RootPart, obj, 0)
+		firetouchinterest(entitylib.character.RootPart, obj, 1)
+	end
+
+	LandLord = vape.Categories.Blatant:CreateModule({
+		Name = "LandLord",
+		Function = function(callback) 
+			if callback then 
+				LandLord:Clean(CanRaise:GetPropertyChangedSignal("Value"):Connect(Raise))
+				LandLord:Clean(CanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
+				LandLord:Clean(collectionService:GetInstanceAddedSignal("Rent"):Connect(RentSpawned))
+
+				for _, obj in ipairs(collectionService:GetTagged("Rent")) do
+					RentSpawned(obj)
+				end
+			end
+		end
 	})
 end)
 
