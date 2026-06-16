@@ -81,7 +81,7 @@ run(function()
 			current = obj.Parent
 			
 			while current do 
-				if compareinstances(obj.Parent, workspace) then
+				if obj.Parent == workspace then
 					tag(obj, "MilkDelivery")
 					break
 				end
@@ -94,7 +94,7 @@ run(function()
 			current = obj.Parent
 
 			while current do 
-				if compareinstances(obj.Parent, workspace) then
+				if obj.Parent == workspace then
 					tag(obj, "Meteorite")
 					break
 				end
@@ -120,7 +120,7 @@ run(function()
 			current = obj.Parent
 
 			while current do
-				if compareinstances(obj.Parent, workspace) then
+				if obj.Parent == workspace then
 					tag(obj, "Rent")
 					break
 				end
