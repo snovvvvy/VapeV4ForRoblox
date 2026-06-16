@@ -515,7 +515,7 @@ run(function()
 
 		old = entitylib.character.RootPart.CFrame
 
-		entitylib.character.RootPart.CFrame = prompt.Parent.CFrame + CFrame.new(1, 0, 0)
+		entitylib.character.RootPart.CFrame = prompt.Parent.CFrame * CFrame.new(1, 0, 0)
 		task.wait(0.1)
 		fireproximityprompt(prompt)
 		task.wait(0.1)
@@ -555,7 +555,7 @@ run(function()
 						old = entitylib.character.RootPart.CFrame
 						entitylib.character.Humanoid:EquipTool(getTool(ingredient))
 						task.wait(0.1)
-						entitylib.character.RootPart.CFrame = StovePrimary.CFrame + CFrame.new(0, 0, 1)
+						entitylib.character.RootPart.CFrame = StovePrimary.CFrame * CFrame.new(0, 0, 1)
 						task.wait()
 						fireproximityprompt(StovePrimary:FindFirstChildWhichIsA("ProximityPrompt"))
 						task.wait(0.1)
