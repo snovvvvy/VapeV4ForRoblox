@@ -205,7 +205,7 @@ run(function()
 	local Happiness = floppa.Configuration.Happiness
 	local prompt = floppa.HumanoidRootPart.ProximityPrompt
 
-	AutoPet = vape.Categories.module:CreateModule({
+	AutoPet = vape.Categories.Blatant:CreateModule({
 		Name = "AutoPet",
 		Function = function(callback)
 			if callback then 
