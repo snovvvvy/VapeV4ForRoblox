@@ -460,7 +460,6 @@ run(function()
 
 							if not tool then
 								Unlock:FireServer("Floppa Food", "the_interwebs")
-								return
 							end
 
 							entitylib.character.RootPart.CFrame = BowlPart.CFrame
