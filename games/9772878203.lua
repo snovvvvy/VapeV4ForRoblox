@@ -103,6 +103,19 @@ run(function()
 			end
 		end
 
+		if obj.Name == "Money" then 
+			current = obj.Parent
+
+			while current do 
+				if obj.Parent == workspace then
+					tag(obj, "Money")
+					break
+				end
+
+				current = current.Parent
+			end
+		end
+
 		if obj.Name == "Poop" then 
 			current = obj.Parent
 
@@ -395,27 +408,26 @@ if roommate then
 end
 
 run(function() 
-	local AutoCollectMeteorites
+	local AutoCollectMoney
 
-	AutoCollectMeteorites = vape.Categories.Blatant:CreateModule({
-		Name = "AutoCollectMeteorites",
+	AutoCollectMoney = vape.Categories.Blatant:CreateModule({
+		Name = "AutoCollectMoney",
 		Function = function(callback)
 			if callback then 
 				repeat
 					if entitylib.isAlive then
-						for _, v in collectionService:GetTagged("Meteorite") do
-							local handle = v:FindFirstChildOfClass("UnionOperation")
-							firetouchinterest(entitylib.character.RootPart, handle, 1)
-							firetouchinterest(entitylib.character.RootPart, handle, 0)
+						for _, v in collectionService:GetTagged("Money") do
+							firetouchinterest(entitylib.character.RootPart, v, true)
+							firetouchinterest(entitylib.character.RootPart, v, false)
 							break
 						end
 					end
 	
-					task.wait(0.4)
+					task.wait(0.2)
 				until not AutoCollectMeteorites.Enabled
 			end
 		end,
-		Tooltip = "Automatically collects meteorites"
+		Tooltip = "Automatically collects money."
 	})
 end)
 
