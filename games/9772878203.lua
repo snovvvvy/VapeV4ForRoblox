@@ -169,7 +169,7 @@ run(function()
 		Sound = require(modules.Sound),
 		Recipes = require(modules.Recipes),
 		Abbreviate = require(modules.Abbreviate),
-		RoommateDialogue = getsenv(lplr.PlayerScripts["Roommate Dialogue"])
+		RoommateDialogue = lplr.PlayerScripts["Roommate Dialogue"]
 	}
 
 	vape:Clean(function()
