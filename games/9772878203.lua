@@ -386,7 +386,7 @@ if roommate then
 			if CanRaise.Value then 
 				remoteEvents:FindFirstChild("Raise Rent"):FireServer()
 				task.wait(0.1)
-				notif("LandLord", "Raised the Roommate's rent to $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 3)
+				notif("LandLord", "Raised the Roommate's rent to $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 6)
 			end
 		end
 	
@@ -409,7 +409,7 @@ if roommate then
 							for _, v in collectionService:GetTagged("Rent") do
 								firetouchinterest(entitylib.character.RootPart, v, 0)
 								firetouchinterest(entitylib.character.RootPart, v, 1)
-								notif("LandLord", "Collected the Roommate's rent: $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 3)
+								notif("LandLord", "Collected the Roommate's rent: $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 6)
 								break
 							end
 						end
