@@ -1632,6 +1632,36 @@ run(function()
 		end
 	})
 end)
+
+run(function()
+    local PromptDuration
+    local Duration
+
+    PromptDuration = vape.Categories.Blatant:CreateModule({
+    	Name = "PromptDuration",
+    	Function = function(callback)
+    		if callback then
+    			PromptDuration:Clean(proximityPromptService.PromptButtonHoldBegan:Connect(function(prompt, plr)
+    				if plr == lplr and prompt.HoldDuration <= Duration.Value then
+    					task.delay(Duration.Value, fireproximityprompt, prompt)
+    				end
+    			end))
+    		end
+    	end,
+		Tooltip = "Changes the duration of all proximity prompts.",
+    })
+
+    Duration = PromptDuration:CreateSlider({
+    	Name = "Duration",
+    	Min = 0,
+    	Max = 10,
+    	Default = 1,
+    	Suffix = function(val)
+    		return val > 1 and "secs" or "sec"
+    	end,
+    	Decimal = 10,
+    })
+end)
 	
 run(function()
 	local AntiFall
@@ -4720,7 +4750,7 @@ run(function()
 				label.Position = UDim2.new(0.5, 6, 0.5, 30)
 				label.AnchorPoint = Vector2.new(0.5, 0)
 				label.BackgroundTransparency = 1
-				label.Text = '100 ❤️'
+				label.Text = "100 ❤️"
 				label.TextSize = 18
 				label.Font = Enum.Font.Arial
 				label.Parent = vape.gui
