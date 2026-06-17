@@ -102,10 +102,9 @@ run(function()
 			return false
 		end
 
-		local player = playersService.LocalPlayer
-		if player then
-			local backpack = player:FindFirstChild("Backpack")
-			local character = player.Character
+		if lplr then
+			local backpack = lplr:FindFirstChild("Backpack")
+			local character = lplr.Character
 
 			if backpack and obj:IsDescendantOf(backpack) then
 				return false
