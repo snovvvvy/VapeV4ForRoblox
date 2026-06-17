@@ -115,7 +115,7 @@ run(function()
 			current = obj.Parent
 
 			while current do 
-				if obj.Parent.Name == "Meteorite" then
+				if obj.Parent.Name ~= "Backpack" and obj.Parent == workspace then
 					tag(obj, "Meteorite")
 					break
 				end
