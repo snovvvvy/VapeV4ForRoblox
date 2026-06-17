@@ -624,6 +624,9 @@ run(function()
     local Dialogues
     local oldt = {}
     local closure = getscriptclosure(raf2.RoommateDialogue)
+	for i, v in pairs(debug.getupvalues(closure)) do
+		print(i, type(v), v)
+	end
     local t = debug.getupvalue(closure, 2)
 
     RoommateDialogue = vape.Categories.Minigames:CreateModule({
