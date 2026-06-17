@@ -431,7 +431,7 @@ if roommate then
 							for _, v in collectionService:GetTagged("RichRent") do 
 								firetouchinterest(entitylib.character.RootPart, v, 0)
 								firetouchinterest(entitylib.character.RootPart, v, 1)
-								notif("LandLord", "Collected the Rich Roommate's rent: " .. raf2.Abbreviate.Convert(richRentAmount.Value) .. " gold.", 6)
+								notif("LandLord", "Collected the Rich Roommate's rent: " .. raf2.Abbreviate.Convert(RichRentAmount.Value) .. " gold.", 6)
 								break
 							end
 						end
