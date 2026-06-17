@@ -649,7 +649,12 @@ run(function()
 
     Dialogues = RoommateDialogue:CreateTextList({
         Name = 'Dialogues',
-        Function = function() end,
+        Function = function() 
+			if RoommateDialogue.Enabled then 
+				RoommateDialogue:Toggle()
+				RoommateDialogue:Toggle()
+			end
+		end,
         Placeholder = 'Dialogue',
         Tooltip = 'Enter the custom dialogues here.'
     })
