@@ -484,9 +484,6 @@ run(function()
 								if not old then
 									old = entitylib.character.RootPart.CFrame
 								end
-								print(v)
-								print(v.Parent)
-								print(v.Parent.Parent)
 								success = false
 								entitylib.character.RootPart.CFrame = v.CFrame
 								break
