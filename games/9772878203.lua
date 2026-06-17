@@ -515,17 +515,32 @@ run(function()
 		Name = "AutoCollectMeteorites",
 		Function = function(callback)
 			if callback then
-				repeat
-					if entitylib.isAlive then
-						for _, v in collectionService:GetTagged("Meteorite") do
-							firetouchinterest(entitylib.character.RootPart, v, 0)
-							firetouchinterest(entitylib.character.RootPart, v, 1)
-							break
-						end
-					end
+				if callback then
+					local old
+					repeat
+						if entitylib.isAlive then
+							local success = true
+							for _, v in collectionService:GetTagged('Meteorite') do
+								if not old then
+									old = entitylib.character.RootPart.CFrame
+								end
 	
-					task.wait(0.4)
-				until not AutoCollectMeteorites.Enabled
+								success = false
+								entitylib.character.RootPart.CFrame = v.CFrame
+								break
+							end
+		
+							if success and old then
+								entitylib.character.RootPart.CFrame = old
+								old = nil
+							end
+						else
+							old = nil
+						end
+		
+						task.wait(0.4)
+					until not AutoCollectMeteorites.Enabled
+				end
 			end
 		end,
 		Tooltip = "Automatically collects meteorite pickups"
