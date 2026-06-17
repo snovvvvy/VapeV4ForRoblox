@@ -168,7 +168,8 @@ run(function()
 	raf2 = {
 		Sound = require(modules.Sound),
 		Recipes = require(modules.Recipes),
-		Abbreviate = require(modules.Abbreviate)
+		Abbreviate = require(modules.Abbreviate),
+		RoommateDialogue = getsenv(lplr.PlayerScripts["Roommate Dialogue"])
 	}
 
 	vape:Clean(function()
@@ -615,6 +616,41 @@ run(function()
     Menu = Chef:CreateDropdown({
         Name = "Menu",
         List = getRecipeNames(raf2.Recipes)
+    })
+end)
+
+run(function() 
+    local RoommateDialogue
+    local Dialogues
+    local oldt = {}
+    local closure = getscriptclosure(raf2.RoommateDialogue)
+    local t = debug.getupvalue(closure, 2)
+
+    RoommateDialogue = vape.Categories.Minigames:CreateModule({
+        Name = "RoommateDialogue",
+        Function = function(callback)
+            if callback then
+                table.move(t, 1, #t, 1, oldt)
+                table.clear(t)
+                for i, v in ipairs(Dialogues.ListEnabled) do
+                    t[i] = v
+                end
+            else
+                table.clear(t)
+                for i, v in ipairs(oldt) do
+                    t[i] = v
+                end
+                table.clear(oldt)
+            end
+        end,
+        Tooltip = "Change the roommate's starting dialogue."
+    })
+
+    Dialogues = RoommateDialogue:CreateTextList({
+        Name = 'Dialogues',
+        Function = function() end,
+        Placeholder = 'Dialogue',
+        Tooltip = 'Enter the custom dialogues here.'
     })
 end)
 
