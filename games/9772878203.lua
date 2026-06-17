@@ -47,6 +47,8 @@ local Unlock = remoteEvents:FindFirstChild("Unlock")
 
 local floppa = workspace:FindFirstChild("Floppa")
 local roommate = workspace.Unlocks:FindFirstChild("Roommate")
+local richRoommate = workspace.Unlocks:FindFirstChild("Rich Roommate")
+
 
 local Keyparts = workspace:FindFirstChild("Key Parts")
 
@@ -57,9 +59,14 @@ if not roommate then
 end
 
 local RentAmount = roommate and roommate:FindFirstChild("Amt") or nil
+local RichRentAmount = richRoommate and richRoommate:FindFirstChild("Amt") or nil
 
 local function notif(...)
 	return vape:CreateNotification(...)
+end
+
+local function hasRichRoommate() 
+	return richRoommate and true or false
 end
 
 local function getTool(toolName)
@@ -149,6 +156,19 @@ run(function()
 			while current do
 				if obj.Parent == workspace then
 					tag(obj, "Rent")
+					break
+				end
+
+				current = current.Parent
+			end
+		end
+
+		if obj.Name == "Rent 2" then 
+			current = obj.Parent
+
+			while current do
+				if obj.Parent == workspace then
+					tag(obj, "RichRent")
 					break
 				end
 
@@ -382,18 +402,36 @@ if roommate then
 	
 		local CanRaise = roommate:FindFirstChild("Can Raise")
 		local CanCollect = roommate:FindFirstChild("Can Collect")
-	
+
+		local richCanRaise
+		local richCanCollect
+
+		if hasRichRoommate() then 
+			richCanRaise = richRoommate:FindFirstChild("Can Raise")
+			richCanCollect = richRoommate:FindFirstChild("Can Collect")
+		end
+
 		local function Raise()
-			if CanRaise.Value then 
+			if CanRaise.Value then
 				remoteEvents:FindFirstChild("Raise Rent"):FireServer()
 				task.wait(0.1)
 				notif("LandLord", "Raised the Roommate's rent to $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 6)
+			end
+		
+			if hasRichRoommate() and richCanRaise.Value then
+				remoteEvents:FindFirstChild("Raise Rent 2"):FireServer()
+				task.wait(0.1)
+				notif("LandLord", "Raised the Rich Roommate's rent to " .. raf2.Abbreviate.Convert(RichRentAmount.Value) .. " gold.", 6)
 			end
 		end
 	
 		local function Collect()
 			if CanCollect.Value then 
 				remoteEvents:FindFirstChild("Collect Rent"):FireServer()
+			end
+
+			if hasRichRoommate() and richCanCollect.Value then 
+				remoteEvents:FindFirstChild("Collect Rent 2"):FireServer()
 			end
 		end
 	
@@ -403,6 +441,10 @@ if roommate then
 				if callback then 
 					LandLord:Clean(CanRaise:GetPropertyChangedSignal("Value"):Connect(Raise))
 					LandLord:Clean(CanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
+					if hasRichRoommate() then
+						LandLord:Clean(richCanRaise:GetPropertyChangedSignal("Value"):Connect(Raise))
+						LandLord:Clean(richCanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
+					end
 					Raise()
 					Collect()
 					repeat
@@ -411,6 +453,12 @@ if roommate then
 								firetouchinterest(entitylib.character.RootPart, v, 0)
 								firetouchinterest(entitylib.character.RootPart, v, 1)
 								notif("LandLord", "Collected the Roommate's rent: $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 6)
+								break
+							end
+							for _, v in collectionService:GetTagged("RichRent") do 
+								firetouchinterest(entitylib.character.RootPart, v, 0)
+								firetouchinterest(entitylib.character.RootPart, v, 1)
+								notif("LandLord", "Collected the Rich Roommate's rent: " .. raf2.Abbreviate.Convert(RentAmount.Value) .. " gold.", 6)
 								break
 							end
 						end
