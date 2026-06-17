@@ -124,10 +124,7 @@ run(function()
 
 		local name = obj.Name
 
-		if name == "Meteorite" then
-			tag(obj, "Meteorite")
-
-		elseif name == "Milk Delivery" then
+		if name == "Milk Delivery" then
 			tag(obj, "MilkDelivery")
 
 		elseif name == "Money" or name == "Money Bag" then
@@ -145,6 +142,11 @@ run(function()
 		elseif name == "Poop" then
 			if obj.Parent and obj.Parent.Name == "Litter Box" then
 				tag(obj, "Poop")
+			end
+
+		elseif name == "Gold Bar" then
+			if obj.Parent and obj.Parent.Name == "Divine Gold" and obj:FindFirstChildWhichIsA("TouchTransmitter") then 
+				tag(obj, "Gold")
 			end
 		end
 	end
@@ -464,44 +466,6 @@ run(function()
 			end
 		end,
 		Tooltip = "Automatically collects gold pickups"
-	})
-end)
-
-run(function() 
-	local AutoCollectMeteorites
-
-	AutoCollectMeteorites = vape.Categories.Minigames:CreateModule({
-		Name = "AutoCollectMeteorites",
-		Function = function(callback)
-			if callback then
-				if callback then
-					local old
-					repeat
-						if entitylib.isAlive then
-							local success = true
-							for _, v in collectionService:GetTagged('Meteorite') do
-								if not old then
-									old = entitylib.character.RootPart.CFrame
-								end
-								success = false
-								entitylib.character.RootPart.CFrame = v.CFrame
-								break
-							end
-		
-							if success and old then
-								entitylib.character.RootPart.CFrame = old
-								old = nil
-							end
-						else
-							old = nil
-						end
-		
-						task.wait(0.4)
-					until not AutoCollectMeteorites.Enabled
-				end
-			end
-		end,
-		Tooltip = "Automatically collects meteorite pickups"
 	})
 end)
 
