@@ -175,6 +175,19 @@ run(function()
 				current = current.Parent
 			end
 		end
+
+		if obj.Name == "Gold" then 
+			current = obj.Parent
+
+			while current do
+				if obj.Parent == workspace then
+					tag(obj, "Gold")
+					break
+				end
+
+				current = current.Parent
+			end
+		end
 	end
 	
 	for _, obj in ipairs(workspace:GetDescendants()) do
@@ -470,6 +483,30 @@ if roommate then
 		})
 	end)
 end
+
+run(function() 
+	local AutoCollectGold
+
+	AutoCollectGold = vape.Categories.Minigames:CreateModule({
+		Name = "AutoCollectGold",
+		Function = function(callback)
+			if callback then
+				repeat
+					if entitylib.isAlive then
+						for _, v in collectionService:GetTagged("Gold") do
+							firetouchinterest(entitylib.character.RootPart, v, 0)
+							firetouchinterest(entitylib.character.RootPart, v, 1)
+							break
+						end
+					end
+	
+					task.wait(0.4)
+				until not AutoCollectGold.Enabled
+			end
+		end,
+		Tooltip = "Automatically collects gold pickups"
+	})
+end)
 
 run(function() 
 	local AutoCollectMoney
