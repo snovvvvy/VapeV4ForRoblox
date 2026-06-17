@@ -610,7 +610,10 @@ run(function()
                 Chef:Toggle()
             end
         end,
-        Tooltip = "Cooks any recipe for you."
+        Tooltip = "Cooks any recipe for you.",
+		ExtraText = function() 
+			return Menu.Value
+		end
     })
 
     Menu = Chef:CreateDropdown({
