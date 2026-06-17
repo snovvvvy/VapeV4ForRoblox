@@ -619,6 +619,13 @@ run(function()
     })
 end)
 
+local env = getsenv(raf2.RoommateDialogue)
+local t
+
+for i, v in pairs(debug.getupvalues(env.InitialPrompt)) do
+    print(i, type(v), v)
+end
+
 run(function() 
     local RoommateDialogue
     local Dialogues
