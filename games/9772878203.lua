@@ -620,10 +620,14 @@ run(function()
 end)
 
 local env = getsenv(raf2.RoommateDialogue)
-local t
-
-for i, v in pairs(debug.getupvalues(env.InitialPrompt)) do
-    print(i, type(v), v)
+print(env)
+for k, v in pairs(env) do
+    print(k, type(v))
+    if type(v) == "function" then
+        for i, u in pairs(debug.getupvalues(v)) do
+            print("  upvalue", i, type(u), u)
+        end
+    end
 end
 
 run(function() 
