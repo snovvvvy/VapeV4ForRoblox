@@ -111,7 +111,7 @@ run(function()
 			end
 		end
 
-		if obj.Name == "Handle" then
+		if obj.Name == "Meteorite" then
 			current = obj.Parent
 
 			while current do 
@@ -526,7 +526,7 @@ run(function()
 								end
 	
 								success = false
-								entitylib.character.RootPart.CFrame = v.CFrame
+								entitylib.character.RootPart.CFrame = v.Handle.CFrame
 								break
 							end
 		
