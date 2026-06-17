@@ -1643,7 +1643,7 @@ run(function()
     	Function = function(callback)
     		if callback then
     			PromptDuration:Clean(proximityPromptService.PromptButtonHoldBegan:Connect(function(prompt, plr)
-    				if plr == lplr and prompt.HoldDuration <= Duration.Value then
+    				if plr == lplr then
     					task.delay(Duration.Value, fireproximityprompt, prompt)
     				end
     			end))
