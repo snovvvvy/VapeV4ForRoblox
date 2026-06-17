@@ -80,120 +80,80 @@ local function getTool(toolName)
 	return (backpack and backpack:FindFirstChild(toolName)) or (character and character:FindFirstChild(toolName))
 end
 
-run(function() 
-	local function tag(obj, tag)
-		if collectionService:HasTag(obj, tag) then
+run(function()
+	local function tag(obj, tagName)
+		if collectionService:HasTag(obj, tagName) then
 			return
 		end
-	
+
 		if vape.ThreadFix then
 			setthreadidentity(8)
 		end
-	
+
 		pcall(function()
-			collectionService:AddTag(obj, tag)
+			collectionService:AddTag(obj, tagName)
 		end)
 	end
-	
+
+	local function isValidWorldObject(obj)
+		if not obj then return false end
+
+		if not obj:IsDescendantOf(workspace) then
+			return false
+		end
+
+		local player = playersService.LocalPlayer
+		if player then
+			local backpack = player:FindFirstChild("Backpack")
+			local character = player.Character
+
+			if backpack and obj:IsDescendantOf(backpack) then
+				return false
+			end
+
+			if character and obj:IsDescendantOf(character) then
+				return false
+			end
+		end
+
+		return true
+	end
+
 	local function tagObj(obj)
-		local current
+		if not obj or not obj.Parent then return end
+		if not isValidWorldObject(obj) then return end
 
-		if obj.Name == "Milk Delivery" then
-			current = obj.Parent
-			
-			while current do 
-				if obj.Parent == workspace then
-					tag(obj, "MilkDelivery")
-					break
-				end
+		local name = obj.Name
 
-				current = current.Parent
-			end
-		end
+		if name == "Meteorite" then
+			tag(obj, "Meteorite")
 
-		if obj.Name == "Meteorite" then
-			current = obj.Parent
+		elseif name == "Milk Delivery" then
+			tag(obj, "MilkDelivery")
 
-			while current do 
-				if obj.Parent.Name ~= "Backpack" and obj.Parent == workspace then
-					tag(obj, "Meteorite")
-					break
-				end
+		elseif name == "Money" or name == "Money Bag" then
+			tag(obj, "Money")
 
-				current = current.Parent
-			end
-		end
+		elseif name == "Rent" then
+			tag(obj, "Rent")
 
-		if obj.Name == "Money" or obj.Name == "Money Bag" then 
-			current = obj.Parent
+		elseif name == "Rent 2" then
+			tag(obj, "RichRent")
 
-			while current do 
-				if obj.Parent == workspace then
-					tag(obj, "Money")
-					break
-				end
+		elseif name == "Gold" then
+			tag(obj, "Gold")
 
-				current = current.Parent
-			end
-		end
-
-		if obj.Name == "Poop" then 
-			current = obj.Parent
-
-			while current do
-				if obj.Parent.Name == "Litter Box" then
-					tag(obj, "Poop")
-					break
-				end
-
-				current = current.Parent
-			end
-		end
-
-		if obj.Name == "Rent" then 
-			current = obj.Parent
-
-			while current do
-				if obj.Parent == workspace then
-					tag(obj, "Rent")
-					break
-				end
-
-				current = current.Parent
-			end
-		end
-
-		if obj.Name == "Rent 2" then 
-			current = obj.Parent
-
-			while current do
-				if obj.Parent == workspace then
-					tag(obj, "RichRent")
-					break
-				end
-
-				current = current.Parent
-			end
-		end
-
-		if obj.Name == "Gold" then 
-			current = obj.Parent
-
-			while current do
-				if obj.Parent == workspace then
-					tag(obj, "Gold")
-					break
-				end
-
-				current = current.Parent
+		elseif name == "Poop" then
+			if obj.Parent and obj.Parent.Name == "Litter Box" then
+				tag(obj, "Poop")
 			end
 		end
 	end
-	
+
 	for _, obj in ipairs(workspace:GetDescendants()) do
 		tagObj(obj)
 	end
-	
+
 	vape:Clean(workspace.DescendantAdded:Connect(tagObj))
 end)
 
