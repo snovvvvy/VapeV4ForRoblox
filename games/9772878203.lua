@@ -644,7 +644,7 @@ run(function()
                 table.clear(oldt)
             end
         end,
-        Tooltip = "Change the roommate's starting dialogue."
+        Tooltip = "Change the roommate's initial dialogue. (might work)"
     })
 
     Dialogues = RoommateDialogue:CreateTextList({
