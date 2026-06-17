@@ -509,6 +509,30 @@ run(function()
 end)
 
 run(function() 
+	local AutoCollectMeteorites
+
+	AutoCollectMeteorites = vape.Categories.Minigames:CreateModule({
+		Name = "AutoCollectMeteorites",
+		Function = function(callback)
+			if callback then
+				repeat
+					if entitylib.isAlive then
+						for _, v in collectionService:GetTagged("Meteorite") do
+							firetouchinterest(entitylib.character.RootPart, v, 0)
+							firetouchinterest(entitylib.character.RootPart, v, 1)
+							break
+						end
+					end
+	
+					task.wait(0.4)
+				until not AutoCollectMeteorites.Enabled
+			end
+		end,
+		Tooltip = "Automatically collects meteorite pickups"
+	})
+end)
+
+run(function() 
 	local AutoCollectMoney
 
 	AutoCollectMoney = vape.Categories.Minigames:CreateModule({
