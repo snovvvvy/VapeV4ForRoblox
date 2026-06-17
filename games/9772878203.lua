@@ -111,11 +111,11 @@ run(function()
 			end
 		end
 
-		if obj.Name == "Meteorite" then
+		if obj.Name == "Handle" then
 			current = obj.Parent
 
 			while current do 
-				if obj.Parent == workspace then
+				if obj.Parent.Name == "Meteorite" then
 					tag(obj, "Meteorite")
 					break
 				end
@@ -518,8 +518,8 @@ run(function()
 				repeat
 					if entitylib.isAlive then
 						for _, v in collectionService:GetTagged("Meteorite") do
-							firetouchinterest(entitylib.character.RootPart, v.Handle, 0)
-							firetouchinterest(entitylib.character.RootPart, v.Handle, 1)
+							firetouchinterest(entitylib.character.RootPart, v, 0)
+							firetouchinterest(entitylib.character.RootPart, v, 1)
 							break
 						end
 					end
