@@ -389,13 +389,17 @@ if roommate then
 			if CanRaise.Value then
 				remoteEvents:FindFirstChild("Raise Rent"):FireServer()
 				task.wait(0.1)
-				notif("LandLord", "Raised the Roommate's rent to $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 6)
+				if RentAmount.Value ~= 999000000000000000 then
+					notif("LandLord", "Raised the Roommate's rent to $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 6)
+				end
 			end
 		
 			if hasRichRoommate() and richCanRaise.Value then
 				remoteEvents:FindFirstChild("Raise Rent 2"):FireServer()
 				task.wait(0.1)
-				notif("LandLord", "Raised the Rich Roommate's rent to " .. raf2.Abbreviate.Convert(RichRentAmount.Value) .. " gold.", 6)
+				if RichRentAmount.Value ~= 10000 then
+					notif("LandLord", "Raised the Rich Roommate's rent to " .. raf2.Abbreviate.Convert(RichRentAmount.Value) .. " gold.", 6)
+				end
 			end
 		end
 	
