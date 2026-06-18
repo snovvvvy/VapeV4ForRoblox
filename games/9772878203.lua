@@ -148,6 +148,11 @@ run(function()
 			if obj.Parent and obj.Parent.Name == "Divine Gold" and obj:FindFirstChildWhichIsA("TouchTransmitter") then 
 				tag(obj, "Gold")
 			end
+
+		elseif obj:IsA("Tool") then
+			if obj:FindFirstChild("Handle") and obj:FindFirstChild("Handle"):FindFirstChildWhichIsA("TouchTransmitter") then 
+				tag(obj, "Pickup")
+			end
 		end
 	end
 
@@ -369,106 +374,141 @@ run(function()
 	})
 end)
 
-if roommate then 
-	run(function() 
-		local LandLord
-	
-		local CanRaise = roommate:FindFirstChild("Can Raise")
-		local CanCollect = roommate:FindFirstChild("Can Collect")
-
-		local richCanRaise
-		local richCanCollect
-
-		if hasRichRoommate() then 
-			richCanRaise = richRoommate:FindFirstChild("Can Raise")
-			richCanCollect = richRoommate:FindFirstChild("Can Collect")
-		end
-
-		local function Raise()
-			if CanRaise.Value then
-				remoteEvents:FindFirstChild("Raise Rent"):FireServer()
-				task.wait(0.1)
-				if RentAmount.Value ~= 999000000000000000 then
-					notif("LandLord", "Raised the Roommate's rent to $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 6)
-				end
-			end
-		
-			if hasRichRoommate() and richCanRaise.Value then
-				remoteEvents:FindFirstChild("Raise Rent 2"):FireServer()
-				task.wait(0.1)
-				if RichRentAmount.Value ~= 10000 then
-					notif("LandLord", "Raised the Rich Roommate's rent to " .. raf2.Abbreviate.Convert(RichRentAmount.Value) .. " gold.", 6)
-				end
-			end
-		end
-	
-		local function Collect()
-			if CanCollect.Value then 
-				remoteEvents:FindFirstChild("Collect Rent"):FireServer()
-			end
-
-			if hasRichRoommate() and richCanCollect.Value then 
-				remoteEvents:FindFirstChild("Collect Rent 2"):FireServer()
-			end
-		end
-	
-		LandLord = vape.Categories.Blatant:CreateModule({
-			Name = "LandLord",
-			Function = function(callback) 
-				if callback then 
-					LandLord:Clean(CanRaise:GetPropertyChangedSignal("Value"):Connect(Raise))
-					LandLord:Clean(CanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
-					if hasRichRoommate() then
-						LandLord:Clean(richCanRaise:GetPropertyChangedSignal("Value"):Connect(Raise))
-						LandLord:Clean(richCanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
-					end
-					Raise()
-					Collect()
-					repeat
-						if entitylib.isAlive then
-							for _, v in collectionService:GetTagged("Rent") do
-								firetouchinterest(entitylib.character.RootPart, v, 0)
-								firetouchinterest(entitylib.character.RootPart, v, 1)
-								notif("LandLord", "Collected the Roommate's rent: $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 6)
-								break
-							end
-							for _, v in collectionService:GetTagged("RichRent") do 
-								firetouchinterest(entitylib.character.RootPart, v, 0)
-								firetouchinterest(entitylib.character.RootPart, v, 1)
-								notif("LandLord", "Collected the Rich Roommate's rent: " .. raf2.Abbreviate.Convert(RichRentAmount.Value) .. " gold.", 6)
-								break
-							end
-						end
-		
-						task.wait(0.4)
-					until not LandLord.Enabled
-				end
-			end
-		})
-	end)
-end
-
 run(function() 
-	local AutoCollectGold
+	local LandLord
 
-	local function collect(v) 
-		firetouchinterest(entitylib.character.RootPart, v, 0)
-		firetouchinterest(entitylib.character.RootPart, v, 1)
+	local CanRaise = roommate and roommate:FindFirstChild("Can Raise") or nil
+	local CanCollect = roommate and roommate:FindFirstChild("Can Collect") or nil
+
+	local richCanRaise
+	local richCanCollect
+
+	if hasRichRoommate() then 
+		richCanRaise = richRoommate:FindFirstChild("Can Raise")
+		richCanCollect = richRoommate:FindFirstChild("Can Collect")
 	end
 
-	AutoCollectGold = vape.Categories.Minigames:CreateModule({
-		Name = "AutoCollectGold",
+	local function Raise()
+		if CanRaise.Value then
+			remoteEvents:FindFirstChild("Raise Rent"):FireServer()
+			task.wait(0.1)
+			if RentAmount.Value ~= 999000000000000000 then
+				notif("LandLord", "Raised the Roommate's rent to $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 6)
+			end
+		end
+	
+		if hasRichRoommate() and richCanRaise.Value then
+			remoteEvents:FindFirstChild("Raise Rent 2"):FireServer()
+			task.wait(0.1)
+			if RichRentAmount.Value ~= 10000 then
+				notif("LandLord", "Raised the Rich Roommate's rent to " .. raf2.Abbreviate.Convert(RichRentAmount.Value) .. " gold.", 6)
+			end
+		end
+	end
+
+	local function Collect()
+		if CanCollect.Value then 
+			remoteEvents:FindFirstChild("Collect Rent"):FireServer()
+		end
+
+		if hasRichRoommate() and richCanCollect.Value then 
+			remoteEvents:FindFirstChild("Collect Rent 2"):FireServer()
+		end
+	end
+
+	LandLord = vape.Categories.Blatant:CreateModule({
+		Name = "LandLord",
+		Function = function(callback) 
+			if callback then 
+				LandLord:Clean(CanRaise:GetPropertyChangedSignal("Value"):Connect(Raise))
+				LandLord:Clean(CanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
+				if hasRichRoommate() then
+					LandLord:Clean(richCanRaise:GetPropertyChangedSignal("Value"):Connect(Raise))
+					LandLord:Clean(richCanCollect:GetPropertyChangedSignal("Value"):Connect(Collect))
+				end
+				Raise()
+				Collect()
+				repeat
+					if entitylib.isAlive then
+						for _, v in collectionService:GetTagged("Rent") do
+							firetouchinterest(entitylib.character.RootPart, v, 0)
+							firetouchinterest(entitylib.character.RootPart, v, 1)
+							notif("LandLord", "Collected the Roommate's rent: $" .. raf2.Abbreviate.Convert(RentAmount.Value) .. ".", 6)
+							break
+						end
+						for _, v in collectionService:GetTagged("RichRent") do 
+							firetouchinterest(entitylib.character.RootPart, v, 0)
+							firetouchinterest(entitylib.character.RootPart, v, 1)
+							notif("LandLord", "Collected the Rich Roommate's rent: " .. raf2.Abbreviate.Convert(RichRentAmount.Value) .. " gold.", 6)
+							break
+						end
+					end
+	
+					task.wait(0.4)
+				until not LandLord.Enabled
+			end
+		end
+	})
+end)
+
+run(function()
+	local PickupTP
+	
+	PickupTP = vape.Categories.Blatant:CreateModule({
+		Name = 'PickupTP',
 		Function = function(callback)
 			if callback then
-				AutoCollectGold:Clean(collectionService:GetInstanceAddedSignal("Gold"):Connect(collect))
+				local old
+				repeat
+					if entitylib.isAlive then
+						local success = true
+						for _, v in collectionService:GetTagged("Pickup") do
+							if not old then
+								old = entitylib.character.RootPart.CFrame
+							end
 
-				for _, v in ipairs(collectionService:GetTagged("Gold")) do
-					collect(v)
-					break
-				end
+							success = false
+							entitylib.character.RootPart.CFrame = v.CFrame
+							break
+						end
+	
+						if success and old then
+							entitylib.character.RootPart.CFrame = old
+							old = nil
+						end
+					else
+						old = nil
+					end
+	
+					task.wait(0.4)
+				until not PickupTP.Enabled
 			end
 		end,
-		Tooltip = "Automatically collects gold pickups"
+		Tooltip = 'Teleport to any item pickups.'
+	})
+end)
+
+run(function()
+	local AutoCollectGold
+	
+	AutoCollectGold = vape.Categories.Blatant:CreateModule({
+		Name = 'AutoCollectGold',
+		Function = function(callback)
+			if callback then 
+				repeat
+					if entitylib.isAlive then
+						for _, v in collectionService:GetTagged("Gold") do
+							firetouchinterest(entitylib.character.RootPart, v, true)
+							firetouchinterest(entitylib.character.RootPart, v, false)
+							break
+						end
+					end
+	
+					task.wait(0.1)
+				until not AutoCollectGold.Enabled
+			end
+		end,
+		Tooltip = 'Teleport to any gold pickups.'
 	})
 end)
 
