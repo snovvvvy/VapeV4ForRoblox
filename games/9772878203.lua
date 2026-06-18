@@ -145,12 +145,12 @@ run(function()
 			end
 
 		elseif name == "Gold Bar" then
-			if obj.Parent and obj.Parent.Name == "Divine Gold" and obj:FindFirstChildWhichIsA("TouchTransmitter") then 
+			if obj.Parent and obj.Parent.Name == "Divine Gold" then 
 				tag(obj, "Gold")
 			end
 
 		elseif obj:IsA("Tool") then
-			if obj:FindFirstChild("Handle") and obj:FindFirstChild("Handle"):FindFirstChildWhichIsA("TouchTransmitter") then 
+			if obj:FindFirstChild("Handle") then 
 				tag(obj, "Pickup")
 			end
 		end
@@ -491,7 +491,7 @@ end)
 run(function()
 	local AutoCollectGold
 	
-	AutoCollectGold = vape.Categories.Blatant:CreateModule({
+	AutoCollectGold = vape.Categories.Minigames:CreateModule({
 		Name = 'AutoCollectGold',
 		Function = function(callback)
 			if callback then 
