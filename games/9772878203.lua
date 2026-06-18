@@ -452,21 +452,21 @@ end
 run(function() 
 	local AutoCollectGold
 
+	local function collect(v) 
+		firetouchinterest(entitylib.character.RootPart, v, 0)
+		firetouchinterest(entitylib.character.RootPart, v, 1)
+	end
+
 	AutoCollectGold = vape.Categories.Minigames:CreateModule({
 		Name = "AutoCollectGold",
 		Function = function(callback)
 			if callback then
-				repeat
-					if entitylib.isAlive then
-						for _, v in collectionService:GetTagged("Gold") do
-							firetouchinterest(entitylib.character.RootPart, v, 0)
-							firetouchinterest(entitylib.character.RootPart, v, 1)
-							break
-						end
-					end
-	
-					task.wait(0.4)
-				until not AutoCollectGold.Enabled
+				AutoCollectGold:Clean(collectionService:GetInstanceAddedSignal("Gold"):Connect(collect))
+
+				for _, v in ipairs(collectionService:GetTagged("Gold")) do
+					collect(v)
+					break
+				end
 			end
 		end,
 		Tooltip = "Automatically collects gold pickups"
