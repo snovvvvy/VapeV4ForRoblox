@@ -163,7 +163,6 @@ run(function()
 		Sound = require(modules.Sound),
 		Recipes = require(modules.Recipes),
 		Abbreviate = require(modules.Abbreviate),
-		RoommateDialogue = lplr.PlayerScripts["Roommate Dialogue"]
 	}
 
 	vape:Clean(function()
@@ -676,7 +675,8 @@ run(function()
     local RoommateDialogue
     local Dialogues
     local oldt = {}
-    local Dialog = workspace.Unlocks.Roommate.Head.Dialog
+	local oldDialog
+    local Dialog = roommate.Head.Dialog
     local connections = getconnections(Dialog.DialogChoiceSelected)
     local t = debug.getupvalue(connections[1].Function, 8)
 
@@ -689,15 +689,20 @@ run(function()
                 for i, v in ipairs(Dialogues.ListEnabled) do
                     t[i] = v
                 end
+				if #t > 0 then
+					oldDialog = Dialog.InitialPrompt
+					Dialog.InitialPrompt = t[math.random(#t)]
+				end
             else
                 table.clear(t)
                 for i, v in ipairs(oldt) do
                     t[i] = v
                 end
                 table.clear(oldt)
+				oldDialog = nil
             end
         end,
-        Tooltip = "Change the roommate's initial dialogue. (might work)"
+        Tooltip = "Change the roommate's initial dialogue."
     })
 
     Dialogues = RoommateDialogue:CreateTextList({
@@ -706,6 +711,53 @@ run(function()
 			if RoommateDialogue.Enabled then 
 				RoommateDialogue:Toggle()
 				RoommateDialogue:Toggle()
+			end
+		end,
+        Placeholder = 'Dialogue',
+        Tooltip = 'Enter the custom dialogues here.'
+    })
+end)
+
+run(function() 
+    local RichRoommateDialogue
+    local Dialogues
+    local oldt = {}
+	local oldDialog
+    local Dialog = richRoommate.Head.Dialog
+    local connections = getconnections(Dialog.DialogChoiceSelected)
+    local t = debug.getupvalue(connections[1].Function, 8)
+
+    RichRoommateDialogue = vape.Categories.Minigames:CreateModule({
+        Name = "RichRoommateDialogue",
+        Function = function(callback)
+            if callback then
+                table.move(t, 1, #t, 1, oldt)
+                table.clear(t)
+                for i, v in ipairs(Dialogues.ListEnabled) do
+                    t[i] = v
+                end
+				if #t > 0 then
+					oldDialog = Dialog.InitialPrompt
+					Dialog.InitialPrompt = t[math.random(#t)]
+				end
+            else
+                table.clear(t)
+                for i, v in ipairs(oldt) do
+                    t[i] = v
+                end
+                table.clear(oldt)
+				oldDialog = nil
+            end
+        end,
+        Tooltip = "Change the rich roommate's initial dialogue."
+    })
+
+    Dialogues = RichRoommateDialogue:CreateTextList({
+        Name = 'Dialogues',
+        Function = function() 
+			if RichRoommateDialogue.Enabled then 
+				RichRoommateDialogue:Toggle()
+				RichRoommateDialogue:Toggle()
 			end
 		end,
         Placeholder = 'Dialogue',
