@@ -150,7 +150,7 @@ run(function()
 			end
 
 		elseif obj:IsA("Tool") then
-			if obj:FindFirstChild("Handle") then 
+			if obj:FindFirstChild("Handle") and not obj:IsDescendantOf(workspace.Unlocks) then 
 				tag(obj, "Pickup")
 			end
 		end
