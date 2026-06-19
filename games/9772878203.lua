@@ -136,17 +136,9 @@ run(function()
 		elseif name == "Rent 2" then
 			tag(obj, "RichRent")
 
-		elseif name == "Gold" then
-			tag(obj, "Gold")
-
 		elseif name == "Poop" then
 			if obj.Parent and obj.Parent.Name == "Litter Box" then
 				tag(obj, "Poop")
-			end
-
-		elseif name == "Gold Bar" then
-			if obj.Parent and obj.Parent.Name == "Divine Gold" then 
-				tag(obj, "Gold")
 			end
 
 		elseif obj:IsA("Tool") then
@@ -485,30 +477,6 @@ run(function()
 			end
 		end,
 		Tooltip = 'Teleport to any item pickups.'
-	})
-end)
-
-run(function()
-	local AutoCollectGold
-	
-	AutoCollectGold = vape.Categories.Minigames:CreateModule({
-		Name = 'AutoCollectGold',
-		Function = function(callback)
-			if callback then 
-				repeat
-					if entitylib.isAlive then
-						for _, v in collectionService:GetTagged("Gold") do
-							firetouchinterest(entitylib.character.RootPart, v, true)
-							firetouchinterest(entitylib.character.RootPart, v, false)
-							break
-						end
-					end
-	
-					task.wait(0.1)
-				until not AutoCollectGold.Enabled
-			end
-		end,
-		Tooltip = 'Teleport to any gold pickups.'
 	})
 end)
 
