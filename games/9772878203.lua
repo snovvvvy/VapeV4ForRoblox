@@ -463,16 +463,15 @@ run(function()
 					if entitylib.isAlive then
 						local success = true
 						for _, v in collectionService:GetTagged("Pickup") do
-							if v:IsDescendantOf(lplr.Backpack) or v:IsDescendantOf(lplr.Character) then 
+							if not v:IsDescendantOf(lplr.Backpack) or not v:IsDescendantOf(lplr.Character) then 
+								if not old then
+									old = entitylib.character.RootPart.CFrame
+								end
+	
+								success = false
+								entitylib.character.RootPart.CFrame = v.Handle.CFrame
 								break
 							end
-							if not old then
-								old = entitylib.character.RootPart.CFrame
-							end
-
-							success = false
-							entitylib.character.RootPart.CFrame = v.Handle.CFrame
-							break
 						end
 	
 						if success and old then
