@@ -468,7 +468,7 @@ run(function()
 							end
 
 							success = false
-							entitylib.character.RootPart.CFrame = v.CFrame
+							entitylib.character.RootPart.CFrame = v.Handle.CFrame
 							break
 						end
 	
