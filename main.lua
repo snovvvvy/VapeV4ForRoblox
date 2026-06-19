@@ -77,6 +77,9 @@ local function finishLoading()
 			if shared.VapeDeveloper then
 				teleportScript = 'shared.VapeDeveloper = true\n'..teleportScript
 			end
+			if shared.vapedev then
+				teleportScript = 'shared.vapedev = true\n'..teleportScript
+			end
 			if shared.VapeCustomProfile then
 				teleportScript = 'shared.VapeCustomProfile = "'..shared.VapeCustomProfile..'"\n'..teleportScript
 			end
