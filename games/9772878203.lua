@@ -145,6 +145,11 @@ run(function()
 			if obj:FindFirstChild("Handle") and not obj:IsDescendantOf(workspace.Unlocks) then 
 				tag(obj, "Pickup")
 			end
+
+		elseif name == "Floppa Gunner" then
+			if obj.Parent == workspace.Unlocks then 
+				tag(obj, "FloppaGunner")
+			end
 		end
 	end
 
@@ -847,4 +852,79 @@ run(function()
 		end,
 		Tooltip = "THE OVEN IS ON FIRE"
 	})
+end)
+
+run(function()
+    local FloppaGunners
+    local Material
+    local Color
+    local materials = {"ForceField"}
+    for _, v in Enum.Material:GetEnumItems() do
+        if v.Name ~= 'ForceField' then
+            table.insert(materials, v.Name)
+        end
+    end
+
+    local stored = {}
+	local floppaGunners = collectionService:GetTagged("FloppaGunner")
+
+    FloppaGunners = vape.Legit:CreateModule({
+        Name = "FloppaGunners",
+        Function = function(callback)
+            if callback then
+                for _, fg in floppaGunners do
+                    for _, v in ipairs(fg:GetDescendants()) do
+                        if v:IsA("BasePart") then
+                            if not stored[v] then
+                                stored[v] = {Material = v.Material, Color = v.Color}
+                            end
+                            v.Material = Enum.Material[Material.Value]
+                            v.Color = Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
+                        end
+                    end
+                end
+            else
+                for v, data in pairs(stored) do
+                    if v and v.Parent then
+                        v.Material = data.Material
+                        v.Color = data.Color
+                    end
+                end
+                table.clear(stored)
+            end
+        end,
+        Tooltip = "Customize your floppa gunners"
+    })
+
+    Material = FloppaGunners:CreateDropdown({
+        Name = "Material",
+        List = materials,
+        Function = function(val)
+            if FloppaGunners.Enabled then
+                FloppaGunners:Toggle()
+                FloppaGunners:Toggle()
+            end
+        end,
+    })
+
+    Color = FloppaGunners:CreateColorSlider({
+        Name = 'Color',
+        DefaultOpacity = 0.5,
+        Function = function()
+            if FloppaGunners.Enabled then
+                FloppaGunners:Toggle()
+                FloppaGunners:Toggle()
+            end
+        end
+    })
+
+	if #floppaGunners == 0 then 
+		FloppaGunners.Object.Visible = false
+	end
+
+	vape:Clean(collectionService:GetInstanceAddedSignal("FloppaGunner"):Connect(function() 
+		if #floppaGunners ~= 0 then 
+			FloppaGunners.Object.Visible = true
+		end
+	end))
 end)
