@@ -6188,7 +6188,7 @@ run(function()
 
 				old = hookmetamethod(game, "__index", function(self, method)
 					if self == lplr and method:lower() == "kick" then
-						return error("Expected ':' not '.' calling member function Kick", 2)
+						return
 					end
 
 					return old(self, method)
