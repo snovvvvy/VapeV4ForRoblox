@@ -6166,6 +6166,58 @@ run(function()
 		Decimal = 10
 	})
 end)
+
+run(function() 
+	local AntiKick
+	local old, old2, oldKick
+
+	AntiKick = vape.Categories.Utility:CreateModule({
+		Name = "AntiKick",
+		Function = function(callback)
+			if callback then 
+				if not hookmetamethod then
+					notif("AntiKick", "This feature requires hookmetamethod! (missing function)", 10, "warning")
+					return
+				end
+
+				if hookfunction then
+					oldKick = hookfunction(lplr.Kick, function()
+						notif("AntiKick", "Prevented a kick from the client!", 5, "warning")
+					end)
+				end
+
+				old = hookmetamethod(game, "__index", function(self, method)
+					if self == lplr and method:lower() == "kick" then
+						return error("Expected ':' not '.' calling member function Kick", 2)
+					end
+
+					return old(self, method)
+				end)
+
+				old2 = hookmetamethod(game, "__namecall", function(self, ...)
+					if self == lplr and getnamecallmethod():lower() == "kick" then
+						return
+					end
+
+					return old2(self, ...)
+				end)
+			else
+				if oldKick then 
+					hookfunction(lplr.Kick, oldKick)
+				end
+
+				if old then 
+					hookmetamethod(game, "__index", old)
+				end
+
+				if old2 then 
+					hookmetamethod(game, "__namecall", old2)
+				end
+			end
+		end,
+		Tooltip = "Prevents client side kicks."
+	})
+end)
 	
 run(function()
 	local AntiRagdoll
