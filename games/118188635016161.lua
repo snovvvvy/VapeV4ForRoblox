@@ -195,7 +195,7 @@ run(function()
 					Added(obj)
 				end
 
-				AutoParry:Clean(RunService.Heartbeat:Connect(function()
+				AutoParry:Clean(runService.Heartbeat:Connect(function()
 					for obj in pairs(trackedBullets) do
 						if not obj.Parent then
 							trackedBullets[obj] = nil
