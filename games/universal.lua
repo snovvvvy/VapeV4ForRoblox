@@ -6180,7 +6180,29 @@ run(function()
 					return
 				end
 
-				
+				pcall(function() 
+					if hookfunction then
+						oldKick = hookfunction(lplr.Kick, function()
+							notif("AntiKick", "Prevented a kick from the client!", 5, "warning")
+						end)
+					end
+	
+					old = hookmetamethod(game, "__index", function(self, method)
+						if self == lplr and method:lower() == "kick" then
+							return
+						end
+	
+						return old(self, method)
+					end)
+	
+					old2 = hookmetamethod(game, "__namecall", function(self, ...)
+						if self == lplr and getnamecallmethod():lower() == "kick" then
+							return
+						end
+	
+						return old2(self, ...)
+					end)
+				end)
 			else
 				if oldKick then 
 					hookfunction(lplr.Kick, oldKick)
