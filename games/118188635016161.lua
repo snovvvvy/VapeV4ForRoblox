@@ -163,39 +163,61 @@ run(function()
 			if callback then
 				table.clear(trackedBullets)
 
-                if not keyMap[parryKeybind] then 
-                    notif("AutoParry", "Unsupported Parry Keybind! (try changing your parry keybind to something else)", 10, "warning")
-                    AutoParry:Toggle()
-                    return
-                end
-
-				AutoParry:Clean(collectionService:GetInstanceAddedSignal("RaygunBullet"):Connect(Added))
-				
-                for _, obj in collectionService:GetTagged("RaygunBullet") do
-					Added(obj)
-				end
-
-				AutoParry:Clean(runService.Heartbeat:Connect(function()
-					for obj in pairs(trackedBullets) do
-						if not obj.Parent then
-							trackedBullets[obj] = nil
-							continue
-						end
-
-						if isNearCharacter(obj) and math.random() * 100 <= Chance.Value then
-                            local key = keyMap[parryKeybind]
-
-                            if key then
-                                keyclick(key)     
+                if Mode.Value == "Projectiles" then 
+                    if not keyMap[parryKeybind] then 
+                        notif("AutoParry", "Unsupported Parry Keybind! (try changing your parry keybind or use all mode.)", 10, "warning")
+                        AutoParry:Toggle()
+                        return
+                    end
+    
+                    AutoParry:Clean(collectionService:GetInstanceAddedSignal("RaygunBullet"):Connect(Added))
+                    
+                    for _, obj in collectionService:GetTagged("RaygunBullet") do
+                        Added(obj)
+                    end
+    
+                    AutoParry:Clean(runService.Heartbeat:Connect(function()
+                        for obj in pairs(trackedBullets) do
+                            if not obj.Parent then
+                                trackedBullets[obj] = nil
+                                continue
                             end
-						end
-					end
-				end))
+    
+                            if isNearCharacter(obj) and math.random() * 100 <= Chance.Value then
+                                local key = keyMap[parryKeybind]
+    
+                                if key then
+                                    keyclick(key)     
+                                end
+                            end
+                        end
+                    end))
+                else
+                    repeat
+                        if math.random() * 100 <= Chance.Value then
+                            lplr:SetAttribute("ParryActiveTime", 10)
+                        else
+                            lplr:SetAttribute("ParryActiveTime", 0)
+                        end
+                        task.wait(0.1)
+                    until not AutoParry.Enabled
+                end
 			else
 				table.clear(trackedBullets)
 			end
 		end,
 		Tooltip = "Automatically parries ONLY projectiles."
+	})
+
+    Mode = AutoParry:CreateDropdown({
+		Name = "Mode",
+		List = {"Projectiles", "All"},
+        Function = function() 
+            if AutoParry.Enabled then 
+                AutoParry:Toggle()
+                AutoParry:Toggle()
+            end
+        end
 	})
 
 	Distance = AutoParry:CreateSlider({
@@ -214,52 +236,6 @@ run(function()
         end,
 		Default = 100
 	})
-end)
-
-run(function() 
-	local ParryDuration
-    local Duration
-    local busy
-
-	ParryDuration = vape.Categories.Blatant:CreateModule({
-		Name = "ParryDuration",
-		Function = function(callback)
-			if callback then 
-                busy = false
-
-                ParryDuration:Clean(lplr:GetAttributeChangedSignal("ParryActiveTime"):Connect(function()
-                    local value = lplr:GetAttribute("ParryActiveTime")
-
-                    if busy then return end
-                    if value <= 0 then return end
-
-                    busy = true
-
-                    lplr:SetAttribute("ParryActiveTime", Duration.Value)
-
-                    task.spawn(function()
-                        task.wait(Duration.Value)
-
-                        repeat
-                            task.wait()
-                        until (lplr:GetAttribute("ParryActiveTime") or 0) <= 0
-
-                        busy = false
-                    end)
-                end))
-			else
-
-			end
-		end,
-		Tooltip = "Sets your parry duration to x amount of seconds"
-	})
-
-    Duration = ParryDuration:CreateSlider({
-        Name = "Duration",
-        Min = 0,
-        Max = 60,
-        Default = 3
-    })
 end)
 
 run(function() 
