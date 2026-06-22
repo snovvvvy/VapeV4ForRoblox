@@ -217,7 +217,7 @@ run(function()
                 AutoParry:Toggle()
             end
         end,
-        Tooltip = "Projectiles - Perfect parries projectiles\nImpulse - Same as velocity while using forces instead"
+        Tooltip = "Projectiles - Perfect parries projectiles\nAll - parries all attacks"
 	})
 
 	Chance = AutoParry:CreateSlider({
