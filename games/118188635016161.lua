@@ -122,26 +122,6 @@ run(function()
 	end
 
 	vape:Clean(workspace.DescendantAdded:Connect(tagObj))
-
-	local oldUninject = vape.Uninject
-
-	vape.Uninject = function(...)
-		for obj, tags in pairs(taggedObjects) do
-			if obj then
-				for tagName in pairs(tags) do
-					pcall(function()
-						if collectionService:HasTag(obj, tagName) then
-							collectionService:RemoveTag(obj, tagName)
-						end
-					end)
-				end
-			end
-		end
-
-		table.clear(taggedObjects)
-
-		oldUninject(...)
-	end
 end)
 
 run(function()
