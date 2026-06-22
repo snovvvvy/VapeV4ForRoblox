@@ -6205,7 +6205,8 @@ run(function()
 				end)
 			else
 				if oldKick then 
-					hookfunction(lplr.Kick, oldKick)
+					pcall(function() 
+						hookfunction(lplr.Kick, oldKick)
 				end
 
 				if old then 

@@ -124,100 +124,39 @@ run(function()
 	vape:Clean(workspace.DescendantAdded:Connect(tagObj))
 end)
 
+run(function() 
+    local TargetedEnemy = lplr:FindFirstChild("TargetedEnemy")
+
+    TargetedEnemy:GetPropertyChangedSignal("Value"):Connect(function() 
+        if TargetedEnemy.Value ~= nil then 
+            targetinfo.Targets[TargetedEnemy.Value] = tick() + 1
+        end
+    end)
+end)
+
 run(function()
 	local AutoParry
 	local Chance
-
-	local trackedBullets = {}
-
-    local parryKeybind = lplr:GetAttribute("ParryKeybind")
-
-	local function isNearCharacter(obj)
-		if not entitylib.isAlive then
-			return false
-        end
-
-		local pos = obj:IsA("Model") and obj:GetPivot().Position or obj.Position
-
-		return (pos - entitylib.character.RootPart.Position).Magnitude <= 3
-	end
-
-	local function Added(obj)
-		trackedBullets[obj] = true
-
-		AutoParry:Clean(obj.Destroying:Connect(function()
-			trackedBullets[obj] = nil
-		end))
-
-		AutoParry:Clean(obj.AncestryChanged:Connect(function(_, parent)
-			if not parent then
-				trackedBullets[obj] = nil
-			end
-		end))
-	end
+    local PerfectParry
 
 	AutoParry = vape.Categories.Blatant:CreateModule({
 		Name = "AutoParry",
 		Function = function(callback)
 			if callback then
-				table.clear(trackedBullets)
-
-                if Mode.Value == "Projectiles" then 
-                    if not keyMap[parryKeybind] then 
-                        notif("AutoParry", "Unsupported Parry Keybind! (try changing your parry keybind or use all mode.)", 10, "warning")
-                        AutoParry:Toggle()
-                        return
+                repeat
+                    if math.random() * 100 <= Chance.Value then
+                        lplr:SetAttribute("ParryActiveTime", 0.3)
+                    else
+                        lplr:SetAttribute("ParryActiveTime", 0)
                     end
-    
-                    AutoParry:Clean(collectionService:GetInstanceAddedSignal("RaygunBullet"):Connect(Added))
-                    
-                    for _, obj in collectionService:GetTagged("RaygunBullet") do
-                        Added(obj)
+                    if PerfectParry.Enabled then 
+                        entitylib.character.Character:SetAttribute("PerfectParrying", true)
                     end
-    
-                    AutoParry:Clean(runService.Heartbeat:Connect(function()
-                        for obj in pairs(trackedBullets) do
-                            if not obj.Parent then
-                                trackedBullets[obj] = nil
-                                continue
-                            end
-    
-                            if isNearCharacter(obj) and math.random() * 100 <= Chance.Value then
-                                local key = keyMap[parryKeybind]
-    
-                                if key then
-                                    keyclick(key)     
-                                end
-                            end
-                        end
-                    end))
-                else
-                    repeat
-                        if math.random() * 100 <= Chance.Value then
-                            lplr:SetAttribute("ParryActiveTime", 0.3)
-                        else
-                            lplr:SetAttribute("ParryActiveTime", 0)
-                        end
-                        task.wait(0.1)
-                    until not AutoParry.Enabled
-                end
-			else
-				table.clear(trackedBullets)
+                    task.wait(0.1)
+                until not AutoParry.Enabled
 			end
 		end,
 		Tooltip = "Automatically parries attacks."
-	})
-
-    Mode = AutoParry:CreateDropdown({
-		Name = "Mode",
-		List = {"Projectiles", "All"},
-        Function = function() 
-            if AutoParry.Enabled then 
-                AutoParry:Toggle()
-                AutoParry:Toggle()
-            end
-        end,
-        Tooltip = "Projectiles - Perfect parries projectiles [BETA]\nAll - parries all attacks"
 	})
 
 	Chance = AutoParry:CreateSlider({
@@ -228,6 +167,10 @@ run(function()
             return '%'
         end,
 		Default = 100
+	})
+
+    PerfectParry = AutoParry:CreateToggle({
+		Name = "Perfect Parry",
 	})
 end)
 
