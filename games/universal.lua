@@ -6204,18 +6204,19 @@ run(function()
 					end)
 				end)
 			else
-				if oldKick then 
-					pcall(function() 
+				pcall(function() 
+					if oldKick then 
 						hookfunction(lplr.Kick, oldKick)
-				end
+					end
 
-				if old then 
-					hookmetamethod(game, "__index", old)
-				end
+					if old then 
+						hookmetamethod(game, "__index", old)
+					end
 
-				if old2 then 
-					hookmetamethod(game, "__namecall", old2)
-				end
+					if old2 then 
+						hookmetamethod(game, "__namecall", old2)
+					end
+				end)
 			end
 		end,
 		Tooltip = "Prevents client side kicks."
