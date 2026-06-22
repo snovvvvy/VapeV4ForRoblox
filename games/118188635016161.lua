@@ -124,16 +124,6 @@ run(function()
 	vape:Clean(workspace.DescendantAdded:Connect(tagObj))
 end)
 
-run(function() 
-    local TargetedEnemy = lplr:FindFirstChild("TargetedEnemy")
-
-    TargetedEnemy:GetPropertyChangedSignal("Value"):Connect(function() 
-        if TargetedEnemy.Value ~= nil then 
-            targetinfo.Targets[TargetedEnemy.Value] = tick() + 1
-        end
-    end)
-end)
-
 run(function()
 	local AutoParry
 	local Chance
