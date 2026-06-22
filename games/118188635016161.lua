@@ -195,7 +195,7 @@ run(function()
 				table.clear(trackedBullets)
 			end
 		end,
-		Tooltip = "Automatically parries attacks."
+		Tooltip = "Automatically parries ONLY projectiles."
 	})
 
 	Distance = AutoParry:CreateSlider({
@@ -214,6 +214,52 @@ run(function()
         end,
 		Default = 100
 	})
+end)
+
+run(function() 
+	local ParryDuration
+    local Duration
+    local busy
+
+	ParryDuration = vape.Categories.Blatant:CreateModule({
+		Name = "ParryDuration",
+		Function = function(callback)
+			if callback then 
+                busy = false
+
+                ParryDuration:Clean(lplr:GetAttributeChangedSignal("ParryActiveTime"):Connect(function()
+                    local value = lplr:GetAttribute("ParryActiveTime")
+
+                    if busy then return end
+                    if value <= 0 then return end
+
+                    busy = true
+
+                    lplr:SetAttribute("ParryActiveTime", Duration.Value)
+
+                    task.spawn(function()
+                        task.wait(Duration.Value)
+
+                        repeat
+                            task.wait()
+                        until (lplr:GetAttribute("ParryActiveTime") or 0) <= 0
+
+                        busy = false
+                    end)
+                end))
+			else
+
+			end
+		end,
+		Tooltip = "Sets your parry duration to x amount of seconds"
+	})
+
+    Duration = ParryDuration:CreateSlider({
+        Name = "Duration",
+        Min = 0,
+        Max = 60,
+        Default = 3
+    })
 end)
 
 run(function() 
