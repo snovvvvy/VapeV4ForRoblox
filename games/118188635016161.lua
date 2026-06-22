@@ -195,7 +195,7 @@ run(function()
                 else
                     repeat
                         if math.random() * 100 <= Chance.Value then
-                            lplr:SetAttribute("ParryActiveTime", 10)
+                            lplr:SetAttribute("ParryActiveTime", 0.3)
                         else
                             lplr:SetAttribute("ParryActiveTime", 0)
                         end
