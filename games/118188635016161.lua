@@ -122,7 +122,7 @@ end)
 run(function() 
 	local DisableEffects
 
-	local EffectsFolder = workspace:WaitForChild("EffectsFolder")
+	local EffectsFolder = workspace:FindFirstChild("EffectsFolder")
 
 	local function remove(instance)
 		task.defer(function()
@@ -136,6 +136,12 @@ run(function()
 		Name = "DisableEffects",
 		Function = function(callback)
 			if callback then 
+				if not EffectsFolder then 
+					notif("DisableEffects", "Couldn't find the game's effects folder!", 10, "warning")
+					DisableEffects:Toggle()
+					return
+				end
+
 				for _, obj in ipairs(EffectsFolder:GetDescendants()) do
 					remove(obj)
 				end
