@@ -126,7 +126,6 @@ end)
 
 run(function()
 	local AutoParry
-	local Distance
 	local Chance
 
 	local trackedBullets = {}
@@ -140,7 +139,7 @@ run(function()
 
 		local pos = obj:IsA("Model") and obj:GetPivot().Position or obj.Position
 
-		return (pos - entitylib.character.RootPart.Position).Magnitude <= Distance.Value
+		return (pos - entitylib.character.RootPart.Position).Magnitude <= 3
 	end
 
 	local function Added(obj)
@@ -206,7 +205,7 @@ run(function()
 				table.clear(trackedBullets)
 			end
 		end,
-		Tooltip = "Automatically parries ONLY projectiles."
+		Tooltip = "Automatically parries attacks."
 	})
 
     Mode = AutoParry:CreateDropdown({
@@ -217,14 +216,8 @@ run(function()
                 AutoParry:Toggle()
                 AutoParry:Toggle()
             end
-        end
-	})
-
-	Distance = AutoParry:CreateSlider({
-		Name = "Distance",
-		Min = 1,
-		Max = 25,
-		Default = 2
+        end,
+        Tooltip = "Projectiles - Perfect parries projectiles\nImpulse - Same as velocity while using forces instead"
 	})
 
 	Chance = AutoParry:CreateSlider({
@@ -255,7 +248,10 @@ run(function()
                 lplr:SetAttribute("Weapon", oldWeapon)
 			end
 		end,
-		Tooltip = "Spoofs your current weapon to any weapon."
+		Tooltip = "Spoofs your current weapon to any weapon.",
+        ExtraText = function()
+			return Weapon.Value
+		end
 	})
 
     Weapon = SpoofWeapon:CreateDropdown({
