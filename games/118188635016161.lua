@@ -42,6 +42,10 @@ local function notif(...)
 	return vape:CreateNotification(...)
 end
 
+for _, v in { "Reach", "Invisible", "Disabler", "Killaura", "MurderMystery", "SilentAim", "AimAssist" } do
+	vape:Remove(v)
+end
+
 run(function()
 	local AutoParry
 	local Chance
