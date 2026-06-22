@@ -125,7 +125,7 @@ run(function()
 
 	local oldUninject = vape.Uninject
 
-	vape.Uninject = function()
+	vape.Uninject = function(...)
 		for obj, tags in pairs(taggedObjects) do
 			if obj then
 				for tagName in pairs(tags) do
@@ -140,7 +140,7 @@ run(function()
 
 		table.clear(taggedObjects)
 
-		oldUninject()
+		oldUninject(...)
 	end
 end)
 
