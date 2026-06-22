@@ -118,3 +118,31 @@ run(function()
         end,
     })
 end)
+
+run(function() 
+	local DisableEffects
+
+	local EffectsFolder = workspace:WaitForChild("EffectsFolder")
+
+	local function remove(instance)
+		task.defer(function()
+			if instance.Parent and not instance:IsA("Folder") then
+				instance:Destroy()
+			end
+		end)
+	end
+
+	DisableEffects = vape.Categories.World:CreateModule({
+		Name = "DisableEffects",
+		Function = function(callback)
+			if callback then 
+				for _, obj in ipairs(EffectsFolder:GetDescendants()) do
+					remove(obj)
+				end
+
+				DisableEffects:Clean(EffectsFolder.DescendantAdded:Connect(remove))
+			end
+		end,
+		Tooltip = "Attempts to destroy all the effects in the game. [BETA]"
+	})
+end)
