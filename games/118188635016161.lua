@@ -149,7 +149,7 @@ run(function()
                     else
                         lplr:SetAttribute("ParryActiveTime", 0)
                     end
-                    entitylib.character.Character:SetAttribute("PerfectParrying", PerfectParry.Value)
+                    entitylib.character.Character:SetAttribute("PerfectParrying", PerfectParry.Enabled)
                     task.wait(0.1)
                 until not AutoParry.Enabled
 			end
