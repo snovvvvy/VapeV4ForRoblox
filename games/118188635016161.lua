@@ -235,3 +235,35 @@ run(function()
 		Default = 100
 	})
 end)
+
+run(function() 
+	local SpoofWeapon
+    local Weapon
+
+    local oldWeapon
+
+	SpoofWeapon = vape.Categories.Blatant:CreateModule({
+		Name = "SpoofWeapon",
+		Function = function(callback)
+			if callback then 
+                oldWeapon = lplr:GetAttribute("Weapon")
+
+                lplr:SetAttribute("Weapon", Weapon.Value)
+            else
+                lplr:SetAttribute("Weapon", oldWeapon)
+			end
+		end,
+		Tooltip = "Spoofs your current weapon to any weapon."
+	})
+
+    Weapon = SpoofWeapon:CreateDropdown({
+        Name = "Weapon",
+        List = {"Buster", "Katana", "Staff", "Nothing"},
+        Function = function() 
+            if SpoofWeapon.Enabled then 
+                SpoofWeapon:Toggle()
+                SpoofWeapon:Toggle()
+            end
+        end,
+    })
+end)
