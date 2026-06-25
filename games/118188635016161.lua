@@ -135,6 +135,7 @@ run(function() -- ac bypass by koya
 	local goofinator = replicatedStorage:FindFirstChild("GoofinatorActivationSequence")
 	if goofinator then
 		goofinator:Destroy()
+		print("destroyed goofinator")
 	end
 end)
 
