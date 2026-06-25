@@ -131,11 +131,12 @@ run(function()
 end)
 
 run(function() -- ac bypass by koya
-
 	local goofinator = replicatedStorage:FindFirstChild("GoofinatorActivationSequence")
 	if goofinator then
 		goofinator:Destroy()
-		print("destroyed goofinator")
+		notif("Vape", "Successfully bypassed the anticheat, thanks koya!", 10)
+	else
+		notif("Vape", "Couldn't bypass the anticheat. Use at your own risk.", 10, "warning")
 	end
 end)
 
@@ -233,30 +234,32 @@ run(function()
 	local Expand
 	local Transparency
 	local modified = {}
+
+	local function Added(v) 
+		local part = v:FindFirstChild("HumanoidRootPart") or v.PrimaryPart
+
+		if not modified[part] then
+			modified[part] = part.Size
+		end
+
+		part.Size = modified[part] + Vector3.new(Expand.Value, Expand.Value, Expand.Value)
+	end
 	
 	HitBoxes = vape.Categories.Blatant:CreateModule({
 		Name = 'HitBoxes',
 		Function = function(callback)
 			if callback then
-				repeat
-					for _, v in collectionService:GetTagged("Enemy") do
-						local part = v:FindFirstChild("HumanoidRootPart") or v.PrimaryPart
+				HitBoxes:Clean(collectionService:GetInstanceAddedSignal("Enemy"):Connect(Added))
 
-						if not modified[part] then
-							modified[part] = {part.Size, part.Transparency}
-						end
-
-						part.Size = Vector3.new(Expand.Value, modified[part][1].Y, Expand.Value)
-						part.Transparency = Transparency.Value
-					end
-	
-					task.wait(0.1)
-				until not HitBoxes.Enabled
+				for _, obj in ipairs(collectionService:GetTagged("Enemy")) do
+					Added(obj)
+				end
 			else
 				for i, v in modified do
 					i.Size = v[1]
 					i.Transparency = v[2]
 				end
+
 				table.clear(modified)
 			end
 		end,
@@ -266,7 +269,7 @@ run(function()
 	Expand = HitBoxes:CreateSlider({
 		Name = 'Expand amount',
 		Min = 0,
-		Max = 100,
+		Max = 75,
 		Suffix = function(val)
 			return val == 1 and 'stud' or 'studs'
 		end
@@ -277,7 +280,7 @@ run(function()
 		Min = 0,
 		Max = 1,
 		Default = 0.75,
-		Decimal = 10
+		Decimal = 100
 	})
 end)
 
