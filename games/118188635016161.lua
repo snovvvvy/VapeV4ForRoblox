@@ -44,10 +44,10 @@ local function notif(...)
 end
 
 run(function()
-	local modules = replicatedStorage:FindFirstChild("Modules")
+	local modules = replicatedStorage.Modules
 
 	parry = {
-		GlobalFunctions = require(modules:FindFirstChild("GlobalFunctions"))
+		GlobalFunctions = require(modules.GlobalFunctions)
 	}
 
 	vape:Clean(function()
