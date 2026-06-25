@@ -235,18 +235,23 @@ run(function()
 	local Transparency
 	local modified = {}
 
-	local function Added(v) 
+	local function Added(v)
 		local part = v:FindFirstChild("HumanoidRootPart") or v.PrimaryPart
+		if not part then return end
 
 		if not modified[part] then
-			modified[part] = part.Size
+			modified[part] = {
+				Size = part.Size,
+				Transparency = part.Transparency
+			}
 		end
 
-		part.Size = modified[part] + Vector3.new(Expand.Value, Expand.Value, Expand.Value)
+		part.Size = modified[part].Size + Vector3.new(Expand.Value, Expand.Value, Expand.Value)
+		part.Transparency = Transparency.Value
 	end
-	
+
 	HitBoxes = vape.Categories.Blatant:CreateModule({
-		Name = 'HitBoxes',
+		Name = "HitBoxes",
 		Function = function(callback)
 			if callback then
 				repeat
@@ -256,25 +261,27 @@ run(function()
 					task.wait(0.1)
 				until not HitBoxes.Enabled
 			else
-				for i, v in modified do
-					i.Size = v[1]
-					i.Transparency = v[2]
+				for part, original in pairs(modified) do
+					if part and part.Parent then
+						part.Size = original.Size
+						part.Transparency = original.Transparency
+					end
 				end
 
 				table.clear(modified)
 			end
 		end,
-		Tooltip = 'Expands enemy hitboxes.'
+		Tooltip = "Expands enemy hitboxes."
 	})
 
 	Expand = HitBoxes:CreateSlider({
-		Name = 'Expand amount',
+		Name = "Expand amount",
 		Min = 0,
 		Max = 75,
 		Suffix = function(val)
-			return val == 1 and 'stud' or 'studs'
+			return val == 1 and "stud" or "studs"
 		end,
-		Function = function() 
+		Function = function()
 			if HitBoxes.Enabled then
 				HitBoxes:Toggle()
 				HitBoxes:Toggle()
@@ -283,12 +290,12 @@ run(function()
 	})
 
 	Transparency = HitBoxes:CreateSlider({
-		Name = 'Transparency',
+		Name = "Transparency",
 		Min = 0,
 		Max = 1,
 		Default = 0.75,
 		Decimal = 100,
-		Function = function() 
+		Function = function()
 			if HitBoxes.Enabled then
 				HitBoxes:Toggle()
 				HitBoxes:Toggle()
