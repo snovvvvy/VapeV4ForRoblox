@@ -277,7 +277,7 @@ run(function()
 	Expand = HitBoxes:CreateSlider({
 		Name = "Expand amount",
 		Min = 0,
-		Max = 75,
+		Max = 35,
 		Suffix = function(val)
 			return val == 1 and "stud" or "studs"
 		end,
