@@ -37,10 +37,23 @@ local getcustomasset = vape.Libraries.getcustomasset
 local uipallet = vape.Libraries.uipallet
 local entitylib = vape.Libraries.entity
 local sessioninfo = vape.Libraries.sessioninfo
+local parry = {}
 
 local function notif(...)
 	return vape:CreateNotification(...)
 end
+
+run(function()
+	local modules = replicatedStorage:FindFirstChild("Modules")
+
+	parry = {
+		GlobalFunctions = require(modules:FindFirstChild("GlobalFunctions"))
+	}
+
+	vape:Clean(function()
+		table.clear(parry)
+	end)
+end)
 
 for _, v in { "Reach", "Invisible", "Disabler", "Killaura", "MurderMystery", "SilentAim", "AimAssist" } do
 	vape:Remove(v)
@@ -50,20 +63,30 @@ run(function()
 	local AutoParry
 	local Chance
     local PerfectParry
+	local old
 
 	AutoParry = vape.Categories.Blatant:CreateModule({
 		Name = "AutoParry",
 		Function = function(callback)
 			if callback then
+				old = GlobalFunctions.GPP
                 repeat
                     if math.random() * 100 <= Chance.Value then
                         lplr:SetAttribute("ParryActiveTime", 0.3)
                     else
                         lplr:SetAttribute("ParryActiveTime", 0)
                     end
-                    entitylib.character.Character:SetAttribute("PerfectParrying", PerfectParry.Enabled)
-                    task.wait(0.05)
+
+					GlobalFunctions.GPP = function(...) 
+						return PerfectParry.Enabled
+					end
+                    
+					task.wait(0.05)
                 until not AutoParry.Enabled
+			else
+				if old then
+					GlobalFunctions.GPP = old
+				end
 			end
 		end,
 		Tooltip = "Automatically parries attacks."
