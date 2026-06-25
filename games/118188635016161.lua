@@ -69,7 +69,7 @@ run(function()
 		Name = "AutoParry",
 		Function = function(callback)
 			if callback then
-				old = GlobalFunctions.GPP
+				old = parry.GlobalFunctions.GPP
                 repeat
                     if math.random() * 100 <= Chance.Value then
                         lplr:SetAttribute("ParryActiveTime", 0.3)
@@ -77,7 +77,7 @@ run(function()
                         lplr:SetAttribute("ParryActiveTime", 0)
                     end
 
-					GlobalFunctions.GPP = function(...) 
+					parry.GlobalFunctions.GPP = function(...) 
 						return PerfectParry.Enabled
 					end
                     
@@ -85,7 +85,7 @@ run(function()
                 until not AutoParry.Enabled
 			else
 				if old then
-					GlobalFunctions.GPP = old
+					parry.GlobalFunctions.GPP = old
 				end
 			end
 		end,
