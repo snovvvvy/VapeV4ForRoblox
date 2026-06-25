@@ -39,9 +39,84 @@ local entitylib = vape.Libraries.entity
 local sessioninfo = vape.Libraries.sessioninfo
 local parry = {}
 
+local EnemyFolder = workspace:FindFirstChild("EnemyFolder")
+
 local function notif(...)
 	return vape:CreateNotification(...)
 end
+
+run(function()
+	local taggedObjects = {}
+
+	local function tag(obj, tagName)
+		if collectionService:HasTag(obj, tagName) then
+			return
+		end
+
+		if vape.ThreadFix then
+			setthreadidentity(8)
+		end
+
+		pcall(function()
+			collectionService:AddTag(obj, tagName)
+
+			taggedObjects[obj] = {tagName}
+
+			obj.Destroying:Connect(function() 
+				taggedObjects[obj] = nil
+			end)
+		end)
+	end
+
+	local function isValidWorldObject(obj)
+		if not obj then return false end
+
+		if not obj:IsDescendantOf(workspace) then
+			return false
+		end
+
+		if lplr then
+			local backpack = lplr:FindFirstChild("Backpack")
+			local character = lplr.Character
+
+			if backpack and obj:IsDescendantOf(backpack) then
+				return false
+			end
+
+			if character and obj:IsDescendantOf(character) then
+				return false
+			end
+		end
+
+		return true
+	end
+
+	local function tagObj(obj)
+		if not obj or not obj.Parent then return end
+		if not isValidWorldObject(obj) then return end
+
+		local name = obj.Name
+
+		if obj.Parent == EnemyFolder then
+			tag(obj, "Enemy")
+		end
+	end
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		tagObj(obj)
+	end
+
+	vape:Clean(workspace.DescendantAdded:Connect(tagObj))
+	vape:Clean(function() 
+		for obj, tags in pairs(taggedObjects) do
+			for _, tagName in ipairs(tags) do
+				pcall(function()
+					collectionService:RemoveTag(obj, tagName)
+				end)
+			end
+		end
+	end)
+end)
 
 run(function()
 	local modules = replicatedStorage.Modules
@@ -142,6 +217,59 @@ run(function()
             end
         end,
     })
+end)
+
+run(function()
+	local HitBoxes
+	local Expand
+	local Transparency
+	local modified = {}
+	
+	HitBoxes = vape.Categories.Blatant:CreateModule({
+		Name = 'HitBoxes',
+		Function = function(callback)
+			if callback then
+				repeat
+					for _, v in collectionService:GetTagged("Enemy") do
+						local part = v:FindFirstChild("HumanoidRootPart") or v.PrimaryPart
+
+						if not modified[part] then
+							modified[part] = {part.Size, part.Transparency}
+						end
+
+						part.Size = Vector3.new(Expand.Value, Expand.Value, Expand.Value)
+						part.Transparency = Transparency.Value
+					end
+	
+					task.wait(0.1)
+				until not HitBoxes.Enabled
+			else
+				for i, v in modified do
+					i.Size = v[1]
+					i.Transparency = v[2]
+				end
+				table.clear(modified)
+			end
+		end,
+		Tooltip = 'Expands enemy hitboxes.'
+	})
+
+	Expand = HitBoxes:CreateSlider({
+		Name = 'Expand amount',
+		Min = 0,
+		Max = 100,
+		Suffix = function(val)
+			return val == 1 and 'stud' or 'studs'
+		end
+	})
+
+	Transparency = HitBoxes:CreateSlider({
+		Name = 'Transparency',
+		Min = 0,
+		Max = 1,
+		Default = 0.75,
+		Decimal = 10
+	})
 end)
 
 run(function() 
