@@ -63,13 +63,13 @@ run(function()
 	local AutoParry
 	local Chance
     local PerfectParry
-	local old
+	--local old
 
 	AutoParry = vape.Categories.Blatant:CreateModule({
 		Name = "AutoParry",
 		Function = function(callback)
 			if callback then
-				old = parry.GlobalFunctions.GPP
+				--old = parry.GlobalFunctions.GPP
                 repeat
                     if math.random() * 100 <= Chance.Value then
                         lplr:SetAttribute("ParryActiveTime", 0.3)
@@ -77,16 +77,16 @@ run(function()
                         lplr:SetAttribute("ParryActiveTime", 0)
                     end
 
-					parry.GlobalFunctions.GPP = function(...) 
-						return PerfectParry.Enabled
-					end
+					--parry.GlobalFunctions.GPP = function(...) 
+					--	return PerfectParry.Enabled
+					--end
                     
 					task.wait(0.05)
                 until not AutoParry.Enabled
 			else
-				if old then
-					parry.GlobalFunctions.GPP = old
-				end
+				--if old then
+				--	parry.GlobalFunctions.GPP = old
+				--end
 			end
 		end,
 		Tooltip = "Automatically parries attacks."
@@ -105,6 +105,8 @@ run(function()
     PerfectParry = AutoParry:CreateToggle({
 		Name = "Perfect Parry",
 	})
+
+	PerfectParry.Object.Visible = false
 end)
 
 run(function() 
