@@ -272,6 +272,12 @@ run(function()
 		Max = 75,
 		Suffix = function(val)
 			return val == 1 and 'stud' or 'studs'
+		end,
+		Function = function() 
+			if HitBoxes.Enabled then
+				HitBoxes:Toggle()
+				HitBoxes:Toggle()
+			end
 		end
 	})
 
@@ -280,7 +286,13 @@ run(function()
 		Min = 0,
 		Max = 1,
 		Default = 0.75,
-		Decimal = 100
+		Decimal = 100,
+		Function = function() 
+			if HitBoxes.Enabled then
+				HitBoxes:Toggle()
+				HitBoxes:Toggle()
+			end
+		end
 	})
 end)
 
