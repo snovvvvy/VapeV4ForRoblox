@@ -249,11 +249,12 @@ run(function()
 		Name = 'HitBoxes',
 		Function = function(callback)
 			if callback then
-				HitBoxes:Clean(collectionService:GetInstanceAddedSignal("Enemy"):Connect(Added))
-
-				for _, obj in ipairs(collectionService:GetTagged("Enemy")) do
-					Added(obj)
-				end
+				repeat
+					for _, obj in ipairs(collectionService:GetTagged("Enemy")) do
+						Added(obj)
+					end
+					task.wait(0.1)
+				until not HitBoxes.Enabled
 			else
 				for i, v in modified do
 					i.Size = v[1]
