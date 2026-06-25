@@ -131,7 +131,6 @@ run(function()
 end)
 
 run(function() -- ac bypass by koya
-	playerGui:FindFirstChild("MainGui"):FindFirstChild("MainLocal"):Destroy()
 
 	local goofinator = replicatedStorage:FindFirstChild("GoofinatorActivationSequence")
 	if goofinator then
