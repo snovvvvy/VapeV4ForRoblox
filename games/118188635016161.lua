@@ -356,6 +356,7 @@ run(function()
 		Min = 0,
 		Max = 120,
 		Suffix = function() return "Hz" end,
+		Default = 30,
 		Tooltip = "How many times a second you want to fire the overcharge refill remote."
 	})
 end)
