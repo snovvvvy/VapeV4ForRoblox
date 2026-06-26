@@ -261,6 +261,8 @@ end)
 run(function()
 	local HitBoxes
 	local Expand
+	local ExpandY
+	local Y
 	local Transparency
 	local modified = {}
 
@@ -275,7 +277,7 @@ run(function()
 			}
 		end
 
-		part.Size = modified[part].Size + Vector3.new(Expand.Value, 3, Expand.Value)
+		part.Size = modified[part].Size + Vector3.new(Expand.Value, ExpandY.Enabled and Y.Value or 3, Expand.Value)
 		part.Transparency = Transparency.Value
 	end
 
@@ -315,7 +317,37 @@ run(function()
 				HitBoxes:Toggle()
 				HitBoxes:Toggle()
 			end
-		end
+		end,
+		Default = 35
+	})
+
+	ExpandY = HitBoxes:CreateToggle({
+		Name = "Expand Y",
+		Function = function(val)
+			if HitBoxes.Enabled then
+				HitBoxes:Toggle()
+				HitBoxes:Toggle()
+			end
+			Y.Object.Visible = val
+		end,
+		Darker = true
+	})
+	
+	Y = HitBoxes:CreateSlider({
+		Name = "Expand amount (Y)",
+		Min = 0,
+		Max = 35,
+		Suffix = function(val)
+			return val == 1 and "stud" or "studs"
+		end,
+		Function = function()
+			if HitBoxes.Enabled then
+				HitBoxes:Toggle()
+				HitBoxes:Toggle()
+			end
+		end,
+		Default = 3,
+		Darker = true
 	})
 
 	Transparency = HitBoxes:CreateSlider({
