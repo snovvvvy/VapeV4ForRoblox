@@ -273,7 +273,7 @@ run(function()
 			}
 		end
 
-		part.Size = modified[part].Size + Vector3.new(Expand.Value, Expand.Value, Expand.Value)
+		part.Size = modified[part].Size + Vector3.new(Expand.Value, 3, Expand.Value)
 		part.Transparency = Transparency.Value
 	end
 
