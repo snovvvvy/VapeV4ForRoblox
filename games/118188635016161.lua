@@ -438,6 +438,7 @@ run(function()
 	Song = NewSong:CreateDropdown({
 		Name = "Song",
 		List = GetSongs(),
+		Default = "StadiumRave"
 	})
 
 	Volume = NewSong:CreateSlider({
@@ -457,7 +458,6 @@ run(function()
 			end
 		end,
 		Tooltip = "Increase the bass!",
-		Default = "StadiumRave"
 	})
 
 	PlaybackSpeed = NewSong:CreateSlider({
