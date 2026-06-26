@@ -403,11 +403,11 @@ run(function()
 	end
 
 	local function GetSongs()
-		local list = {}
+		local list = {"StadiumRave"}
 
 		if songs then
 			for _, v in ipairs(songs:GetChildren()) do
-				if v:IsA("Sound") then
+				if v:IsA("Sound") and not list[v.Name] then
 					table.insert(list, v.Name)
 				end
 			end
