@@ -339,7 +339,7 @@ run(function()
 
 	local LocalEvent = Remotes:FindFirstChild("LocalEvent")
 
-	AutoOverCharge = vape.Categories.Blatant({
+	AutoOverCharge = vape.Categories.Blatant:CreateModule({
 		Name = "AutoOverCharge",
 		Function = function(callback) 
 			if callback then 
