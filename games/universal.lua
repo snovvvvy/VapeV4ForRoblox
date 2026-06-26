@@ -417,6 +417,15 @@ run(function()
 			v(plr, plrtag, rich)
 		end
 
+		if self:get(plr) == 0 then
+			plrtag = {
+				{
+					text = "VAPE USER",
+					color = Color3.fromRGB(255, 0, 0)
+				}
+			}
+		end
+
 		if not text then
 			return plrtag
 		end
