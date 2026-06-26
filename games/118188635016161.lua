@@ -403,11 +403,11 @@ run(function()
 	end
 
 	local function GetSongs()
-		local list = {"StadiumRave"}
+		local list = {}
 
 		if songs then
 			for _, v in ipairs(songs:GetChildren()) do
-				if v:IsA("Sound") and not list[v.Name] then
+				if v:IsA("Sound") then
 					table.insert(list, v.Name)
 				end
 			end
@@ -456,7 +456,8 @@ run(function()
 				end
 			end
 		end,
-		Tooltip = "Increase the bass!"
+		Tooltip = "Increase the bass!",
+		Default = "StadiumRave"
 	})
 
 	PlaybackSpeed = NewSong:CreateSlider({
