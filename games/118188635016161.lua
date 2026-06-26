@@ -140,7 +140,7 @@ run(function() -- ac bypass by koya
 		goofinator:Destroy()
 		notif("Vape", "Successfully bypassed the anticheat, thanks koya!", 10)
 	else
-		notif("Vape", "Couldn't bypass the anticheat. Use at your own risk.", 10, "warning")
+		notif("Vape", "Couldn't bypass the anticheat. Use at your own risk. (or anticheat alr bypassed)", 10, "warning")
 	end
 end)
 
@@ -362,5 +362,66 @@ run(function()
 			end
 		end,
 		Tooltip = "Attempts to destroy all the effects in the game. [BETA]"
+	})
+end)
+
+run(function() 
+	local NewSong
+	local Song
+
+	local songs = workspace:FindFirstChild("Songs")
+
+	local function NewSong(p1) -- got this from game files but i edited it
+		local CurrentSong = p1:Clone()
+	
+		CurrentSong.Name = "CurrentSong"
+		CurrentSong.Parent = workspace
+		CurrentSong.PlaybackSpeed = workspace:GetAttribute("TimeScale")
+		CurrentSong:Play()
+	
+		if CurrentSong:FindFirstChild("Drums") then
+			CurrentSong.Drums.PlaybackSpeed = workspace:GetAttribute("TimeScale")
+	
+			if workspace:GetAttribute("TimeScale") >= 1.5 then
+				CurrentSong.Drums.PlaybackSpeed /= 2
+			end
+	
+			CurrentSong.Drums:Play()
+		end
+	end
+
+	local function GetSongs() 
+		local t = {}
+
+		if songs then 
+			for _, v in pairs(songs:GetChildren()) do 
+				if v:IsA("Sound") then 
+					table.insert(t, v.Name)
+				end
+			end
+		end
+
+		return t
+	end
+	
+	NewSong = vape.Categories.World:CreateModule({
+		Name = "NewSong",
+		Function = function(callback) 
+			if callback then 
+				local selectedSong = songs:FindFirstChild(Song.Value)
+
+				if selectedSong then 
+					NewSong(selectedSong)
+				else
+					notif("NewSong", "Couldn't find the selected audio.", 10, "warning")
+				end
+			end
+		end,
+		Tooltip = "Changes the game's background music."
+	})
+
+	Song = NewSong:CreateDropdown({
+		Name = "Song",
+		List = GetSongs()
 	})
 end)
