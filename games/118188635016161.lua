@@ -321,6 +321,20 @@ run(function()
 		Default = 35
 	})
 
+	Transparency = HitBoxes:CreateSlider({
+		Name = "Transparency",
+		Min = 0,
+		Max = 1,
+		Default = 0.75,
+		Decimal = 100,
+		Function = function()
+			if HitBoxes.Enabled then
+				HitBoxes:Toggle()
+				HitBoxes:Toggle()
+			end
+		end
+	})
+
 	ExpandY = HitBoxes:CreateToggle({
 		Name = "Expand Y",
 		Function = function(val)
@@ -348,20 +362,6 @@ run(function()
 		end,
 		Default = 3,
 		Darker = true
-	})
-
-	Transparency = HitBoxes:CreateSlider({
-		Name = "Transparency",
-		Min = 0,
-		Max = 1,
-		Default = 0.75,
-		Decimal = 100,
-		Function = function()
-			if HitBoxes.Enabled then
-				HitBoxes:Toggle()
-				HitBoxes:Toggle()
-			end
-		end
 	})
 end)
 
@@ -430,6 +430,61 @@ run(function()
 			end
 		end,
 		Default = 10
+	})
+end)
+
+run(function() 
+	local AutoWin -- SON :sob:
+	local UpdateRate
+
+	AutoWin = vape.Categories.Blatant:CreateModule({
+		Name = "AutoWin",
+		Function = function(callback) 
+			if callback then 
+				repeat 
+					if not mouse1press or not mouse1release then 
+						notif("AutoWin", "Your exploit doesn't support this function!", 10, "warning")
+						AutoWin:Toggle()
+						return
+					end
+
+					if entitylib.isAlive then
+						local enemies = collectionService:GetTagged("Enemy")
+
+						if #enemies > 0 then
+							local enemy = enemies[1]
+							local enemyRootPart = enemy:FindFirstChild("HumanoidRootPart") or enemy.PrimaryPart
+
+							if enemyRootPart then
+								entitylib.character.RootPart.CFrame = CFrame.lookAt(
+									(enemyRootPart.CFrame * CFrame.new(0, 0, 5)).Position,
+									enemyRootPart.Position
+								)
+								if (isrbxactive or iswindowactive)() then
+									if not vape.gui.ScaledGui.ClickGui.Visible then
+										mouse1press()
+									else
+										mouse1release()
+									end
+								end
+							end
+						end
+					end
+					
+					task.wait(1 / UpdateRate.Value)
+				until not AutoWin.Enabled
+			end
+		end
+	})
+
+	UpdateRate = AutoWin:CreateSlider({
+		Name = "Update Rate",
+		Min = 1,
+		Max = 60,
+		Default = 20,
+		Suffix = function(val)
+			return "Hz"
+		end
 	})
 end)
 

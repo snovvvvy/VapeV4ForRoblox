@@ -3393,7 +3393,8 @@ run(function()
 		Function = function(callback)
 			if callback then
 				Swim:Clean(runService.PreSimulation:Connect(function(dt)
-					if entitylib.isAlive then
+					if  then
+						if  then
 						local root = entitylib.character.RootPart
 						local moving = entitylib.character.Humanoid.MoveDirection ~= Vector3.zero
 						local rootvelo = root.Velocity
