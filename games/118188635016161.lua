@@ -40,6 +40,7 @@ local sessioninfo = vape.Libraries.sessioninfo
 local parry = {}
 
 local EnemyFolder = workspace:FindFirstChild("EnemyFolder")
+local PlayerFolder = workspace:FindFirstChild("PlayerFolder")
 
 local function notif(...)
 	return vape:CreateNotification(...)
@@ -99,6 +100,9 @@ run(function()
 
 		if obj.Parent == EnemyFolder then
 			tag(obj, "Enemy")
+		
+		elseif name == "Mech" and obj.Parent == PlayerFolder and obj:FindFirstChildWhichIsA("Seat") then
+			tag(obj, "Mech")
 		end
 	end
 
@@ -155,20 +159,32 @@ run(function()
 		Name = "AutoParry",
 		Function = function(callback)
 			if callback then
+				local parrying = (math.random() * 100 <= Chance.Value)
 				old = parry.GlobalFunctions.GPP
-                repeat
-                    if math.random() * 100 <= Chance.Value then
-                        lplr:SetAttribute("ParryActiveTime", 0.3)
-                    else
-                        lplr:SetAttribute("ParryActiveTime", 0)
-                    end
 
-					parry.GlobalFunctions.GPP = function(...) 
+                repeat
+					for _, mech in ipairs(collectionService:GetTagged("Mech")) do
+						local seat = mech:FindFirstChildWhichIsA("Seat", true) or mech:FindFirstChildWhichIsA("VehicleSeat", true)
+					
+						local occupiedBylocal = seat and seat.Occupant and seat.Occupant.Parent == lplr.Character
+					
+						if parrying and occupiedBylocal then
+							mech:SetAttribute("Parrying", true)
+							mech:SetAttribute("PerfectParrying", PerfectParry.Enabled)
+						elseif not parrying and occupiedBylocal then
+							mech:SetAttribute("Parrying", false)
+							mech:SetAttribute("PerfectParrying", false)
+						end
+					end
+				
+					lplr:SetAttribute("ParryActiveTime", parrying and 0.3 or 0)
+				
+					parry.GlobalFunctions.GPP = function(...)
 						return PerfectParry.Enabled
 					end
-                    
+				
 					task.wait(1 / UpdateRate.Value)
-                until not AutoParry.Enabled
+				until not AutoParry.Enabled
 			else
 				if old then
 					parry.GlobalFunctions.GPP = old
