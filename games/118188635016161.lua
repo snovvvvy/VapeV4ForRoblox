@@ -352,7 +352,7 @@ run(function()
 	})
 
 	Rate = AutoOverCharge:CreateSlider({
-		Name = "Rate"
+		Name = "Rate",
 		Min = 0,
 		Max = 120,
 		Suffix = function() return "Hz" end,
