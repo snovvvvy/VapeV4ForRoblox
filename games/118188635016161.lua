@@ -267,19 +267,15 @@ run(function()
 	local function Added(v)
 		local part = v:FindFirstChild("HumanoidRootPart") or v.PrimaryPart
 		if not part then return end
-	
-		if modified[part] then
-			return
+
+		if not modified[part] then
+			modified[part] = {
+				Size = part.Size,
+				Transparency = part.Transparency
+			}
 		end
-	
-		modified[part] = {
-			Size = part.Size,
-			Position = part.Position,
-			Transparency = part.Transparency,
-		}
-	
-		part.Size = modified[part].Size + Vector3.new(Expand.Value, Expand.Value + 3, Expand.Value)
-		part.Position = modified[part].Position + Vector3.new(0, (Expand.Value - 3) / 2, 0)
+
+		part.Size = modified[part].Size + Vector3.new(Expand.Value, 3, Expand.Value)
 		part.Transparency = Transparency.Value
 	end
 
