@@ -365,56 +365,67 @@ run(function()
 	})
 end)
 
-run(function() 
+run(function()
 	local NewSong
 	local Song
 
 	local songs = workspace:FindFirstChild("Songs")
 
-	local function NewSong(p1) -- got this from game files but i edited it
-		local CurrentSong = p1:Clone()
-	
+	local function PlaySong(sound)
+		local oldSong = workspace:FindFirstChild("CurrentSong")
+		if oldSong then
+			oldSong:Destroy()
+		end
+
+		local CurrentSong = sound:Clone()
+
 		CurrentSong.Name = "CurrentSong"
 		CurrentSong.Parent = workspace
-		CurrentSong.PlaybackSpeed = workspace:GetAttribute("TimeScale")
+
+		local timeScale = workspace:GetAttribute("TimeScale") or 1
+		CurrentSong.PlaybackSpeed = timeScale
 		CurrentSong:Play()
-	
-		if CurrentSong:FindFirstChild("Drums") then
-			CurrentSong.Drums.PlaybackSpeed = workspace:GetAttribute("TimeScale")
-	
-			if workspace:GetAttribute("TimeScale") >= 1.5 then
-				CurrentSong.Drums.PlaybackSpeed /= 2
+
+		local drums = CurrentSong:FindFirstChild("Drums")
+		if drums then
+			drums.PlaybackSpeed = timeScale
+
+			if timeScale >= 1.5 then
+				drums.PlaybackSpeed /= 2
 			end
-	
-			CurrentSong.Drums:Play()
+
+			drums:Play()
 		end
 	end
 
-	local function GetSongs() 
-		local t = {}
+	local function GetSongs()
+		local list = {}
 
-		if songs then 
-			for _, v in pairs(songs:GetChildren()) do 
-				if v:IsA("Sound") then 
-					table.insert(t, v.Name)
+		if songs then
+			for _, v in ipairs(songs:GetChildren()) do
+				if v:IsA("Sound") then
+					table.insert(list, v.Name)
 				end
 			end
 		end
 
-		return t
+		table.sort(list)
+		return list
 	end
-	
+
 	NewSong = vape.Categories.World:CreateModule({
 		Name = "NewSong",
-		Function = function(callback) 
-			if callback then 
-				local selectedSong = songs:FindFirstChild(Song.Value)
+		Function = function(callback)
+			if callback then
+				local selectedSong = songs and songs:FindFirstChild(Song.Value)
 
-				if selectedSong then 
-					NewSong(selectedSong)
+				if selectedSong then
+					PlaySong(selectedSong)
 				else
 					notif("NewSong", "Couldn't find the selected audio.", 10, "warning")
 				end
+
+				NewSong:Toggle()
 			end
 		end,
 		Tooltip = "Changes the game's background music."
@@ -422,6 +433,6 @@ run(function()
 
 	Song = NewSong:CreateDropdown({
 		Name = "Song",
-		List = GetSongs()
+		List = GetSongs(),
 	})
 end)
