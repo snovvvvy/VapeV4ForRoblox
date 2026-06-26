@@ -42,6 +42,8 @@ local parry = {}
 local EnemyFolder = workspace:FindFirstChild("EnemyFolder")
 local PlayerFolder = workspace:FindFirstChild("PlayerFolder")
 
+local Remotes = replicatedStorage:FindFirstChild("Remotes")
+
 local function notif(...)
 	return vape:CreateNotification(...)
 end
@@ -328,6 +330,33 @@ run(function()
 				HitBoxes:Toggle()
 			end
 		end
+	})
+end)
+
+run(function() 
+	local AutoOverCharge
+	local Rate
+
+	local LocalEvent = Remotes:FindFirstChild("LocalEvent")
+
+	AutoOverCharge = vape.Categories.Blatant({
+		Name = "AutoOverCharge",
+		Function = function(callback) 
+			if callback then 
+				repeat
+					LocalEvent:FireServer("Overcharge")
+					task.wait(1 / Rate.Value)
+				until not AutoOverCharge.Enabled
+			end
+		end
+	})
+
+	Rate = AutoOverCharge:CreateSlider({
+		Name = "Rate"
+		Min = 0,
+		Max = 120,
+		Suffix = function() return "Hz" end,
+		Tooltip = "How many times a second you want to fire the overcharge refill remote."
 	})
 end)
 
