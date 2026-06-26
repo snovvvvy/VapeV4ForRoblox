@@ -101,7 +101,7 @@ run(function()
 		if obj.Parent == EnemyFolder then
 			tag(obj, "Enemy")
 		
-		elseif name == "Mech" and obj.Parent == PlayerFolder and obj:FindFirstChildWhichIsA("Seat") then
+		elseif name == "Mech" and obj.Parent == PlayerFolder then
 			tag(obj, "Mech")
 		end
 	end
