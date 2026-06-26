@@ -460,13 +460,6 @@ run(function()
 									(enemyRootPart.CFrame * CFrame.new(0, 0, 5)).Position,
 									enemyRootPart.Position
 								)
-								if (isrbxactive or iswindowactive)() then
-									if not vape.gui.ScaledGui.ClickGui.Visible then
-										mouse1press()
-									else
-										mouse1release()
-									end
-								end
 							end
 						end
 					end
