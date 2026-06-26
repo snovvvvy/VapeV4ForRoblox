@@ -417,15 +417,6 @@ run(function()
 			v(plr, plrtag, rich)
 		end
 
-		if self:get(plr) == 0 then
-			plrtag = {
-				{
-					text = "VAPE USER",
-					color = Color3.fromRGB(255, 0, 0)
-				}
-			}
-		end
-
 		if not text then
 			return plrtag
 		end
@@ -3393,8 +3384,7 @@ run(function()
 		Function = function(callback)
 			if callback then
 				Swim:Clean(runService.PreSimulation:Connect(function(dt)
-					if  then
-						if  then
+					if entitylib.isAlive then
 						local root = entitylib.character.RootPart
 						local moving = entitylib.character.Humanoid.MoveDirection ~= Vector3.zero
 						local rootvelo = root.Velocity
