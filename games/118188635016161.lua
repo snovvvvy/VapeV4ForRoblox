@@ -271,11 +271,13 @@ run(function()
 		if not modified[part] then
 			modified[part] = {
 				Size = part.Size,
-				Transparency = part.Transparency
+				Position = part.Position,
+				Transparency = part.Transparency,
 			}
 		end
 
-		part.Size = modified[part].Size + Vector3.new(Expand.Value, 3, Expand.Value)
+		part.Size = modified[part].Size + Vector3.new(Expand.Value, Expand.Value + 3, Expand.Value)
+		part.Position = modified[part].Position + Vector3.new(0, (Expand.Value - 3) / 2, 0)
 		part.Transparency = Transparency.Value
 	end
 
