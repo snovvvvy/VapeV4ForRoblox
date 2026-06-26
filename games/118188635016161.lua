@@ -147,6 +147,7 @@ end
 run(function()
 	local AutoParry
 	local Chance
+	local UpdateRate
     local PerfectParry
 	local old
 
@@ -166,7 +167,7 @@ run(function()
 						return PerfectParry.Enabled
 					end
                     
-					task.wait(0.05)
+					task.wait(1 / UpdateRate.Value)
                 until not AutoParry.Enabled
 			else
 				if old then
@@ -185,6 +186,16 @@ run(function()
             return '%'
         end,
 		Default = 100
+	})
+
+	UpdateRate = AutoParry:CreateSlider({
+		Name = "Update Rate",
+		Min = 1,
+		Max = 120,
+		Default = 20,
+		Suffix = function(val)
+			return "Hz"
+		end
 	})
 
     PerfectParry = AutoParry:CreateToggle({
