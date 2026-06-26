@@ -362,6 +362,46 @@ run(function()
 end)
 
 run(function() 
+	local HipHeight
+	local Height
+
+	local function Added(obj)
+		local humanoid = obj:FindFirstChildWhichIsA("Humanoid")
+		
+		if humanoid then 
+			humanoid.HipHeight = Height.Value
+		end
+	end
+
+	HipHeight = vape.Categories.Blatant:CreateModule({
+		Name = "HipHeight",
+		Function = function(callback) 
+			if callback then 
+				repeat
+					for _, obj in ipairs(collectionService:GetTagged("Enemy")) do
+						Added(obj)
+					end
+					task.wait(0.1)
+				until not HipHeight.Enabled
+			end
+		end
+	})
+
+	Height = HipHeight:CreateSlider({
+		Name = "Height",
+		Min = 0,
+		Max = 100,
+		Function = function() 
+			if HipHeight.Enabled then 
+				HipHeight:Toggle()
+				HipHeight:Toggle()
+			end
+		end,
+		Default = 10
+	})
+end)
+
+run(function() 
 	local DisableEffects
 
 	local EffectsFolder = workspace:FindFirstChild("EffectsFolder")
