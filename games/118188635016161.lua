@@ -368,6 +368,7 @@ end)
 run(function()
 	local NewSong
 	local Song
+	local Volume
 
 	local songs = workspace:FindFirstChild("Songs")
 
@@ -384,11 +385,13 @@ run(function()
 
 		local timeScale = workspace:GetAttribute("TimeScale") or 1
 		CurrentSong.PlaybackSpeed = timeScale
+		CurrentSong.Volume = Volume.Value
 		CurrentSong:Play()
 
 		local drums = CurrentSong:FindFirstChild("Drums")
 		if drums then
 			drums.PlaybackSpeed = timeScale
+			drums.Volume = Volume.Value
 
 			if timeScale >= 1.5 then
 				drums.PlaybackSpeed /= 2
@@ -434,5 +437,24 @@ run(function()
 	Song = NewSong:CreateDropdown({
 		Name = "Song",
 		List = GetSongs(),
+	})
+
+	Volume = NewSong:CreateSlider({
+		Name = "Volume",
+		Min = 0,
+		Max = 10,
+		Default = 1,
+		Function = function(val)
+			local current = workspace:FindFirstChild("CurrentSong")
+			if current then
+				current.Volume = val
+
+				local drums = current:FindFirstChild("Drums")
+				if drums then
+					drums.Volume = val
+				end
+			end
+		end,
+		Tooltip = "Increase the bass!"
 	})
 end)
