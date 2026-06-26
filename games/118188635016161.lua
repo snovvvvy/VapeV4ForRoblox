@@ -369,6 +369,7 @@ run(function()
 	local NewSong
 	local Song
 	local Volume
+	local PlaybackSpeed
 
 	local songs = workspace:FindFirstChild("Songs")
 
@@ -383,7 +384,7 @@ run(function()
 		CurrentSong.Name = "CurrentSong"
 		CurrentSong.Parent = workspace
 
-		local timeScale = workspace:GetAttribute("TimeScale") or 1
+		local timeScale = PlaybackSpeed.Value or 1
 		CurrentSong.PlaybackSpeed = timeScale
 		CurrentSong.Volume = Volume.Value
 		CurrentSong:Play()
@@ -456,5 +457,29 @@ run(function()
 			end
 		end,
 		Tooltip = "Increase the bass!"
+	})
+
+	PlaybackSpeed = NewSong:CreateSlider({
+		Name = "Playback Speed",
+		Min = 0.1,
+		Max = 3,
+		Default = 1,
+		Decimal = 10,
+		Function = function(val)
+			local current = workspace:FindFirstChild("CurrentSong")
+			if current then
+				current.PlaybackSpeed = val
+	
+				local drums = current:FindFirstChild("Drums")
+				if drums then
+					drums.PlaybackSpeed = val
+	
+					if val >= 1.5 then
+						drums.PlaybackSpeed = val / 2
+					end
+				end
+			end
+		end,
+		Tooltip = "Changes the playback speed."
 	})
 end)
