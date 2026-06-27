@@ -133,6 +133,9 @@ run(function()
 			if not collectionService:HasTag(obj, "Enemy") then
 				tagObj(obj)
 			end
+			if not obj:GetAttribute("Alive") then 
+				collectionService:RemoveTag(obj, "Enemy")
+			end
 			task.wait(2)
 		until not obj
 	end
