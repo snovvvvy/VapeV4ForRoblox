@@ -556,6 +556,26 @@ run(function()
 end)
 
 run(function() 
+	local DisableEventsAllowed
+	local EventsAllowed = replicatedStorage:FindFirstChild("EventsAllowed")
+
+	DisableEventsAllowed = vape.Categories.Blatant:CreateModule({
+		Name = "DisableEventsAllowed",
+		Function = function(callback)
+			if callback then 
+				repeat
+					EventsAllowed.Value = false
+					task.wait(1)
+				until not DisableEventsAllowed.Enabled
+			else
+				task.wait(1)
+				EventsAllowed.Value = true
+			end
+		end
+	})
+end)
+
+run(function() 
 	local DisableEffects
 
 	local EffectsFolder = workspace:FindFirstChild("EffectsFolder")
