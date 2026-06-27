@@ -48,8 +48,12 @@ local function notif(...)
 	return vape:CreateNotification(...)
 end
 
+entitylib.start()
+
 run(function()
-	local taggedObjects = {}
+	local taggedObjects = setmetatable({}, {__mode = "k"})
+	local enemyInitialized = setmetatable({}, {__mode = "k"})
+	local destroyConnected = setmetatable({}, {__mode = "k"})
 
 	local function tag(obj, tagName)
 		if collectionService:HasTag(obj, tagName) then
@@ -60,19 +64,30 @@ run(function()
 			setthreadidentity(8)
 		end
 
-		pcall(function()
-			collectionService:AddTag(obj, tagName)
+		local ok = pcall(collectionService.AddTag, collectionService, obj, tagName)
+		if not ok then
+			return
+		end
 
-			taggedObjects[obj] = {tagName}
+		taggedObjects[obj] = tagName
 
-			obj.Destroying:Connect(function() 
-				taggedObjects[obj] = nil
-			end)
+		if destroyConnected[obj] then
+			return
+		end
+
+		destroyConnected[obj] = true
+
+		obj.Destroying:Connect(function()
+			taggedObjects[obj] = nil
+			enemyInitialized[obj] = nil
+			destroyConnected[obj] = nil
 		end)
 	end
 
 	local function isValidWorldObject(obj)
-		if not obj then return false end
+		if not obj or not obj.Parent then
+			return false
+		end
 
 		if not obj:IsDescendantOf(workspace) then
 			return false
@@ -80,12 +95,11 @@ run(function()
 
 		if lplr then
 			local backpack = lplr:FindFirstChild("Backpack")
-			local character = lplr.Character
-
 			if backpack and obj:IsDescendantOf(backpack) then
 				return false
 			end
 
+			local character = entitylib.character.Character
 			if character and obj:IsDescendantOf(character) then
 				return false
 			end
@@ -94,65 +108,77 @@ run(function()
 		return true
 	end
 
-	local function tagObj(obj)
-		if not obj or not obj.Parent then return end
-		if not isValidWorldObject(obj) then return end
+	local Whitelisted = {
+		{
+			tag = "Enemy",
+			match = function(obj)
+				return obj.Parent == EnemyFolder
+			end,
+		},
+		{
+			tag = "Mech",
+			match = function(obj)
+				return obj.Name == "Mech" and obj.Parent == PlayerFolder
+			end,
+		},
+	}
 
-		local name = obj.Name
+	local function tagObject(obj)
+		if not isValidWorldObject(obj) then
+			return
+		end
 
-		if obj.Parent.Name == "EnemyFolder" then
-			tag(obj, "Enemy")
-		
-		elseif name == "Mech" and obj.Parent == PlayerFolder then
-			tag(obj, "Mech")
+		for _, whitelist in ipairs(Whitelisted) do
+			if whitelist.match(obj) then
+				tag(obj, whitelist.tag)
+				return
+			end
 		end
 	end
 
-	local function EnemyConnections(obj) 
-		vape:Clean(obj:GetAttributeChangedSignal("Alive"):Connect(function() 
-			if not obj:GetAttribute("Alive") then 
+	local TagBehaviors = {}
+
+	function TagBehaviors.Enemy(obj)
+		if enemyInitialized[obj] then
+			return
+		end
+
+		enemyInitialized[obj] = true
+
+		vape:Clean(obj:GetAttributeChangedSignal("Alive"):Connect(function()
+			if not obj:GetAttribute("Alive") then
 				collectionService:RemoveTag(obj, "Enemy")
 			end
 		end))
 
-		vape:Clean(obj.AncestryChanged:Connect(function() 
-			if obj and obj.Parent and obj.Parent.Name ~= "EnemyFolder" then 
+		vape:Clean(obj.AncestryChanged:Connect(function()
+			if obj.Parent ~= EnemyFolder then
 				collectionService:RemoveTag(obj, "Enemy")
 			end
 		end))
 
-		if obj.Name == "CYBORGUS" then 
-			vape:Clean(obj:GetAttributeChangedSignal("FinaleActive"):Connect(function() 
-				if obj:GetAttribute("FinaleActive") then 
+		if obj.Name == "CYBORGUS" then
+			vape:Clean(obj:GetAttributeChangedSignal("FinaleActive"):Connect(function()
+				if obj:GetAttribute("FinaleActive") then
 					collectionService:RemoveTag(obj, "Enemy")
 				end
 			end))
 		end
-
-		repeat 
-			if not collectionService:HasTag(obj, "Enemy") then
-				tagObj(obj)
-			end
-			if not obj:GetAttribute("Alive") then 
-				collectionService:RemoveTag(obj, "Enemy")
-			end
-			task.wait(2)
-		until not obj
 	end
 
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		tagObj(obj)
+	for _, obj in workspace:GetDescendants() do
+		tagObject(obj)
 	end
 
-	vape:Clean(workspace.DescendantAdded:Connect(tagObj))
-	vape:Clean(collectionService:GetInstanceAddedSignal("Enemy"):Connect(EnemyConnections))
-	vape:Clean(function() 
-		for obj, tags in pairs(taggedObjects) do
-			for _, tagName in ipairs(tags) do
-				pcall(function()
-					collectionService:RemoveTag(obj, tagName)
-				end)
-			end
+	vape:Clean(workspace.DescendantAdded:Connect(tagObject))
+
+	for tagName, behavior in pairs(TagBehaviors) do
+		vape:Clean(collectionService:GetInstanceAddedSignal(tagName):Connect(behavior))
+	end
+
+	vape:Clean(function()
+		for obj, tagName in pairs(taggedObjects) do
+			pcall(collectionService.RemoveTag, collectionService, obj, tagName)
 		end
 	end)
 end)
