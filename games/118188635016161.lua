@@ -94,6 +94,28 @@ run(function()
 		return true
 	end
 
+	local function EnemyConnections(obj) 
+		vape:Clean(obj:GetAttributeChangedSignal("Alive"):Connect(function() 
+			if not obj:GetAttribute("Alive") then 
+				collectionService:RemoveTag(obj, "Enemy")
+			end
+		end))
+
+		vape:Clean(obj.AncestryChanged:Connect(function() 
+			if obj.Parent.Name ~= "EnemyFolder" then 
+				collectionService:RemoveTag(obj, "Enemy")
+			end
+		end))
+
+		if obj.Name == "CYBORGUS" then 
+			vape:Clean(obj:GetAttributeChangedSignal("FinaleActive"):Connect(function() 
+				if obj:GetAttribute("FinaleActive") then 
+					collectionService:RemoveTag(obj, "Enemy")
+				end
+			end))
+		end
+	end
+
 	local function tagObj(obj)
 		if not obj or not obj.Parent then return end
 		if not isValidWorldObject(obj) then return end
@@ -113,6 +135,7 @@ run(function()
 	end
 
 	vape:Clean(workspace.DescendantAdded:Connect(tagObj))
+	vape:Clean(collectionService:GetInstanceAddedSignal("Enemy"):Connect(EnemyConnections))
 	vape:Clean(function() 
 		for obj, tags in pairs(taggedObjects) do
 			for _, tagName in ipairs(tags) do
@@ -122,21 +145,6 @@ run(function()
 			end
 		end
 	end)
-	vape:Clean(collectionService:GetInstanceAddedSignal("Enemy"):Connect(function(obj) 
-		vape:Clean(obj:GetAttributeChangedSignal("Alive"):Connect(function() 
-			if not obj:GetAttribute("Alive") then 
-				collectionService:RemoveTag(obj, "Enemy")
-			end
-		end))
-
-		if obj.Name == "CYBORGUS" then 
-			vape:Clean(obj:GetAttributeChangedSignal("FinaleActive"):Connect(function() 
-				if obj:GetAttribute("FinaleActive") then 
-					collectionService:RemoveTag(obj, "Enemy")
-				end
-			end))
-		end
-	end))
 end)
 
 run(function()
