@@ -100,7 +100,7 @@ run(function()
 
 		local name = obj.Name
 
-		if obj.Parent.Name == "EnemyFolder" or string.find(obj.Name, "Automaton") then
+		if obj.Parent.Name == "EnemyFolder" or (string.find(obj.Name, "Automaton") and obj:IsA("Model")) then
 			tag(obj, "Enemy")
 		
 		elseif name == "Mech" and obj.Parent == PlayerFolder then
