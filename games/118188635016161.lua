@@ -94,6 +94,20 @@ run(function()
 		return true
 	end
 
+	local function tagObj(obj)
+		if not obj or not obj.Parent then return end
+		if not isValidWorldObject(obj) then return end
+
+		local name = obj.Name
+
+		if obj.Parent.Name == "EnemyFolder" then
+			tag(obj, "Enemy")
+		
+		elseif name == "Mech" and obj.Parent == PlayerFolder then
+			tag(obj, "Mech")
+		end
+	end
+
 	local function EnemyConnections(obj) 
 		vape:Clean(obj:GetAttributeChangedSignal("Alive"):Connect(function() 
 			if not obj:GetAttribute("Alive") then 
@@ -114,20 +128,13 @@ run(function()
 				end
 			end))
 		end
-	end
 
-	local function tagObj(obj)
-		if not obj or not obj.Parent then return end
-		if not isValidWorldObject(obj) then return end
-
-		local name = obj.Name
-
-		if obj.Parent.Name == "EnemyFolder" or (string.find(obj.Name, "Automaton") and obj:IsA("Model") and obj.Parent.Name ~= "IdleAutomatons") then
-			tag(obj, "Enemy")
-		
-		elseif name == "Mech" and obj.Parent == PlayerFolder then
-			tag(obj, "Mech")
-		end
+		repeat 
+			if not collectionService:HasTag(obj, "Enemy") then
+				tagObj(obj)
+			end
+			task.wait(2)
+		until not obj
 	end
 
 	for _, obj in ipairs(workspace:GetDescendants()) do
