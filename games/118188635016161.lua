@@ -116,7 +116,7 @@ run(function()
 		end))
 
 		vape:Clean(obj.AncestryChanged:Connect(function() 
-			if obj.Parent.Name ~= "EnemyFolder" then 
+			if obj and obj.Parent and obj.Parent.Name ~= "EnemyFolder" then 
 				collectionService:RemoveTag(obj, "Enemy")
 			end
 		end))
