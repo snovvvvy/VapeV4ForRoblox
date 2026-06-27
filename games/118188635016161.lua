@@ -122,6 +122,13 @@ run(function()
 			end
 		end
 	end)
+	vape:Clean(collectionService:GetInstanceAddedSignal("Enemy"):Connect(function(obj) 
+		vape:Clean(obj:GetAttributeChangedSignal("Alive"):Connect(function() 
+			if not obj:GetAttribute("Alive") then 
+				collectionService:RemoveTag(obj, "Enemy")
+			end
+		end))
+	end))
 end)
 
 run(function()
