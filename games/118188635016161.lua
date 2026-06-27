@@ -467,18 +467,18 @@ run(function()
 end)
 
 run(function() 
-	local AutoWin -- SON :sob:
+	local AutoTeleport -- SON :sob:
 	local Distance
 	local UpdateRate
 
-	AutoWin = vape.Categories.Blatant:CreateModule({
-		Name = "AutoWin",
+	AutoTeleport = vape.Categories.Blatant:CreateModule({
+		Name = "AutoTeleport",
 		Function = function(callback) 
 			if callback then 
 				repeat 
 					if not mouse1press or not mouse1release then 
-						notif("AutoWin", "Your exploit doesn't support this function!", 10, "warning")
-						AutoWin:Toggle()
+						notif("AutoTeleport", "Your exploit doesn't support this function!", 10, "warning")
+						AutoTeleport:Toggle()
 						return
 					end
 
@@ -499,12 +499,13 @@ run(function()
 					end
 					
 					task.wait(1 / UpdateRate.Value)
-				until not AutoWin.Enabled
+				until not AutoTeleport.Enabled
 			end
-		end
+		end,
+		Tooltip = "Automatically teleports behind an enemy with a certain distance and rate."
 	})
 
-	Distance = AutoWin:CreateSlider({
+	Distance = AutoTeleport:CreateSlider({
 		Name = "Distance",
 		Min = 1,
 		Max = 35,
@@ -514,7 +515,7 @@ run(function()
 		end
 	})
 
-	UpdateRate = AutoWin:CreateSlider({
+	UpdateRate = AutoTeleport:CreateSlider({
 		Name = "Update Rate",
 		Min = 1,
 		Max = 60,
