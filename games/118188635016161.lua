@@ -100,7 +100,7 @@ run(function()
 
 		local name = obj.Name
 
-		if obj.Parent == EnemyFolder then
+		if obj.Parent.Name == "EnemyFolder" then
 			tag(obj, "Enemy")
 		
 		elseif name == "Mech" and obj.Parent == PlayerFolder then
@@ -128,6 +128,14 @@ run(function()
 				collectionService:RemoveTag(obj, "Enemy")
 			end
 		end))
+
+		if obj.Name == "CYBORGUS" then 
+			vape:Clean(obj:GetAttributeChangedSignal("FinaleActive"):Connect(function() 
+				if obj:GetAttribute("FinaleActive") then 
+					collectionService:RemoveTag(obj, "Enemy")
+				end
+			end))
+		end
 	end))
 end)
 
@@ -442,6 +450,7 @@ end)
 
 run(function() 
 	local AutoWin -- SON :sob:
+	local Distance
 	local UpdateRate
 
 	AutoWin = vape.Categories.Blatant:CreateModule({
@@ -464,7 +473,7 @@ run(function()
 
 							if enemyRootPart then
 								entitylib.character.RootPart.CFrame = CFrame.lookAt(
-									(enemyRootPart.CFrame * CFrame.new(0, 0, 5)).Position,
+									(enemyRootPart.CFrame * CFrame.new(0, 0, Distance.Value)).Position,
 									enemyRootPart.Position
 								)
 							end
@@ -474,6 +483,16 @@ run(function()
 					task.wait(1 / UpdateRate.Value)
 				until not AutoWin.Enabled
 			end
+		end
+	})
+
+	Distance = AutoWin:CreateSlider({
+		Name = "Distance",
+		Min = 1,
+		Max = 35,
+		Default = 10,
+		Suffix = function(val)
+			return val == 1 and "stud" or "studs"
 		end
 	})
 
