@@ -497,6 +497,8 @@ run(function()
 	local Distance
 	local UpdateRate
 
+	local AttackEvent = Remotes:FindFirstChild("AttackEvent")
+
 	AutoTeleport = vape.Categories.Blatant:CreateModule({
 		Name = "AutoTeleport",
 		Function = function(callback) 
@@ -520,6 +522,7 @@ run(function()
 									(enemyRootPart.CFrame * CFrame.new(0, 0, Distance.Value)).Position,
 									enemyRootPart.Position
 								)
+								AttackEvent:FireServer("Melee", {{enemy},{}})
 							end
 						end
 					end
