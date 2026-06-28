@@ -38,6 +38,8 @@ local uipallet = vape.Libraries.uipallet
 local entitylib = vape.Libraries.entity
 local sessioninfo = vape.Libraries.sessioninfo
 
+lplr:Kick("Raise a floppa 2 support is broken and i will not be maintaining it")
+
 local raf2 = {}
 
 local modules = replicatedStorage:FindFirstChild("Modules")

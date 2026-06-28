@@ -6450,43 +6450,6 @@ scaleslider = guipane:CreateSlider({
 	Darker = true,
 	Visible = false,
 })
-guipane:CreateDropdown({
-	Name = "GUI Theme",
-	List = inputService.TouchEnabled and { "new", "old" } or { "new", "old", "rise" },
-	Function = function(val, mouse)
-		if mouse then
-			writefile("newvape/profiles/gui.txt", val)
-			shared.vapereload = true
-			do
-				local function downloadFile(path, func)
-					if not isfile(path) then
-						local suc, res = pcall(function()
-							return game:HttpGet(
-								"https://raw.githubusercontent.com/snovvvvy/VapeV4ForRoblox/"
-									.. readfile("newvape/profiles/commit.txt")
-									.. "/"
-									.. select(1, path:gsub("newvape/", "")),
-								true
-							)
-						end)
-						if not suc or res == "404: Not Found" then
-							error(res)
-						end
-						if path:find(".lua") then
-							res = "--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n"
-								.. res
-						end
-						writefile(path, res)
-					end
-					return (func or readfile)(path)
-				end
-
-				loadstring(downloadFile("newvape/main.lua"), "main")()
-			end
-		end
-	end,
-	Tooltip = "new - The newest vape theme to since v4.05\nold - The vape theme pre v4.05\nrise - Rise 6.0",
-})
 mainapi.RainbowMode = guipane:CreateDropdown({
 	Name = "Rainbow Mode",
 	List = { "Normal", "Gradient", "Retro" },

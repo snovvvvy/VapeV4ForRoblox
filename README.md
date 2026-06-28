@@ -12,9 +12,7 @@
 </h2>
 
 ## Contacts
-[Discord](https://discord.gg/5gJqhQmrdS)
-<br/>
-[Youtube](https://youtube.com/c/7GrandDadVape)
+[Discord](https://discord.gg/6p2ES6HYkX)
 
 ## Usage
 1. Download the specific scripting utility of your choice.
@@ -35,7 +33,9 @@ If its not the supposed utility at fault, please try some troubleshooting steps.
 3. Ensuring no external script is conflicting with vape.
 
 ## Developers & Credits
-[7GrandDad](https://github.com/7GrandDadPGN) - Lead maintainer of the project - vaperoblox on Discord
+[7GrandDad](https://github.com/7GrandDadPGN) - original project - vaperoblox on Discord
+<br/>
+[snovvvvy](https://github.com/snovvvvy) - the maintainer of the custom vape mod - snovvvvy on Discord
 <br/>
 [rce-incorporated](https://github.com/rce-incorporated/Fiu) - Luau bytecode disassembly with modifications
 <br/>
