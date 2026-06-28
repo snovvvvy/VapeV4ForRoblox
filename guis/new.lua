@@ -1,10 +1,6 @@
 local mainapi = {
 	Categories = {},
-	GUIColor = {
-		Hue = 0.653,
-		Sat = 0.636,
-		Value = 0.949,
-	},
+	GUIColor = { Hue = 0.46, Sat = 0.96, Value = 0.52, },
 	HeldKeybinds = {},
 	Keybind = { "RightShift" },
 	Loaded = false,
