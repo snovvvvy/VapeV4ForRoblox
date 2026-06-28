@@ -56,23 +56,12 @@ local function finishLoading()
 		if (not teleportedServers) and (not shared.VapeIndependent) then
 			teleportedServers = true
 			local teleportScript = [[
-				local function downloadFile(path, func)
-					if not isfile(path) then
-						local suc, res = pcall(function()
-							return game:HttpGet('https://raw.githubusercontent.com/snovvvvy/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
-						end)
-						if not suc or res == '404: Not Found' then
-							error(res)
-						end
-						if path:find('.lua') then
-							res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..res
-						end
-						writefile(path, res)
-					end
-					return (func or readfile)(path)
+				shared.vapereload = true
+				if shared.VapeDeveloper then
+					loadstring(readfile('newvape/loader.lua'), 'loader')()
+				else
+					loadstring(game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeCompiled/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true), 'loader')()
 				end
-
-				loadstring(downloadFile('newvape/main.lua'), 'main')()
 			]]
 			if shared.VapeDeveloper then
 				teleportScript = 'shared.VapeDeveloper = true\n'..teleportScript
