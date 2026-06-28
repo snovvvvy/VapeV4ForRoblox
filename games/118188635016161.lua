@@ -514,12 +514,6 @@ run(function()
 		Function = function(callback) 
 			if callback then 
 				repeat 
-					if not mouse1press or not mouse1release then 
-						notif("AutoTeleport", "Your exploit doesn't support this function!", 10, "warning")
-						AutoTeleport:Toggle()
-						return
-					end
-
 					if entitylib.isAlive then
 						local enemies = collectionService:GetTagged("Enemy")
 
