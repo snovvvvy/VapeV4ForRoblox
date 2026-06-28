@@ -1,10 +1,6 @@
 local mainapi = {
 	Categories = {},
-	GUIColor = {
-		Hue = 0.653,
-		Sat = 0.636,
-		Value = 0.949,
-	},
+	GUIColor = {},
 	HeldKeybinds = {},
 	Keybind = { "RightShift" },
 	Loaded = false,
@@ -124,13 +120,133 @@ local getcustomassets = {
 	["newvape/assets/new/worldicon.png"] = "rbxassetid://14368362492",
 }
 
-local isfile = isfile
-	or function(file)
-		local suc, res = pcall(function()
-			return readfile(file)
-		end)
-		return suc and res ~= nil and res ~= ""
+local GUIThemes = {
+	Default = {
+		Hue = 0.46,
+		Sat = 0.96,
+		Value = 0.52,
+	},
+
+	Snow = {
+		Hue = 0.00,
+		Sat = 0.01,
+		Value = 0.97,
+	},
+
+	Discord = {
+		Hue = 0.653,
+		Sat = 0.636,
+		Value = 0.949,
+	},
+
+	Emerald = {
+		Hue = 0.39,
+		Sat = 0.65,
+		Value = 0.95,
+	},
+
+	Rose = {
+		Hue = 0.94,
+		Sat = 0.72,
+		Value = 0.93,
+	},
+
+	Crimson = {
+		Hue = 0.99,
+		Sat = 0.72,
+		Value = 0.93,
+	},
+
+	Amber = {
+		Hue = 0.14,
+		Sat = 0.70,
+		Value = 1.00,
+	},
+
+	Orange = {
+		Hue = 0.08,
+		Sat = 0.84,
+		Value = 0.98,
+	},
+
+	Purple = {
+		Hue = 0.77,
+		Sat = 0.67,
+		Value = 0.91,
+	},
+
+	Pink = {
+		Hue = 0.88,
+		Sat = 0.68,
+		Value = 0.94,
+	},
+
+	Ocean = {
+		Hue = 0.56,
+		Sat = 0.78,
+		Value = 0.90,
+	},
+
+	Mint = {
+		Hue = 0.43,
+		Sat = 0.42,
+		Value = 0.96,
+	},
+
+	Lime = {
+		Hue = 0.26,
+		Sat = 0.72,
+		Value = 0.93,
+	},
+
+	Lavender = {
+		Hue = 0.72,
+		Sat = 0.30,
+		Value = 0.97,
+	},
+}
+
+local isfile = isfile or function(file)
+	local suc, res = pcall(function()
+		return readfile(file)
+	end)
+	return suc and res ~= nil and res ~= ""
+end
+
+local function CopyTheme(theme)
+	return {
+		Hue = theme.Hue,
+		Sat = theme.Sat,
+		Value = theme.Value,
+	}
+end
+
+local themePath = "newvape/profiles/guicolor.txt"
+
+if not isfile(themePath) then
+	writefile(themePath, "Default")
+end
+
+local selectedTheme = readfile(themePath)
+
+if not GUIThemes[selectedTheme] then
+	selectedTheme = "Default"
+	writefile(themePath, selectedTheme)
+end
+
+mainapi.GUIColor = CopyTheme(GUIThemes[selectedTheme])
+
+function mainapi:SetTheme(name)
+	local theme = GUIThemes[name]
+	if not theme then
+		return false
 	end
+
+	self.GUIColor = CopyTheme(theme)
+	writefile(themePath, name)
+
+	return true
+end
 
 local getfontsize = function(text, size, font)
 	fontsize.Text = text
@@ -6449,6 +6565,21 @@ scaleslider = guipane:CreateSlider({
 	Default = 1,
 	Darker = true,
 	Visible = false,
+})
+mainapi.GUITheme = guipane:CreateDropdown({
+	Name = "GUI Theme (color)",
+	List = GUIThemes,
+	Function = function(val, mouse)
+		if mouse then
+			mainapi:SetTheme(val)
+			shared.vapereload = true
+			if shared.VapeDeveloper then
+				loadstring(readfile('newvape/loader.lua'), 'loader')()
+			else
+				loadstring(game:HttpGet('https://raw.githubusercontent.com/snovvvvy/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/loader.lua', true))()
+			end
+		end
+	end,
 })
 mainapi.RainbowMode = guipane:CreateDropdown({
 	Name = "Rainbow Mode",
