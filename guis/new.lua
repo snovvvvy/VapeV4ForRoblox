@@ -6566,7 +6566,7 @@ scaleslider = guipane:CreateSlider({
 	Darker = true,
 	Visible = false,
 })
-mainapi.GUITheme = guipane:CreateDropdown({
+guipane:CreateDropdown({
 	Name = "GUI Theme (color)",
 	List = GUIThemes,
 	Function = function(val, mouse)
