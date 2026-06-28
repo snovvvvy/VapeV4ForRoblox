@@ -455,11 +455,13 @@ end)
 run(function() 
 	local HipHeight
 	local Height
+	local modified = {}
 
 	local function Added(obj)
 		local humanoid = obj:FindFirstChildWhichIsA("Humanoid")
 		
 		if humanoid then 
+			modified[humanoid] = humanoid.HipHeight
 			humanoid.HipHeight = Height.Value
 		end
 	end
@@ -474,6 +476,14 @@ run(function()
 					end
 					task.wait(0.1)
 				until not HipHeight.Enabled
+			else
+				for humanoid, original in pairs(modified) do
+					if humanoid and humanoid.Parent then
+						humanoid.HipHeight = original
+					end
+				end
+
+				table.clear(modified)
 			end
 		end
 	})
