@@ -6566,7 +6566,7 @@ scaleslider = guipane:CreateSlider({
 	Darker = true,
 	Visible = false,
 })
-guipane:CreateDropdown({
+--[[guipane:CreateDropdown({
 	Name = "GUI Theme (color)",
 	List = GUIThemes,
 	Function = function(val, mouse)
@@ -6580,7 +6580,7 @@ guipane:CreateDropdown({
 			end
 		end
 	end,
-})
+})]]
 mainapi.RainbowMode = guipane:CreateDropdown({
 	Name = "Rainbow Mode",
 	List = { "Normal", "Gradient", "Retro" },
