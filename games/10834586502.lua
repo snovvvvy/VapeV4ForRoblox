@@ -117,9 +117,9 @@ run(function()
 		return Cash
 	end, false)
 
-    sessioninfo:AddItem("Cannon Cooldown", 0, function(val) 
+    --[[sessioninfo:AddItem("Cannon Cooldown", 0, function(val) 
 		return math.round(math.max(0, cannonCooldownEnd - tick()))
-	end, false)
+	end, false)]]
 
 	vape:Clean(BattleInfo.OnClientEvent:Connect(function(val) 
 		Cash = val or 0 
