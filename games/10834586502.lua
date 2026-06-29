@@ -185,6 +185,9 @@ run(function()
         
                         if slot and current and max and current < max then
                             firesignal(slot.Activated)
+                            if Notify.Enabled then
+                                notif("AutoUnit", "Spawned " .. imageToUnit[slot.Image].Name .. ".", 4)
+                            end
                         end
                     end
         
