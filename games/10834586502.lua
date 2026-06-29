@@ -448,8 +448,7 @@ run(function()
 
 	local function clearLabels()
 		for _, label in pairs(dpsLabels) do
-			label.Visible = false
-			label.Parent = nil
+			label:Destroy()
 		end
 	end
 
