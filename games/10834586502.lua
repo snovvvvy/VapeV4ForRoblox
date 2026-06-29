@@ -178,6 +178,7 @@ run(function()
                     if screen then
                         local NPCText = screen.Info and screen.Info:FindFirstChild("NPCText")
                         print("NPCText:", NPCText, NPCText and NPCText.Text)
+                        print("raw NPCText:", NPCText.Text)
         
                         local slot = getTargetSlot()
                         print("slot:", slot)
