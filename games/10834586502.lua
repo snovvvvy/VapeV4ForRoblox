@@ -106,42 +106,76 @@ end)
 
 run(function()
 	local AutoUnit
+	local Mode
 	local Notify
 
-    local function getCheapestSlot()
-        local bestSlot
-        local bestCost = math.huge
-        eachSlot(function(slot)
-            if slot.Active then
-                local cost = getSlotCost(slot)
-                if cost <= Cash and cost < bestCost then
-                    bestCost = cost
-                    bestSlot = slot
-                end
-            end
-        end)
-        return bestSlot
-    end
+	local function getCheapestSlot()
+		local bestSlot
+		local bestCost = math.huge
+        
+		eachSlot(function(slot)
+			if slot.Active then
+				local cost = getSlotCost(slot)
+				if cost <= Cash and cost < bestCost then
+					bestCost = cost
+					bestSlot = slot
+				end
+			end
+		end)
+
+		return bestSlot
+	end
+
+	local function getMostExpensiveSlot()
+		local bestSlot
+		local bestCost = -math.huge
+        
+		eachSlot(function(slot)
+			if slot.Active then
+				local cost = getSlotCost(slot)
+				if cost <= Cash and cost > bestCost then
+					bestCost = cost
+					bestSlot = slot
+				end
+			end
+		end)
+
+		return bestSlot
+	end
+
+	local function getTargetSlot()
+		if Mode.Value == "Cheapest" then
+			return getCheapestSlot()
+		elseif Mode.Value == "Most Expensive" then
+			return getMostExpensiveSlot()
+		end
+	end
 
 	AutoUnit = vape.Categories.Blatant:CreateModule({
 		Name = "AutoUnit",
 		Function = function(callback)
 			if callback then
 				repeat
-					local slot = getCheapestSlot()
+					local slot = getTargetSlot()
 
-                    if slot then
-                        firesignal(slot.Activated)
-                    end
+					if slot then
+						firesignal(slot.Activated)
+					end
 
-                    task.wait(1)
+					task.wait(1)
 				until not AutoUnit.Enabled
 			end
 		end,
-		Tooltip = "Automatically spawns the cheapest unit."
+		Tooltip = "Automatically spawns a unit."
 	})
 
-    Notify = AutoUnit:CreateToggle({
-        Name = "Notify",
-    })
+	Mode = AutoUnit:CreateDropdown({
+		Name = "Mode",
+		List = {"Cheapest", "Most Expensive"},
+		Tooltip = "Which unit to prioritize when auto spawning.",
+	})
+
+	Notify = AutoUnit:CreateToggle({
+		Name = "Notify",
+	})
 end)
