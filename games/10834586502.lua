@@ -480,6 +480,9 @@ run(function()
                     label.Size = UDim2.new(1, 0, 0, 16)
                     label.Position = UDim2.fromOffset(0, -18)
                     dpsLabels[i] = label
+
+                    local uigradient = Instance.new("UIGradient")
+                    uigradient.Enabled = false
                 end
 
                 local unitData = imageToUnit[slot.Image]
