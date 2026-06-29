@@ -415,3 +415,88 @@ run(function()
 		Name = "Notify",
 	})
 end)
+
+run(function()
+	local DPSDisplay
+	local dpsLabels = {}
+
+	local function getUnitDPS(unitData)
+		if not unitData then return 0 end
+		local dmg = unitData.Damage or 0
+		local rate = unitData.AttackRate or 1
+		if rate <= 0 then rate = 1 end
+		return math.floor((dmg / rate) * 10) / 10
+	end
+
+	local function formatDPS(val)
+		if val >= 1000 then
+			return string.format("%.0f", val)
+		elseif val >= 100 then
+			return string.format("%.1f", val)
+		else
+			return string.format("%.2f", val)
+		end
+	end
+
+	local function clearLabels()
+		for _, label in pairs(dpsLabels) do
+			label.Visible = false
+			label.Parent = nil
+		end
+	end
+
+	local function updateLabels(screen)
+		local sm = getSpawnMenu()
+		if not sm then
+			clearLabels()
+			return
+		end
+
+		for _, label in pairs(dpsLabels) do
+			label.Visible = false
+		end
+
+		eachSlot(function(slot, i)
+            local label = dpsLabels[i]
+            if not label then
+                label = Instance.new("TextLabel")
+                label.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                label.BackgroundTransparency = 0.4
+                label.TextColor3 = Color3.fromRGB(255, 220, 100)
+                label.Font = Enum.Font.GothamBold
+                label.TextSize = 11
+                label.BorderSizePixel = 0
+                label.ZIndex = 25
+                label.Size = UDim2.new(1, 0, 0, 16)
+                label.Position = UDim2.fromOffset(0, -18)
+                dpsLabels[i] = label
+            end
+
+            local unitData = imageToUnit[slot.Image]
+            label.Text = unitData and (unitData.Name .. " " .. formatDPS(getUnitDPS(unitData)) .. " DPS") or "?"
+            label.Parent = slot
+            label.Visible = true
+        end)
+	end
+
+	DPSDisplay = vape.Categories.Render:CreateModule({
+		Name = "DPSDisplay",
+		Function = function(callback)
+			if callback then
+				clearLabels()
+				repeat
+					local screen = getBattleScreen()
+
+					if screen then
+						updateLabels(screen)
+					else
+						clearLabels()
+					end
+
+					task.wait(0.5)
+				until not DPSDisplay.Enabled
+			end
+		end,
+		Tooltip = "Shows the DPS of each unit in your spawn menu.",
+	})
+end)
