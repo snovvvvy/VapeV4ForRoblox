@@ -49,7 +49,7 @@ local BattleScreen = lplr.PlayerGui:FindFirstChild("BattleScreen")
 local PlayerSpawn = Events.RemoteFunction.PlayerSpawn
 
 local function getSpawnMenu()
-	if not BattleScreen then return nil end
+	if not BattleScreen or not BattleScreen.Enabled then return nil end
 	return BattleScreen:FindFirstChild("SpawnMenu")
 		or BattleScreen:FindFirstChild("MobileSpawnMenu")
 end
@@ -70,7 +70,7 @@ local function eachSlot(callback)
 		local bar = menu:FindFirstChild(i <= 4 and "Bar1" or "Bar2")
 		local slot = bar and bar:FindFirstChild(("Slot%d"):format(i))
 
-		if slot and slot.Activated then
+		if slot then
 			callback(slot, i)
 		end
 	end
@@ -112,12 +112,13 @@ run(function()
         local bestSlot
         local bestCost = math.huge
         eachSlot(function(slot)
-			local cost = getSlotCost(slot)
-
-			if cost <= c and cost < bestCost then
-				bestCost = cost
-				bestSlot = slot
-			end
+            if slot.Active then
+                local cost = getSlotCost(slot)
+                if cost <= Cash and cost < bestCost then
+                    bestCost = cost
+                    bestSlot = slot
+                end
+            end
         end)
         return bestSlot
     end
