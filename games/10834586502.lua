@@ -457,25 +457,27 @@ run(function()
 		end
 
 		eachSlot(function(slot, i)
-            local label = dpsLabels[i]
-            if not label then
-                label = Instance.new("TextLabel")
-                label.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                label.BackgroundTransparency = 0.4
-                label.TextColor3 = Color3.fromRGB(255, 220, 100)
-                label.Font = Enum.Font.GothamBold
-                label.TextSize = 11
-                label.BorderSizePixel = 0
-                label.ZIndex = 25
-                label.Size = UDim2.new(1, 0, 0, 16)
-                label.Position = UDim2.fromOffset(0, -18)
-                dpsLabels[i] = label
-            end
+            if slot.Visible then 
+                local label = dpsLabels[i]
+                if not label then
+                    label = Instance.new("TextLabel")
+                    label.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                    label.BackgroundTransparency = 0.4
+                    label.TextColor3 = Color3.fromRGB(255, 220, 100)
+                    label.Font = Enum.Font.GothamBold
+                    label.TextSize = 11
+                    label.BorderSizePixel = 0
+                    label.ZIndex = 25
+                    label.Size = UDim2.new(1, 0, 0, 16)
+                    label.Position = UDim2.fromOffset(0, -18)
+                    dpsLabels[i] = label
+                end
 
-            local unitData = imageToUnit[slot.Image]
-            label.Text = unitData and (unitData.Name .. " " .. formatDPS(getUnitDPS(unitData)) .. " DPS") or "?"
-            label.Parent = slot
-            label.Visible = true
+                local unitData = imageToUnit[slot.Image]
+                label.Text = unitData and (unitData.Name .. " " .. formatDPS(getUnitDPS(unitData)) .. " DPS") or "?"
+                label.Parent = slot
+                label.Visible = true
+            end
         end)
 	end
 
@@ -495,6 +497,8 @@ run(function()
 
 					task.wait(0.5)
 				until not DPSDisplay.Enabled
+            else
+                clearLabels()
 			end
 		end,
 		Tooltip = "Shows the DPS of each unit in your spawn menu.",
