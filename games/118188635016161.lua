@@ -510,7 +510,7 @@ run(function()
 	local AttackEvent = Remotes:FindFirstChild("AttackEvent")
 
 	AutoTeleport = vape.Categories.Blatant:CreateModule({
-		Name = "AutoTeleport",
+		Name = "AutoWin",
 		Function = function(callback) 
 			if callback then 
 				repeat 
@@ -535,7 +535,7 @@ run(function()
 				until not AutoTeleport.Enabled
 			end
 		end,
-		Tooltip = "Automatically teleports behind an enemy with a certain distance and rate."
+		Tooltip = "Automatically teleports behind an enemy with a certain distance and rate and attacks them."
 	})
 
 	Distance = AutoTeleport:CreateSlider({
