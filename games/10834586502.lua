@@ -47,6 +47,7 @@ local CannonCharging = Events.RemoteEvents:FindFirstChild("CannonCharging")
 
 local Cash = 0
 local cannonCooldownEnd = 0
+local bankPriorityActive = false
 
 local PlayerSpawn = Events.RemoteFunction.PlayerSpawn
 
@@ -185,6 +186,11 @@ run(function()
                     local screen = getBattleScreen()
         
                     if screen then
+                        if bankPriorityActive then
+                            task.wait(Rate.Value)
+                            continue
+                        end
+                        
                         local NPCText = screen.Info and screen.Info:FindFirstChild("NPCText")
         
                         local slot = getTargetSlot()
@@ -277,6 +283,51 @@ run(function()
 
     Notify = AutoBank:CreateToggle({
 		Name = "Notify",
+	})
+end)
+
+run(function()
+	local BankPriority
+	local Threshold
+
+	local function getBankUpgradeCost(screen)
+		local btn = screen:FindFirstChild("BankButton")
+		if not btn or not btn.Active then return nil end
+		local upg = btn:FindFirstChild("Upgrade")
+		if not upg or upg.Text == "Maxed" then return nil end
+		return tonumber((upg.Text:gsub("[%$ ,]", "")))
+	end
+
+	BankPriority = vape.Categories.Blatant:CreateModule({
+		Name = "BankPriority",
+		Function = function(callback)
+			if callback then
+				repeat
+                    local screen = getBattleScreen()
+                    if not screen then
+                        bankPriorityActive = false
+                        continue
+                    end
+
+                    local cost = getBankUpgradeCost(screen)
+                    if not cost then
+                        bankPriorityActive = false
+                        continue
+                    end
+                    bankPriorityActive = Cash < cost and (cost - Cash) <= Threshold.Value
+					task.wait(0.1)
+				until not BankPriority.Enabled
+			end
+		end,
+        Tooltip = "Automatically prioritizes bank upgrades.",
+	})
+
+	Threshold = BankPriority:CreateSlider({
+		Name = "Threshold",
+		Min = 0,
+		Max = 500,
+		Default = 100,
+		Tooltip = "How many dollars below the bank upgrade cost to start blocking unit spawns.",
 	})
 end)
 
