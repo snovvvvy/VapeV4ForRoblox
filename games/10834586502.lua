@@ -112,7 +112,7 @@ run(function()
 	local function getCheapestSlot()
 		local bestSlot
 		local bestCost = math.huge
-        
+
 		eachSlot(function(slot)
 			if slot.Active then
 				local cost = getSlotCost(slot)
@@ -144,12 +144,12 @@ run(function()
 	end
 
 	local function getTargetSlot()
-		if Mode.Value == "Cheapest" then
-			return getCheapestSlot()
-		elseif Mode.Value == "Most Expensive" then
-			return getMostExpensiveSlot()
-		end
-	end
+        local mode = Mode.Value or "Cheapest"
+        if mode == "Most Expensive" then
+            return getMostExpensiveSlot()
+        end
+        return getCheapestSlot()
+    end
 
 	AutoUnit = vape.Categories.Blatant:CreateModule({
 		Name = "AutoUnit",
