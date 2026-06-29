@@ -122,6 +122,7 @@ end)
 run(function()
 	local AutoUnit
 	local Mode
+    local Rate
 	local Notify
 
 	local function getCheapestSlot()
@@ -167,32 +168,34 @@ run(function()
 	end
 
 	AutoUnit = vape.Categories.Blatant:CreateModule({
-		Name = "AutoUnit",
-		Function = function(callback)
-			if callback then
-				repeat
-					local screen = getBattleScreen()
-
-					if screen then
-						local NPCText = screen.Info and screen.Info:FindFirstChild("NPCText")
-						local slot = getTargetSlot()
-						local npcs = NPCText and string.split(NPCText.Text, "/")
-
-						if slot and npcs and npcs[1] and npcs[2] and npcs[1] < npcs[2] then
-							firesignal(slot.Activated)
-
-							if Notify.Enabled then
-								notif("AutoUnit", "Spawned " .. imageToUnit[slot.Image].Name, 4)
-							end
-						end
-					end
-
-					task.wait(1)
-				until not AutoUnit.Enabled
-			end
-		end,
-		Tooltip = "Automatically spawns a unit."
-	})
+        Name = "AutoUnit",
+        Function = function(callback)
+            if callback then
+                repeat
+                    local screen = getBattleScreen()
+    
+                    if screen then
+                        local NPCText = screen.Info and screen.Info:FindFirstChild("NPCText")
+                        local slot = getTargetSlot()
+                        local npcs = NPCText and string.split(NPCText.Text, "/")
+                        local current = npcs and tonumber(npcs[1])
+                        local max = npcs and tonumber(npcs[2])
+    
+                        if slot and current and max and current < max then
+                            firesignal(slot.Activated)
+    
+                            if Notify.Enabled then
+                                notif("AutoUnit", "Spawned " .. imageToUnit[slot.Image].Name .. ".", 4)
+                            end
+                        end
+                    end
+    
+                    task.wait(Rate.Value)
+                until not AutoUnit.Enabled
+            end
+        end,
+        Tooltip = "Automatically spawns a unit."
+    })
 
 	Mode = AutoUnit:CreateDropdown({
 		Name = "Mode",
@@ -200,7 +203,66 @@ run(function()
 		Tooltip = "Which unit to prioritize when auto spawning.",
 	})
 
+    Rate = AutoUnit:CreateSlider({
+		Name = "Rate",
+        Min = 0.1,
+        Max = 5,
+		Tooltip = "The rate of checking and spawning a unit.",
+        Default = 1
+	})
+
 	Notify = AutoUnit:CreateToggle({
+		Name = "Notify",
+	})
+end)
+
+run(function()
+    local AutoBank
+    local Rate
+    local Notify
+
+    AutoBank = vape.Categories.Blatant:CreateModule({
+        Name = "AutoBank",
+        Function = function(callback)
+            if callback then
+                repeat
+                    local screen = getBattleScreen()
+    
+                    if screen then
+                        local btn = screen:FindFirstChild("BankButton")
+                        if btn and btn.Active then
+                            local upg = btn:FindFirstChild("Upgrade")
+
+                            if upg and upg.Text ~= "Maxed" then
+                                local cost = tonumber((upg.Text:gsub("[%$ ,]", "")))
+
+                                if cost and Cash >= cost then
+                                    task.spawn(function()
+                                        firesignal(btn.Activated)
+                                        if Notify.Enabled then 
+                                            notif("AutoBank", "Bought " .. upg.Text .. " bank.", 5)
+                                        end
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                    task.wait(Rate.Value)
+                until not AutoBank.Enabled
+            end
+        end,
+        Tooltip = "Automatically buys bank upgrades."
+    })
+
+    Rate = AutoUnit:CreateSlider({
+		Name = "Rate",
+        Min = 0.1,
+        Max = 5,
+		Tooltip = "The rate of checking and buying a bank upgrade.",
+        Default = 0.5
+	})
+
+    Notify = AutoUnit:CreateToggle({
 		Name = "Notify",
 	})
 end)
