@@ -173,24 +173,27 @@ run(function()
             if callback then
                 repeat
                     local screen = getBattleScreen()
-    
+                    print("screen:", screen)
+        
                     if screen then
                         local NPCText = screen.Info and screen.Info:FindFirstChild("NPCText")
+                        print("NPCText:", NPCText, NPCText and NPCText.Text)
+        
                         local slot = getTargetSlot()
+                        print("slot:", slot)
+        
                         local npcs = NPCText and string.split(NPCText.Text, "/")
                         local current = npcs and tonumber(npcs[1])
                         local max = npcs and tonumber(npcs[2])
-    
+                        print("current:", current, "max:", max)
+        
                         if slot and current and max and current < max then
                             firesignal(slot.Activated)
-    
-                            if Notify.Enabled then
-                                notif("AutoUnit", "Spawned " .. imageToUnit[slot.Image].Name .. ".", 4)
-                            end
+                            print("fired!")
                         end
                     end
-    
-                    task.wait(Rate.Value or 1)
+        
+                    task.wait(Rate.Value)
                 until not AutoUnit.Enabled
             end
         end,
