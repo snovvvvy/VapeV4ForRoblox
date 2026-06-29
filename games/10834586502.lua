@@ -337,6 +337,7 @@ end)
 run(function()
 	local AutoCannon
     local Range
+    local Notify
 
 	local function getBlueBase()
 		local n = workspace:FindFirstChild("NPCFolders")
@@ -384,6 +385,9 @@ run(function()
 								local btn = screen:FindFirstChild("CannonButton")
 								if btn and btn.Active then
 									firesignal(btn.Activated)
+                                    if Notify.Enabled then 
+                                        notif("AutoCannon", "Fired the cannon.", 5)
+                                    end
 								end
 							end
 						end
@@ -402,5 +406,9 @@ run(function()
 		Max = 100,
 		Default = 30,
 		Tooltip = "Distance from base an enemy must be within to fire the cannon.",
+	})
+
+    Notify = AutoCannon:CreateToggle({
+		Name = "Notify",
 	})
 end)
