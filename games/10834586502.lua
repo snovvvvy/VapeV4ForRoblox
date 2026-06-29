@@ -122,10 +122,6 @@ run(function()
 end)
 
 run(function() 
-	sessioninfo:AddItem("Cash", 0, function(val) 
-		return Cash
-	end, false)
-
     --[[sessioninfo:AddItem("Cannon Cooldown", 0, function(val) 
 		return math.round(math.max(0, cannonCooldownEnd - tick()))
 	end, false)]]
