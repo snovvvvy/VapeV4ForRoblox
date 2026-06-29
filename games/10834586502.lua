@@ -190,7 +190,7 @@ run(function()
                         end
                     end
     
-                    task.wait(Rate.Value)
+                    task.wait(Rate.Value or 1)
                 until not AutoUnit.Enabled
             end
         end,
