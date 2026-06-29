@@ -46,13 +46,21 @@ local BattleInfo = Events.RemoteEvents:FindFirstChild("BattleInfo")
 
 local Cash = 0
 
-local BattleScreen = lplr.PlayerGui:FindFirstChild("BattleScreen")
 local PlayerSpawn = Events.RemoteFunction.PlayerSpawn
 
+local function getBattleScreen()
+	local screen = lplr.PlayerGui:FindFirstChild("BattleScreen")
+	if screen and screen.Enabled then
+		return screen
+	end
+	return nil
+end
+
 local function getSpawnMenu()
-	if not BattleScreen or not BattleScreen.Enabled then return nil end
-	return BattleScreen:FindFirstChild("SpawnMenu")
-		or BattleScreen:FindFirstChild("MobileSpawnMenu")
+	local screen = getBattleScreen()
+	if not screen then return nil end
+	return screen:FindFirstChild("SpawnMenu")
+		or screen:FindFirstChild("MobileSpawnMenu")
 end
 
 local function getSlotCost(slot)
@@ -116,8 +124,6 @@ run(function()
 	local Mode
 	local Notify
 
-    local NPCText = BattleScreen.Info.NPCText
-
 	local function getCheapestSlot()
 		local bestSlot
 		local bestCost = math.huge
@@ -138,7 +144,7 @@ run(function()
 	local function getMostExpensiveSlot()
 		local bestSlot
 		local bestCost = -math.huge
-        
+
 		eachSlot(function(slot)
 			if slot.Active then
 				local cost = getSlotCost(slot)
@@ -153,27 +159,32 @@ run(function()
 	end
 
 	local function getTargetSlot()
-        local mode = Mode.Value or "Cheapest"
-        if mode == "Most Expensive" then
-            return getMostExpensiveSlot()
-        end
-        return getCheapestSlot()
-    end
+		local mode = Mode and Mode.Value or "Cheapest"
+		if mode == "Most Expensive" then
+			return getMostExpensiveSlot()
+		end
+		return getCheapestSlot()
+	end
 
 	AutoUnit = vape.Categories.Blatant:CreateModule({
 		Name = "AutoUnit",
 		Function = function(callback)
 			if callback then
 				repeat
-					local slot = getTargetSlot()
-                    local npcs = string.split(NPCText.Text, "/")
+					local screen = getBattleScreen()
 
-					if slot and npcs[1] < npcs[2] then
-						firesignal(slot.Activated)
+					if screen then
+						local NPCText = screen.Info and screen.Info:FindFirstChild("NPCText")
+						local slot = getTargetSlot()
+						local npcs = NPCText and string.split(NPCText.Text, "/")
 
-                        if Notify.Enabled then
-                            notif("AutoUnit", "Spawned ".. imageToUnit[slot.Image].Name, 4)
-                        end
+						if slot and npcs and npcs[1] and npcs[2] and npcs[1] < npcs[2] then
+							firesignal(slot.Activated)
+
+							if Notify.Enabled then
+								notif("AutoUnit", "Spawned " .. imageToUnit[slot.Image].Name, 4)
+							end
+						end
 					end
 
 					task.wait(1)
