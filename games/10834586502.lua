@@ -449,6 +449,7 @@ run(function()
 	local function clearLabels()
 		for _, label in pairs(dpsLabels) do
 			label:Destroy()
+            table.clear(dpsLabels)
 		end
 	end
 
