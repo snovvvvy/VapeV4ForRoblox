@@ -116,6 +116,8 @@ run(function()
 	local Mode
 	local Notify
 
+    local NPCText = BattleScreen.Info.NPCText
+
 	local function getCheapestSlot()
 		local bestSlot
 		local bestCost = math.huge
@@ -164,8 +166,9 @@ run(function()
 			if callback then
 				repeat
 					local slot = getTargetSlot()
+                    local npcs = string.split(NPCText.Text, "/")
 
-					if slot then
+					if slot and npcs[1] < npcs[2] then
 						firesignal(slot.Activated)
 
                         if Notify.Enabled then
