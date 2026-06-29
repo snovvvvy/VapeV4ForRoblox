@@ -254,7 +254,7 @@ run(function()
         Tooltip = "Automatically buys bank upgrades."
     })
 
-    Rate = AutoUnit:CreateSlider({
+    Rate = AutoBank:CreateSlider({
 		Name = "Rate",
         Min = 0.1,
         Max = 5,
@@ -262,7 +262,7 @@ run(function()
         Default = 0.5
 	})
 
-    Notify = AutoUnit:CreateToggle({
+    Notify = AutoBank:CreateToggle({
 		Name = "Notify",
 	})
 end)
