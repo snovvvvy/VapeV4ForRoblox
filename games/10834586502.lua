@@ -109,6 +109,7 @@ run(function()
 
 	vape:Clean(function()
 		table.clear(bb)
+        table.clear(imageToUnit)
 	end)
 end)
 
@@ -320,6 +321,8 @@ run(function()
                     bankPriorityActive = Cash < cost and (cost - Cash) <= Threshold.Value
 					task.wait(0.1)
 				until not AutoBankPriority.Enabled
+            else
+                bankPriorityActive = false
 			end
 		end,
         Tooltip = "Automatically prioritizes bank upgrades.",
