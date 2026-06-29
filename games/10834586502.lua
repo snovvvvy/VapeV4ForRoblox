@@ -43,8 +43,10 @@ local imageToUnit = {}
 
 local Events = replicatedStorage.Events
 local BattleInfo = Events.RemoteEvents:FindFirstChild("BattleInfo")
+local CannonCharging = Events.RemoteEvents:FindFirstChild("CannonCharging")
 
 local Cash = 0
+local cannonCooldownEnd = 0
 
 local PlayerSpawn = Events.RemoteFunction.PlayerSpawn
 
@@ -112,10 +114,18 @@ end)
 run(function() 
 	sessioninfo:AddItem("Cash", 0, function(val) 
 		return Cash
-	end)
+	end, false)
+
+    sessioninfo:AddItem("Cannon Cooldown", 0, function(val) 
+		return math.max(0, cannonCooldownEnd - tick())
+	end, false)
 
 	vape:Clean(BattleInfo.OnClientEvent:Connect(function(val) 
 		Cash = val or 0 
+	end))
+
+    vape:Clean(CannonCharging.OnClientEvent:Connect(function(duration)
+		cannonCooldownEnd = tick() + (duration or 0)
 	end))
 end)
 
@@ -267,5 +277,76 @@ run(function()
 
     Notify = AutoBank:CreateToggle({
 		Name = "Notify",
+	})
+end)
+
+run(function()
+	local AutoCannon
+    local Range
+
+	local function getBlueBase()
+		local n = workspace:FindFirstChild("NPCFolders")
+		local bf = n and n:FindFirstChild("BaseFolder")
+		return bf and bf:FindFirstChild("Blue Base")
+	end
+
+	local function getBasePos(base)
+		if not base then return nil end
+		return base:GetPrimaryPartCFrame()
+			or (base:FindFirstChild("HumanoidRootPart") and base.HumanoidRootPart.CFrame)
+			or (base:FindFirstChild("MainHitbox") and base.MainHitbox.CFrame)
+	end
+
+	local function isEnemyInRange(basePos, range)
+		local npcFolder = workspace:FindFirstChild("NPCFolders")
+		local enemyFolder = npcFolder and npcFolder:FindFirstChild("EnemyFolder")
+		if not enemyFolder or not basePos then return false end
+		for _, e in ipairs(enemyFolder:GetChildren()) do
+			if e:IsA("Model") then
+				local root = e:FindFirstChild("HumanoidRootPart") or e.PrimaryPart
+				if root and (root.Position - basePos.Position).Magnitude <= range then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	AutoCannon = vape.Categories.Blatant:CreateModule({
+		Name = "AutoCannon",
+		Function = function(callback)
+			if callback then
+				repeat
+					local screen = getBattleScreen()
+
+					if screen then
+						local cooldownRemaining = math.max(0, cannonCooldownEnd - tick())
+
+						if cooldownRemaining <= 0 then
+							local base = getBlueBase()
+							local basePos = getBasePos(base)
+
+							if basePos and isEnemyInRange(basePos, Range.Value) then
+								local btn = screen:FindFirstChild("CannonButton")
+								if btn and btn.Active then
+									firesignal(btn.Activated)
+								end
+							end
+						end
+					end
+
+					task.wait(0.1)
+				until not AutoCannon.Enabled
+			end
+		end,
+        Tooltip = "Automatically fires the cannon when an enemy is within range."
+	})
+
+	Range = AutoCannon:CreateSlider({
+		Name = "Range",
+		Min = 5,
+		Max = 100,
+		Default = 30,
+		Tooltip = "Distance from base an enemy must be within to fire the cannon.",
 	})
 end)
