@@ -535,8 +535,8 @@ run(function()
     local function Added(unit)
         if not unit:IsA("Model") then return end
     
-        local head = unit:FindFirstChild("Head") or unit:WaitForChild("Head", 5)
-        local humanoid = unit:FindFirstChildWhichIsA("Humanoid") or unit:WaitForChild("Humanoid", 5)
+        local head = unit:FindFirstChild("Head")
+        local humanoid = unit:FindFirstChildWhichIsA("Humanoid")
     
         if not head or not humanoid then return end
         if healthbarLabels[unit] then return end
