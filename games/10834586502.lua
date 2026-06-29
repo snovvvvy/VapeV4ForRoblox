@@ -287,7 +287,7 @@ run(function()
 end)
 
 run(function()
-	local BankPriority
+	local AutoBankPriority
 	local Threshold
 
 	local function getBankUpgradeCost(screen)
@@ -298,8 +298,8 @@ run(function()
 		return tonumber((upg.Text:gsub("[%$ ,]", "")))
 	end
 
-	BankPriority = vape.Categories.Blatant:CreateModule({
-		Name = "BankPriority",
+	AutoBankPriority = vape.Categories.Blatant:CreateModule({
+		Name = "AutoBankPriority",
 		Function = function(callback)
 			if callback then
 				repeat
@@ -319,13 +319,13 @@ run(function()
                     task.wait(0.1)
                     bankPriorityActive = Cash < cost and (cost - Cash) <= Threshold.Value
 					task.wait(0.1)
-				until not BankPriority.Enabled
+				until not AutoBankPriority.Enabled
 			end
 		end,
         Tooltip = "Automatically prioritizes bank upgrades.",
 	})
 
-	Threshold = BankPriority:CreateSlider({
+	Threshold = AutoBankPriority:CreateSlider({
 		Name = "Threshold",
 		Min = 0,
 		Max = 500,
