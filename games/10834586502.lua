@@ -208,7 +208,8 @@ run(function()
         Min = 0.1,
         Max = 5,
 		Tooltip = "The rate of checking and spawning a unit.",
-        Default = 1
+        Default = 1,
+        Decimal = 10
 	})
 
 	Notify = AutoUnit:CreateToggle({
@@ -259,7 +260,8 @@ run(function()
         Min = 0.1,
         Max = 5,
 		Tooltip = "The rate of checking and buying a bank upgrade.",
-        Default = 0.5
+        Default = 0.5,
+        Decimal = 10
 	})
 
     Notify = AutoBank:CreateToggle({
