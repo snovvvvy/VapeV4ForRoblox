@@ -519,3 +519,108 @@ run(function()
 		Tooltip = "Shows the DPS of each unit in your spawn menu.",
 	})
 end)
+
+run(function()
+	local Healthbars
+	local healthbarLabels = {}
+    local seen = {}
+
+	local function clearHealthbars()
+		for _, label in pairs(healthbarLabels) do
+			label:Destroy()
+		end
+		table.clear(healthbarLabels)
+	end
+
+    local function Added(unit) 
+        seen[unit] = true
+        local head = unit:FindFirstChild("Head")
+        local humanoid = unit:FindFirstChildWhichIsA("Humanoid")
+        if head and humanoid then
+            if healthbarLabels[unit] then return end
+            for _, child in ipairs(head:GetChildren()) do
+                if child:IsA("BillboardGui") and (
+                    child.Name:find("HP") or
+                    child.Name:find("Health") or
+                    child.Name:find("Bar") or
+                    child:FindFirstChildOfClass("Frame")
+                ) then
+                    return
+                end
+            end
+
+            local label = Instance.new("BillboardGui")
+            label.Name = "CustomHPBar"
+            label.Size = UDim2.fromOffset(80, 16)
+            label.StudsOffset = Vector3.new(0, 2.5, 0)
+            label.Adornee = head
+            label.AlwaysOnTop = true
+
+            local bg = Instance.new("Frame")
+            bg.Size = UDim2.new(1, 0, 1, 0)
+            bg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            bg.BorderSizePixel = 0
+            bg.Parent = label
+
+            local fill = Instance.new("Frame")
+            fill.Name = "Fill"
+            fill.Size = UDim2.fromScale(1, 1)
+            fill.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
+            fill.BorderSizePixel = 0
+            fill.Parent = bg
+
+            local hpText = Instance.new("TextLabel")
+            hpText.Size = UDim2.new(1, 0, 1, 0)
+            hpText.BackgroundTransparency = 1
+            hpText.TextColor3 = Color3.fromRGB(255, 255, 255)
+            hpText.Font = Enum.Font.GothamBold
+            hpText.TextSize = 10
+            hpText.TextStrokeTransparency = 0.3
+            hpText.Parent = label
+
+            healthbarLabels[unit] = label
+            label.Parent = head
+
+            local function updateHP()
+                if not humanoid.Parent then return end
+                local pct = humanoid.Health / math.max(humanoid.MaxHealth, 1)
+                fill.Size = UDim2.fromScale(math.clamp(pct, 0, 1), 1)
+                fill.BackgroundColor3 = pct > 0.5 and Color3.fromRGB(60, 200, 60)
+                    or pct > 0.25 and Color3.fromRGB(220, 200, 50)
+                    or Color3.fromRGB(220, 60, 60)
+                hpText.Text = string.format("%.0f/%.0f", humanoid.Health, humanoid.MaxHealth)
+            end
+
+            updateHP()
+            vape:Clean(humanoid.HealthChanged:Connect(updateHP))
+        end
+    end
+
+    local function Removed(unit) 
+        if healthbarLabels[unit] then
+            healthbarLabels[unit]:Destroy()
+        end
+    end
+
+	Healthbars = vape.Categories.Render:CreateModule({
+		Name = "Healthbars",
+		Function = function(callback)
+			if callback then
+                Healthbars:Clean(collectionService:GetInstanceAddedSignal("Enemy"):Connect(Added))
+				Healthbars:Clean(collectionService:GetInstanceRemovedSignal("Enemy"):Connect(Removed))
+                Healthbars:Clean(collectionService:GetInstanceAddedSignal("Friendly"):Connect(Added))
+				Healthbars:Clean(collectionService:GetInstanceRemovedSignal("Friendly"):Connect(Removed))
+
+				for _, obj in ipairs(collectionService:GetTagged("Enemy")) do
+					Added(obj)
+				end
+                for _, obj in ipairs(collectionService:GetTagged("Friendly")) do
+					Added(obj)
+				end
+			else
+				clearHealthbars()
+			end
+		end,
+		Tooltip = "Displays health bars above NPCs."
+	})
+end)
