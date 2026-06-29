@@ -475,7 +475,7 @@ run(function()
 
                 local unitData = imageToUnit[slot.Image]
                 label.Text = unitData and (unitData.Name .. " " .. formatDPS(getUnitDPS(unitData)) .. " DPS") or "?"
-                label.Parent = slot
+                label.Parent = vape.gui
                 label.Visible = true
             end
         end)
