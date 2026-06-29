@@ -190,7 +190,7 @@ run(function()
                             task.wait(Rate.Value)
                             continue
                         end
-                        
+
                         local NPCText = screen.Info and screen.Info:FindFirstChild("NPCText")
         
                         local slot = getTargetSlot()
@@ -306,12 +306,14 @@ run(function()
                     local screen = getBattleScreen()
                     if not screen then
                         bankPriorityActive = false
+                        task.wait(0.1)
                         continue
                     end
 
                     local cost = getBankUpgradeCost(screen)
                     if not cost then
                         bankPriorityActive = false
+                        task.wait(0.1)
                         continue
                     end
                     bankPriorityActive = Cash < cost and (cost - Cash) <= Threshold.Value
