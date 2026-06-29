@@ -59,7 +59,7 @@ local function getSlotCost(slot)
 	if not costLabel then
 		return math.huge
 	end
-	return tonumber(costLabel.Text:gsub("[%$ ,]", "")) or math.huge
+	return tonumber((costLabel.Text:gsub("[%$ ,]", ""))) or math.huge
 end
 
 local function eachSlot(callback)
