@@ -316,6 +316,7 @@ run(function()
                         task.wait(0.1)
                         continue
                     end
+                    task.wait(0.1)
                     bankPriorityActive = Cash < cost and (cost - Cash) <= Threshold.Value
 					task.wait(0.1)
 				until not BankPriority.Enabled
