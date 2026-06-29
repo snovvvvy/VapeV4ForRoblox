@@ -118,7 +118,7 @@ run(function()
 	end, false)
 
     sessioninfo:AddItem("Cannon Cooldown", 0, function(val) 
-		return math.max(0, cannonCooldownEnd - tick())
+		return math.round(math.max(0, cannonCooldownEnd - tick()))
 	end, false)
 
 	vape:Clean(BattleInfo.OnClientEvent:Connect(function(val) 
