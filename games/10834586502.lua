@@ -92,6 +92,14 @@ local function notif(...)
 	return vape:CreateNotification(...)
 end
 
+local function randomString()
+	local array = {}
+	for i = 1, math.random(10, 100) do
+		array[i] = string.char(math.random(32, 126))
+	end
+	return table.concat(array)
+end
+
 entitylib.start()
 
 run(function()
@@ -461,6 +469,7 @@ run(function()
                 local label = dpsLabels[i]
                 if not label then
                     label = Instance.new("TextLabel")
+                    label.Name = randomString()
                     label.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     label.BackgroundTransparency = 0.4
                     label.TextColor3 = Color3.fromRGB(255, 220, 100)
@@ -475,7 +484,7 @@ run(function()
 
                 local unitData = imageToUnit[slot.Image]
                 label.Text = unitData and (unitData.Name .. " " .. formatDPS(getUnitDPS(unitData)) .. " DPS") or "?"
-                label.Parent = vape.gui
+                label.Parent = slot
                 label.Visible = true
             end
         end)
