@@ -532,68 +532,70 @@ run(function()
 		table.clear(healthbarLabels)
 	end
 
-    local function Added(unit) 
-        seen[unit] = true
-        local head = unit:FindFirstChild("Head")
-        local humanoid = unit:FindFirstChildWhichIsA("Humanoid")
-        if head and humanoid then
-            if healthbarLabels[unit] then return end
-            for _, child in ipairs(head:GetChildren()) do
-                if child:IsA("BillboardGui") and (
-                    child.Name:find("HP") or
-                    child.Name:find("Health") or
-                    child.Name:find("Bar") or
-                    child:FindFirstChildOfClass("Frame")
-                ) then
-                    return
-                end
+    local function Added(unit)
+        if not unit:IsA("Model") then return end
+    
+        local head = unit:FindFirstChild("Head") or unit:WaitForChild("Head", 5)
+        local humanoid = unit:FindFirstChildWhichIsA("Humanoid") or unit:WaitForChildWhichIsA("Humanoid", 5)
+    
+        if not head or not humanoid then return end
+        if healthbarLabels[unit] then return end
+    
+        for _, child in ipairs(head:GetChildren()) do
+            if child:IsA("BillboardGui") and (
+                child.Name:find("HP") or
+                child.Name:find("Health") or
+                child.Name:find("Bar") or
+                child:FindFirstChildOfClass("Frame")
+            ) then
+                return
             end
-
-            local label = Instance.new("BillboardGui")
-            label.Name = "CustomHPBar"
-            label.Size = UDim2.fromOffset(80, 16)
-            label.StudsOffset = Vector3.new(0, 2.5, 0)
-            label.Adornee = head
-            label.AlwaysOnTop = true
-
-            local bg = Instance.new("Frame")
-            bg.Size = UDim2.new(1, 0, 1, 0)
-            bg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-            bg.BorderSizePixel = 0
-            bg.Parent = label
-
-            local fill = Instance.new("Frame")
-            fill.Name = "Fill"
-            fill.Size = UDim2.fromScale(1, 1)
-            fill.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
-            fill.BorderSizePixel = 0
-            fill.Parent = bg
-
-            local hpText = Instance.new("TextLabel")
-            hpText.Size = UDim2.new(1, 0, 1, 0)
-            hpText.BackgroundTransparency = 1
-            hpText.TextColor3 = Color3.fromRGB(255, 255, 255)
-            hpText.Font = Enum.Font.GothamBold
-            hpText.TextSize = 10
-            hpText.TextStrokeTransparency = 0.3
-            hpText.Parent = label
-
-            healthbarLabels[unit] = label
-            label.Parent = head
-
-            local function updateHP()
-                if not humanoid.Parent then return end
-                local pct = humanoid.Health / math.max(humanoid.MaxHealth, 1)
-                fill.Size = UDim2.fromScale(math.clamp(pct, 0, 1), 1)
-                fill.BackgroundColor3 = pct > 0.5 and Color3.fromRGB(60, 200, 60)
-                    or pct > 0.25 and Color3.fromRGB(220, 200, 50)
-                    or Color3.fromRGB(220, 60, 60)
-                hpText.Text = string.format("%.0f/%.0f", humanoid.Health, humanoid.MaxHealth)
-            end
-
-            updateHP()
-            vape:Clean(humanoid.HealthChanged:Connect(updateHP))
         end
+    
+        local label = Instance.new("BillboardGui")
+        label.Name = "CustomHPBar"
+        label.Size = UDim2.fromOffset(80, 16)
+        label.StudsOffset = Vector3.new(0, 2.5, 0)
+        label.Adornee = head
+        label.AlwaysOnTop = true
+    
+        local bg = Instance.new("Frame")
+        bg.Size = UDim2.new(1, 0, 1, 0)
+        bg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        bg.BorderSizePixel = 0
+        bg.Parent = label
+    
+        local fill = Instance.new("Frame")
+        fill.Name = "Fill"
+        fill.Size = UDim2.fromScale(1, 1)
+        fill.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
+        fill.BorderSizePixel = 0
+        fill.Parent = bg
+    
+        local hpText = Instance.new("TextLabel")
+        hpText.Size = UDim2.new(1, 0, 1, 0)
+        hpText.BackgroundTransparency = 1
+        hpText.TextColor3 = Color3.fromRGB(255, 255, 255)
+        hpText.Font = Enum.Font.GothamBold
+        hpText.TextSize = 10
+        hpText.TextStrokeTransparency = 0.3
+        hpText.Parent = label
+    
+        healthbarLabels[unit] = label
+        label.Parent = head
+    
+        local function updateHP()
+            if not humanoid.Parent then return end
+            local pct = humanoid.Health / math.max(humanoid.MaxHealth, 1)
+            fill.Size = UDim2.fromScale(math.clamp(pct, 0, 1), 1)
+            fill.BackgroundColor3 = pct > 0.5 and Color3.fromRGB(60, 200, 60)
+                or pct > 0.25 and Color3.fromRGB(220, 200, 50)
+                or Color3.fromRGB(220, 60, 60)
+            hpText.Text = string.format("%.0f/%.0f", humanoid.Health, humanoid.MaxHealth)
+        end
+    
+        updateHP()
+        Healthbars:Clean(humanoid.HealthChanged:Connect(updateHP))
     end
 
     local function Removed(unit) 
