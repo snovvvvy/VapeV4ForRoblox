@@ -70,7 +70,7 @@ local function eachSlot(callback)
 		local bar = menu:FindFirstChild(i <= 4 and "Bar1" or "Bar2")
 		local slot = bar and bar:FindFirstChild(("Slot%d"):format(i))
 
-		if slot then
+		if slot and slot.Activated then
 			callback(slot, i)
 		end
 	end
@@ -106,152 +106,41 @@ end)
 
 run(function()
 	local AutoUnit
-	local Unit
-	local Cooldown
+	local Notify
 
-	local lastUnitSpawn = 0
-	local unitCache = {}
-	local slotToUnit = {}
-	local imageToUnit = {}
+    local function getCheapestSlot()
+        local bestSlot
+        local bestCost = math.huge
+        eachSlot(function(slot)
+			local cost = getSlotCost(slot)
 
-    for _, entry in ipairs(bb.FriendlyNPCLibrary) do
-        if type(entry) == "table" and entry.A then
-            imageToUnit[entry.A.Image] = entry.A
-        end
+			if cost <= c and cost < bestCost then
+				bestCost = cost
+				bestSlot = slot
+			end
+        end)
+        return bestSlot
     end
-
-	local function getUnits()
-		local sm = getSpawnMenu()
-		if not sm then return end
-
-		local newCache = {}
-		local newSlotMap = {}
-		for i = 1, 8 do
-			local bar = sm:FindFirstChild(i <= 4 and "Bar1" or "Bar2")
-			local slot = bar and bar:FindFirstChild("Slot" .. i)
-			if slot then
-				local unitData = imageToUnit[slot.Image]
-				local name = unitData and unitData.Name or nil
-				local cost = getSlotCost(slot)
-				if name then
-					newCache[name] = {
-						name = name,
-						slotName = "Slot" .. i,
-						cost = cost,
-						slot = slot,
-					}
-					newSlotMap["Slot" .. i] = newCache[name]
-				end
-			end
-		end
-		unitCache = newCache
-		slotToUnit = newSlotMap
-		local names = {}
-		for name in pairs(newCache) do
-			table.insert(names, name)
-		end
-		table.sort(names)
-		if #names > 0 then
-			table.insert(names, 1, "Cheapest")
-			Unit:Change(names)
-		end
-	end
-
-	local function findCheapest()
-		local bestSlot
-		local bestCost = math.huge
-		eachSlot(function(slot)
-			if slot.Active then
-				local cost = getSlotCost(slot)
-				if cost <= Cash and cost < bestCost then
-					bestCost = cost
-					bestSlot = slot
-				end
-			end
-		end)
-		return bestSlot
-	end
-
-	local function findSlotForUnit(unitName)
-		local found
-		eachSlot(function(slot)
-			local unitData = imageToUnit[slot.Image]
-			if unitData and unitData.Name == unitName then
-				found = slot
-			end
-		end)
-		return found
-	end
-
-	local function spawnUnit()
-		if not BattleScreen or not BattleScreen.Enabled then return end
-		if next(unitCache) == nil then
-			getUnits()
-		end
-		local now = tick()
-
-		local selected = Unit and Unit.Value or "Cheapest"
-		local targetSlot
-		if selected == "Cheapest" then
-			targetSlot = findCheapest()
-		else
-			targetSlot = findSlotForUnit(selected)
-			if targetSlot then
-				local cost = getSlotCost(targetSlot)
-				if cost > Cash or not targetSlot.Active then
-					targetSlot = nil
-				end
-			end
-		end
-		if targetSlot then
-			task.spawn(function() firesignal(targetSlot.Activated) end)
-			lastUnitSpawn = now
-		end
-	end
 
 	AutoUnit = vape.Categories.Blatant:CreateModule({
 		Name = "AutoUnit",
-		Tooltip = "Automatically spawns a unit on cooldown.",
 		Function = function(callback)
 			if callback then
-				if next(unitCache) == nil then
-					getUnits()
-				end
-
 				repeat
-					spawnUnit()
-					task.wait(Cooldown.Value)
+					local slot = getCheapestSlot()
+
+                    if slot then
+                        firesignal(slot.Activated)
+                    end
+
+                    task.wait(1)
 				until not AutoUnit.Enabled
 			end
-		end
-	})
-
-	Unit = AutoUnit:CreateDropdown({
-		Name = "Unit",
-		List = {"Cheapest"},
-		Function = function()
-			if AutoUnit.Enabled then
-				AutoUnit:Toggle()
-				AutoUnit:Toggle()
-			end
 		end,
-        Tooltip = "Which unit to spawn"
+		Tooltip = "Automatically spawns the cheapest unit."
 	})
 
-	Cooldown = AutoUnit:CreateSlider({
-		Name = "Cooldown",
-		Min = 0,
-		Max = 10,
-		Suffix = function() return "s" end,
-		Default = 1,
-		Decimal = 10,
-		Tooltip = "Seconds between each spawn attempt",
-	})
-
-	vape:Clean(function()
-		table.clear(unitCache)
-		table.clear(slotToUnit)
-		table.clear(imageToUnit)
-		lastUnitSpawn = 0
-	end)
+    Notify = AutoUnit:CreateToggle({
+        Name = "Notify",
+    })
 end)
