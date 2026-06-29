@@ -169,7 +169,7 @@ run(function()
 						firesignal(slot.Activated)
 
                         if Notify.Enabled then
-                            notif("AutoUnit", "Spawned ".. imageToUnit[slot.Image], 4)
+                            notif("AutoUnit", "Spawned ".. imageToUnit[slot.Image].Name, 4)
                         end
 					end
 
