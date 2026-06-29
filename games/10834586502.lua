@@ -39,6 +39,7 @@ local uipallet = vape.Libraries.uipallet
 local entitylib = vape.Libraries.entity
 local sessioninfo = vape.Libraries.sessioninfo
 local bb = {}
+local imageToUnit = {}
 
 local Events = replicatedStorage.Events
 local BattleInfo = Events.RemoteEvents:FindFirstChild("BattleInfo")
@@ -88,6 +89,12 @@ run(function()
 	bb = {
 		FriendlyNPCLibrary = require(modules.FriendlyNPCLibrary)
 	}
+
+    for _, entry in ipairs(bb.FriendlyNPCLibrary) do
+        if type(entry) == "table" and entry.A then
+            imageToUnit[entry.A.Image] = entry.A
+        end
+    end
 
 	vape:Clean(function()
 		table.clear(bb)
@@ -160,6 +167,10 @@ run(function()
 
 					if slot then
 						firesignal(slot.Activated)
+
+                        if Notify.Enabled then
+                            notif("AutoUnit", "Spawned ".. imageToUnit[slot.Image], 4)
+                        end
 					end
 
 					task.wait(1)
