@@ -480,15 +480,18 @@ run(function()
                     label.Size = UDim2.new(1, 0, 0, 16)
                     label.Position = UDim2.fromOffset(0, -18)
                     dpsLabels[i] = label
-
-                    local uigradient = Instance.new("UIGradient")
-                    uigradient.Enabled = false
                 end
 
                 local unitData = imageToUnit[slot.Image]
                 label.Text = unitData and (unitData.Name .. " " .. formatDPS(getUnitDPS(unitData)) .. " DPS") or "?"
                 label.Parent = slot
                 label.Visible = true
+
+                if not label:FindFirstChildWhichIsA("UIGradient") then 
+                    local uigradient = Instance.new("UIGradient")
+                    uigradient.Enabled = false
+                    uigradient.Parent = label
+                end
             end
         end)
 	end
