@@ -173,7 +173,6 @@ run(function()
             if callback then
                 repeat
                     local screen = getBattleScreen()
-                    print("screen:", screen)
         
                     if screen then
                         local NPCText = screen.Info and screen.Info:FindFirstChild("NPCText")
