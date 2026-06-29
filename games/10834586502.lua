@@ -160,7 +160,7 @@ run(function()
 	end
 
 	local function getTargetSlot()
-		local mode = Mode and Mode.Value or "Cheapest"
+		local mode = Mode.Value or "Cheapest"
 		if mode == "Most Expensive" then
 			return getMostExpensiveSlot()
 		end
@@ -177,20 +177,15 @@ run(function()
         
                     if screen then
                         local NPCText = screen.Info and screen.Info:FindFirstChild("NPCText")
-                        print("NPCText:", NPCText, NPCText and NPCText.Text)
-                        print("raw NPCText:", NPCText.Text)
         
                         local slot = getTargetSlot()
-                        print("slot:", slot)
         
-                        local npcs = NPCText and string.split(NPCText.Text, "/")
+                        local npcs = NPCText and string.split(NPCText.Text:match("(%d+/%d+)"), "/")
                         local current = npcs and tonumber(npcs[1])
                         local max = npcs and tonumber(npcs[2])
-                        print("current:", current, "max:", max)
         
                         if slot and current and max and current < max then
                             firesignal(slot.Activated)
-                            print("fired!")
                         end
                     end
         
