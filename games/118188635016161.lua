@@ -255,7 +255,7 @@ run(function()
 					task.spawn(function()
 						local track = entitylib.character.Humanoid.Animator:LoadAnimation(animation)
 						track:Play()
-						track.TimePosition = 0.1
+						track.TimePosition = 0.2
 						track.Stopped:Wait()
 						obj.Enabled = false
 					end)
