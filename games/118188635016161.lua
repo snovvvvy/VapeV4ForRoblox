@@ -250,10 +250,17 @@ run(function()
 			if not entitylib.character.Character:GetAttribute("Parrying") then
 				obj.Enabled = true
 
-				local animation = replicatedStorage.Animations.ParryStarts:FindFirstChild(lplr:GetAttribute("Weapon") .. "ParryStart")
+				local animation = replicatedStorage.Animations.ParrySuccesses:FindFirstChild(lplr:GetAttribute("Weapon") .. "ParrySuccess")
 				if animation then
-					local track = entitylib.character.Humanoid.Animator:LoadAnimation(animation)
-					track:Play()
+					task.spawn(function()
+						local track = entitylib.character.Humanoid.Animator:LoadAnimation(animation)
+						track:Play()
+						track.TimePosition = 1
+						animation.Stopped:Wait()
+						obj.Enabled = false
+					end)
+				else
+					obj.Enabled = false
 				end
 			end
 		end))
@@ -270,6 +277,10 @@ run(function()
 
 					for _, obj in ipairs(collectionService:GetTagged("ParryHighlight")) do
 						setupHighlight(obj)
+					end
+				else
+					for _, obj in ipairs(collectionService:GetTagged("ParryHighlight")) do
+						obj.Enabled = true
 					end
 				end
 
