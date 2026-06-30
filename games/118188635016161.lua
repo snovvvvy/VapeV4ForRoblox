@@ -361,7 +361,7 @@ run(function()
 		end
 	})
 
-	LegitMode.Object.Visible = shared.vapedev
+	LegitMode.Object.Visible = shared.vapedev -- wip module, im not adding private modules
 end)
 
 run(function() 
