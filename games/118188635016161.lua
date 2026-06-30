@@ -124,7 +124,7 @@ run(function()
 		{
 			tag = "ParryHighlight",
 			match = function(obj)
-				return obj.Name == "InvincibleHighlight" and obj.Parent == entitylib.character.Character
+				return entitylib.isAlive and obj.Name == "InvincibleHighlight" and obj:IsDescendantOf(entitylib.character.Character)
 			end,
 		},
 	}
