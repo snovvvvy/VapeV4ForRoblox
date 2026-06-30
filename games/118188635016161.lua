@@ -49,7 +49,8 @@ local function notif(...)
 end
 
 entitylib.start()
-
+print(entitylib.character.Character)
+print(entitylib.character.Character.Parent)
 run(function()
 	local taggedObjects = setmetatable({}, {__mode = "k"})
 	local enemyInitialized = setmetatable({}, {__mode = "k"})
@@ -124,7 +125,7 @@ run(function()
 		{
 			tag = "ParryHighlight",
 			match = function(obj)
-				return obj:IsA("Highlight") and obj.Parent == entitylib.character.Character
+				return obj.Name == "InvincibleHighlight" and obj.Parent == entitylib.character.Character
 			end,
 		},
 	}
