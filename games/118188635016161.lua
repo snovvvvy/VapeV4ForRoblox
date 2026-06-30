@@ -256,7 +256,7 @@ run(function()
 						local track = entitylib.character.Humanoid.Animator:LoadAnimation(animation)
 						track:Play()
 						track.TimePosition = 1
-						animation.Stopped:Wait()
+						track.Stopped:Wait()
 						obj.Enabled = false
 					end)
 				else
