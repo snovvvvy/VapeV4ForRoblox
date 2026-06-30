@@ -126,7 +126,6 @@ run(function()
 			match = function(obj)
 				if obj:IsA("Highlight") then 
 					print(obj.Name)
-					print(obj.Parent)
 					print(obj.Parent.Name)
 				end
 				return obj.Name == "InvincibleHighlight" and obj.Parent.Name == entitylib.character.Character.Name
