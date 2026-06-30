@@ -124,10 +124,7 @@ run(function()
 		{
 			tag = "ParryHighlight",
 			match = function(obj)
-				if not obj:IsA("BasePart") or not obj:IsA("Weld") then
-					print(obj.ClassName)
-				end
-				return obj.Name == "InvincibleHighlight" and obj.Parent.Name == entitylib.character.Character.Name
+				return obj.Name == "InvincibleHighlight" and obj.Parent == entitylib.character.Character
 			end,
 		},
 	}
