@@ -222,6 +222,26 @@ run(function()
 	local PerfectParry
 	local LegitMode
 	local oldGPP
+	local cachedTracks = {}
+
+	local function getParryTrack()
+		local weapon = lplr:GetAttribute("Weapon")
+		local track = cachedTracks[weapon]
+
+		if track and track.Parent then
+			return track
+		end
+
+		local animation = replicatedStorage.Animations.ParryStarts:FindFirstChild(weapon .. "ParryStart")
+		if not animation or not entitylib.isAlive then
+			return
+		end
+
+		track = entitylib.character.Humanoid.Animator:LoadAnimation(animation)
+		cachedTracks[weapon] = track
+
+		return track
+	end
 
 	local function isParrying()
 		return math.random(100) <= Chance.Value
@@ -250,10 +270,10 @@ run(function()
 			if not entitylib.character.Character:GetAttribute("Parrying") then
 				obj.Enabled = true
 
-				local animation = replicatedStorage.Animations.ParryStarts:FindFirstChild(lplr:GetAttribute("Weapon") .. "ParryStart")
-				if animation then
+				local track = getParryTrack()
+
+				if track then
 					task.spawn(function()
-						local track = entitylib.character.Humanoid.Animator:LoadAnimation(animation)
 						track:Play()
 						track.TimePosition = 0.2
 						track.Stopped:Wait()
@@ -334,7 +354,7 @@ run(function()
 	LegitMode = AutoParry:CreateToggle({
 		Name = "Legit Mode",
 		Function = function()
-			if AutoParry.Enabled then 
+			if AutoParry.Enabled then
 				AutoParry:Toggle()
 				AutoParry:Toggle()
 			end
