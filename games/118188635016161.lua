@@ -89,6 +89,15 @@ run(function()
 			return false
 		end
 
+		if obj.Name == "InvincibleHighlight" then
+			print("workspace", obj:IsDescendantOf(workspace))
+		
+			local backpack = lplr:FindFirstChild("Backpack")
+			print("backpack", backpack and obj:IsDescendantOf(backpack))
+		
+			print("character", entitylib.character.Character)
+		end
+
 		if not obj:IsDescendantOf(workspace) then
 			return false
 		end
@@ -130,6 +139,9 @@ run(function()
 	}
 
 	local function tagObject(obj)
+		if obj.Name == "InvincibleHighlight" then
+			print("tagObject", obj, obj.Parent, entitylib.character.Character)
+		end
 		if not isValidWorldObject(obj) then
 			return
 		end
@@ -173,10 +185,25 @@ run(function()
 	end
 
 	for _, obj in workspace:GetDescendants() do
+		if obj.Name == "InvincibleHighlight" then
+			print("initial scan found", obj)
+			print(obj.Parent)
+			print(entitylib.character.Character)
+			print(obj.Parent == entitylib.character.Character)
+
+			print(obj.Parent == lplr.Character)
+			print(entitylib.character.Character == lplr.Character)
+		end
 		tagObject(obj)
 	end
 
-	vape:Clean(workspace.DescendantAdded:Connect(tagObject))
+	vape:Clean(workspace.DescendantAdded:Connect(function(obj)
+		if obj.Name == "InvincibleHighlight" then
+			print("added", obj)
+		end
+	
+		tagObject(obj)
+	end))
 
 	for tagName, behavior in pairs(TagBehaviors) do
 		vape:Clean(collectionService:GetInstanceAddedSignal(tagName):Connect(behavior))
