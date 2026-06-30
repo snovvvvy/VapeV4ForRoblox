@@ -250,7 +250,7 @@ run(function()
 			if not entitylib.character.Character:GetAttribute("Parrying") then
 				obj.Enabled = true
 
-				local animation = replicatedStorage.Animations.ParrySuccesses:FindFirstChild(lplr:GetAttribute("Weapon") .. "ParrySuccess")
+				local animation = replicatedStorage.Animations.ParryStarts:FindFirstChild(lplr:GetAttribute("Weapon") .. "ParryStart")
 				if animation then
 					task.spawn(function()
 						local track = entitylib.character.Humanoid.Animator:LoadAnimation(animation)
