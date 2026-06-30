@@ -124,10 +124,7 @@ run(function()
 		{
 			tag = "ParryHighlight",
 			match = function(obj)
-				if obj:IsA("Highlight") then 
-					print(obj.Name)
-					print(obj.Parent.Name)
-				end
+				print(obj.ClassName)
 				return obj.Name == "InvincibleHighlight" and obj.Parent.Name == entitylib.character.Character.Name
 			end,
 		},
@@ -325,7 +322,13 @@ run(function()
 	})
 
 	LegitMode = AutoParry:CreateToggle({
-		Name = "Legit Mode"
+		Name = "Legit Mode",
+		Function = function()
+			if AutoParry.Enabled then 
+				AutoParry:Toggle()
+				AutoParry:Toggle()
+			end
+		end
 	})
 end)
 
