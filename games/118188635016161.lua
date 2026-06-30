@@ -51,9 +51,9 @@ end
 entitylib.start()
 
 run(function()
-	local taggedObjects = setmetatable({}, {__mode = "k"})
-	local enemyInitialized = setmetatable({}, {__mode = "k"})
-	local destroyConnected = setmetatable({}, {__mode = "k"})
+	local taggedObjects = setmetatable({}, { __mode = "k" })
+	local enemyInitialized = setmetatable({}, { __mode = "k" })
+	local destroyConnected = setmetatable({}, { __mode = "k" })
 
 	local function tag(obj, tagName)
 		if collectionService:HasTag(obj, tagName) then
@@ -89,15 +89,6 @@ run(function()
 			return false
 		end
 
-		if obj.Name == "InvincibleHighlight" then
-			print("workspace", obj:IsDescendantOf(workspace))
-		
-			local backpack = lplr:FindFirstChild("Backpack")
-			print("backpack", backpack and obj:IsDescendantOf(backpack))
-		
-			print("character", entitylib.character.Character)
-		end
-
 		if not obj:IsDescendantOf(workspace) then
 			return false
 		end
@@ -109,7 +100,7 @@ run(function()
 			end
 
 			local character = entitylib.character.Character
-			if character and obj:IsDescendantOf(character) then
+			if character and obj:IsDescendantOf(character) and not obj:IsA("Highlight") then
 				return false
 			end
 		end
@@ -133,15 +124,12 @@ run(function()
 		{
 			tag = "ParryHighlight",
 			match = function(obj)
-				return entitylib.isAlive and obj.Name == "InvincibleHighlight" and obj:IsDescendantOf(entitylib.character.Character)
+				return entitylib.isAlive and obj:IsA("Highlight") and obj.Name == "InvincibleHighlight" and obj.Parent == entitylib.character.Character
 			end,
 		},
 	}
 
 	local function tagObject(obj)
-		if obj.Name == "InvincibleHighlight" then
-			print("tagObject", obj, obj.Parent, entitylib.character.Character)
-		end
 		if not isValidWorldObject(obj) then
 			return
 		end
@@ -184,26 +172,11 @@ run(function()
 		end
 	end
 
-	for _, obj in workspace:GetDescendants() do
-		if obj.Name == "InvincibleHighlight" then
-			print("initial scan found", obj)
-			print(obj.Parent)
-			print(entitylib.character.Character)
-			print(obj.Parent == entitylib.character.Character)
-
-			print(obj.Parent == lplr.Character)
-			print(entitylib.character.Character == lplr.Character)
-		end
+	for _, obj in ipairs(workspace:GetDescendants()) do
 		tagObject(obj)
 	end
 
-	vape:Clean(workspace.DescendantAdded:Connect(function(obj)
-		if obj.Name == "InvincibleHighlight" then
-			print("added", obj)
-		end
-	
-		tagObject(obj)
-	end))
+	vape:Clean(workspace.DescendantAdded:Connect(tagObject))
 
 	for tagName, behavior in pairs(TagBehaviors) do
 		vape:Clean(collectionService:GetInstanceAddedSignal(tagName):Connect(behavior))
