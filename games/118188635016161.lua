@@ -121,6 +121,12 @@ run(function()
 				return obj.Name == "Mech" and obj.Parent == PlayerFolder
 			end,
 		},
+		{
+			tag = "ParryHighlight",
+			match = function(obj)
+				return obj.Name == "InvincibleHighlight" and obj.Parent == entitylib.character.Character
+			end,
+		},
 	}
 
 	local function tagObject(obj)
@@ -213,42 +219,77 @@ run(function()
 	local AutoParry
 	local Chance
 	local UpdateRate
-    local PerfectParry
-	local old
+	local PerfectParry
+	local LegitMode
+	local oldGPP
+
+	local function isParrying()
+		return math.random(100) <= Chance.Value
+	end
+
+	local function updateMechs(parrying)
+		for _, mech in ipairs(collectionService:GetTagged("Mech")) do
+			local seat = mech:FindFirstChildWhichIsA("Seat", true) or mech:FindFirstChildWhichIsA("VehicleSeat", true)
+			local occupied = seat and seat.Occupant and seat.Occupant.Parent == lplr.Character
+
+			if occupied then
+				mech:SetAttribute("Parrying", parrying)
+				mech:SetAttribute("PerfectParrying", parrying and PerfectParry.Enabled or false)
+			end
+		end
+	end
+
+	local function setupHighlight(obj)
+		obj.Enabled = false
+
+		AutoParry:Clean(entitylib.character.Character:GetAttributeChangedSignal("Parrying"):Connect(function()
+			if not entitylib.isAlive then
+				return
+			end
+
+			if not entitylib.character.Character:GetAttribute("Parrying") then
+				obj.Enabled = true
+
+				local animation = replicatedStorage.Animations.ParrySuccesses:FindFirstChild(lplr:GetAttribute("Weapon") .. "ParrySuccess")
+				if animation then
+					local track = entitylib.character.Humanoid.Animator:LoadAnimation(animation)
+					track:Play()
+				end
+			end
+		end))
+	end
 
 	AutoParry = vape.Categories.Blatant:CreateModule({
 		Name = "AutoParry",
-		Function = function(callback)
-			if callback then
-				local parrying = (math.random() * 100 <= Chance.Value)
-				old = parry.GlobalFunctions.GPP
+		Function = function(enabled)
+			if enabled then
+				oldGPP = parry.GlobalFunctions.GPP
 
-                repeat
-					for _, mech in ipairs(collectionService:GetTagged("Mech")) do
-						local seat = mech:FindFirstChildWhichIsA("Seat", true) or mech:FindFirstChildWhichIsA("VehicleSeat", true)
-					
-						local occupiedBylocal = seat and seat.Occupant and seat.Occupant.Parent == lplr.Character
-					
-						if parrying and occupiedBylocal then
-							mech:SetAttribute("Parrying", true)
-							mech:SetAttribute("PerfectParrying", PerfectParry.Enabled)
-						elseif not parrying and occupiedBylocal then
-							mech:SetAttribute("Parrying", false)
-							mech:SetAttribute("PerfectParrying", false)
-						end
+				if LegitMode.Enabled then
+					AutoParry:Clean(collectionService:GetInstanceAddedSignal("ParryHighlight"):Connect(setupHighlight))
+
+					for _, obj in ipairs(collectionService:GetTagged("ParryHighlight")) do
+						setupHighlight(obj)
 					end
-				
+				end
+
+				repeat
+					local parrying = isParrying()
+
+					updateMechs(parrying)
+
 					lplr:SetAttribute("ParryActiveTime", parrying and 0.3 or 0)
-				
-					parry.GlobalFunctions.GPP = function(...)
+
+					parry.GlobalFunctions.GPP = function()
 						return PerfectParry.Enabled
 					end
-				
+
 					task.wait(1 / UpdateRate.Value)
 				until not AutoParry.Enabled
 			else
-				if old then
-					parry.GlobalFunctions.GPP = old
+				if oldGPP then
+					parry.GlobalFunctions.GPP = oldGPP
+					oldGPP = nil
 				end
 			end
 		end,
@@ -259,10 +300,10 @@ run(function()
 		Name = "Chance",
 		Min = 1,
 		Max = 100,
-        Suffix = function()
-            return '%'
-        end,
-		Default = 100
+		Default = 100,
+		Suffix = function()
+			return "%"
+		end
 	})
 
 	UpdateRate = AutoParry:CreateSlider({
@@ -270,16 +311,18 @@ run(function()
 		Min = 1,
 		Max = 120,
 		Default = 20,
-		Suffix = function(val)
+		Suffix = function()
 			return "Hz"
 		end
 	})
 
-    PerfectParry = AutoParry:CreateToggle({
-		Name = "Perfect Parry",
+	PerfectParry = AutoParry:CreateToggle({
+		Name = "Perfect Parry"
 	})
 
-	-- PerfectParry.Object.Visible = false
+	LegitMode = AutoParry:CreateToggle({
+		Name = "Legit Mode"
+	})
 end)
 
 run(function() 
@@ -452,7 +495,7 @@ run(function()
 	})
 end)
 
-run(function() 
+--[[run(function() 
 	local HipHeight
 	local Height
 	local modified = {}
@@ -500,7 +543,7 @@ run(function()
 		end,
 		Default = 10
 	})
-end)
+end)]]
 
 run(function() 
 	local AutoTeleport -- SON :sob:
