@@ -124,7 +124,7 @@ run(function()
 		{
 			tag = "ParryHighlight",
 			match = function(obj)
-				return obj.Name == "InvincibleHighlight" and obj.Parent == entitylib.character.Character
+				return obj:IsA("Highlight") and obj.Parent == entitylib.character.Character
 			end,
 		},
 	}
