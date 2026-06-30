@@ -360,6 +360,8 @@ run(function()
 			end
 		end
 	})
+
+	LegitMode.Object.Visible = shared.vapedev
 end)
 
 run(function() 
