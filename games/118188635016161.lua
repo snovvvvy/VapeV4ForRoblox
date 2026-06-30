@@ -125,7 +125,7 @@ run(function()
 			tag = "ParryHighlight",
 			match = function(obj)
 				if obj:IsA("Highlight") then 
-					print(obj)
+					print(obj.Name)
 					print(obj.Parent)
 					print(obj.Parent.Name)
 				end
