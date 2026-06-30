@@ -288,8 +288,8 @@ run(function()
 
 	AutoParry = vape.Categories.Blatant:CreateModule({
 		Name = "AutoParry",
-		Function = function(enabled)
-			if enabled then
+		Function = function(callback)
+			if callback then
 				oldGPP = parry.GlobalFunctions.GPP
 
 				if LegitMode.Enabled then
