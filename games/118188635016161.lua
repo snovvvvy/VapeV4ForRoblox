@@ -149,6 +149,12 @@ run(function()
 				return obj.Name == "Piano" and obj.Parent == EffectsFolder
 			end,
 		},
+		{
+			tag = "HalfShockwave",
+			match = function(obj)
+				return obj.Name == "HalfShockwave" and obj.Parent == EffectsFolder
+			end,
+		}
 	}
 
 	local function tagObject(obj)
@@ -409,7 +415,9 @@ run(function()
 		x1Slash = {
 			Expand = Vector3.new(0.5, 0.5, 0.5)
 		},
-
+		HalfShockwave = {
+			Expand = Vector3.new(1, 1, 1)
+		},
 		Piano = {
 			Expand = Vector3.new(37.5, 1000, 37.5),
 
