@@ -410,7 +410,7 @@ run(function()
 		},
 
 		Piano = {
-			Expand = Vector3.new(23, 1000, 23),
+			Expand = Vector3.new(27, 1000, 27),
 
 			Modify = function(obj, size, cframe)
 				local mesh = obj:FindFirstChildWhichIsA("SpecialMesh")
