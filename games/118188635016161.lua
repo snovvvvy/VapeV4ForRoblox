@@ -394,7 +394,22 @@ run(function()
 			Expand = Vector3.new(0.5, 0.5, 0.5)
 		},
 		Piano = {
-			Expand = Vector3.new(0.5, 100, 0.5)
+			Expand = Vector3.new(0.5, 1000, 0.5),
+
+			Modify = function(obj, size, cframe)
+				local mesh = obj:FindFirstChildWhichIsA("SpecialMesh")
+				if mesh then
+					size = Vector3.new(
+						size.X * mesh.Scale.X,
+						size.Y * mesh.Scale.Y,
+						size.Z * mesh.Scale.Z
+					)
+
+					cframe *= CFrame.new(mesh.Offset)
+				end
+
+				return size, cframe
+			end
 		}
 	}
 
@@ -412,13 +427,20 @@ run(function()
 			return
 		end
 
+		local size = obj.Size
+		local cframe = obj.CFrame
+
+		if info.Modify then
+			size, cframe = info.Modify(obj, size, cframe)
+		end
+
 		local part = Instance.new("Part")
 		part.Name = randomString()
 		part.Anchored = true
-		part.Transparency = 0
 		part.CanCollide = true
-		part.Size = obj.Size + info.Expand
-		part.CFrame = obj.CFrame
+		part.Transparency = 0
+		part.Size = size + (info.Expand or Vector3.zero)
+		part.CFrame = cframe
 		part.Parent = workspace
 
 		Reference[obj] = part
