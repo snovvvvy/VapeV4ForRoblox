@@ -18,7 +18,7 @@ local mainapi = {
 	Version = "4.21",
 	Windows = {},
 }
-task.wait(.1)
+--task.wait(.1)
 local cloneref = cloneref or function(obj)
 	return obj
 end
