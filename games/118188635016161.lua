@@ -395,8 +395,8 @@ run(function()
 		local part = Instance.new("Part")
 		part.Name = randomString()
 		part.Anchored = true
-		part.Transparency = 0
-		part.CanCollide = false
+		part.Transparency = 1
+		part.CanCollide = true
 		part.Size = obj.Size + Vector3.new(0.5, 0.5, 0.5)
 		part.CFrame = obj.CFrame
 		part.Parent = workspace
