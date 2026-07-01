@@ -142,6 +142,12 @@ run(function()
 				return obj.Name == "x1SlashWarning" and obj.Parent == EffectsFolder
 			end,
 		},
+		{
+			tag = "Piano",
+			match = function(obj)
+				return obj.Name == "Piano" and obj.Parent == EffectsFolder
+			end,
+		},
 	}
 
 	local function tagObject(obj)
@@ -380,10 +386,20 @@ run(function()
 end)
 
 run(function()
+
 	local AntiHazard
 	local Reference = {}
 
-	local function create(obj)
+	local Hazards = {
+		x1Slash = {
+			Expand = Vector3.new(0.5, 0.5, 0.5)
+		},
+		Piano = {
+			Expand = Vector3.new(0.5, 100, 0.5)
+		}
+	}
+
+	local function create(obj, hazardType)
 		if not obj or not obj:IsA("BasePart") then
 			return
 		end
@@ -392,12 +408,17 @@ run(function()
 			return
 		end
 
+		local info = Hazards[hazardType]
+		if not info then
+			return
+		end
+
 		local part = Instance.new("Part")
 		part.Name = randomString()
 		part.Anchored = true
 		part.Transparency = 1
 		part.CanCollide = true
-		part.Size = obj.Size + Vector3.new(0.5, 0.5, 0.5)
+		part.Size = obj.Size + info.Expand
 		part.CFrame = obj.CFrame
 		part.Parent = workspace
 
@@ -405,16 +426,16 @@ run(function()
 	end
 
 	local function remove(obj)
-		local part = Reference[obj]
-		if not part then
+		local ref = Reference[obj]
+		if not ref then
 			return
 		end
 
 		Reference[obj] = nil
 
 		task.delay(0.5, function()
-			if part and part.Parent then
-				part:Destroy()
+			if ref and ref.Parent then
+				ref:Destroy()
 			end
 		end)
 	end
@@ -423,11 +444,16 @@ run(function()
 		Name = "AntiHazard",
 		Function = function(callback)
 			if callback then
-				AntiHazard:Clean(collectionService:GetInstanceAddedSignal("x1Slash"):Connect(create))
-				AntiHazard:Clean(collectionService:GetInstanceRemovedSignal("x1Slash"):Connect(remove))
-				
-				for _, obj in ipairs(collectionService:GetTagged("x1Slash")) do
-					create(obj)
+				for tag in pairs(Hazards) do
+					AntiHazard:Clean(collectionService:GetInstanceAddedSignal(tag):Connect(function(obj)
+						create(obj, tag)
+					end))
+
+					AntiHazard:Clean(collectionService:GetInstanceRemovedSignal(tag):Connect(remove))
+
+					for _, obj in ipairs(collectionService:GetTagged(tag)) do
+						create(obj, tag)
+					end
 				end
 			else
 				for _, part in pairs(Reference) do
