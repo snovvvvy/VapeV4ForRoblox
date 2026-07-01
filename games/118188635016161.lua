@@ -41,11 +41,20 @@ local parry = {}
 
 local EnemyFolder = workspace:FindFirstChild("EnemyFolder")
 local PlayerFolder = workspace:FindFirstChild("PlayerFolder")
+local EffectsFolder = workspace:FindFirstChild("EffectsFolder")
 
 local Remotes = replicatedStorage:FindFirstChild("Remotes")
 
 local function notif(...)
 	return vape:CreateNotification(...)
+end
+
+local function randomString()
+	local array = {}
+	for i = 1, math.random(10, 100) do
+		array[i] = string.char(math.random(32, 126))
+	end
+	return table.concat(array)
 end
 
 entitylib.start()
@@ -125,6 +134,12 @@ run(function()
 			tag = "ParryHighlight",
 			match = function(obj)
 				return entitylib.isAlive and obj:IsA("Highlight") and obj.Name == "InvincibleHighlight" and obj.Parent == entitylib.character.Character
+			end,
+		},
+		{
+			tag = "x1Slash",
+			match = function(obj)
+				return obj.Name == "x1SlashWarning" and obj.Parent == EffectsFolder
 			end,
 		},
 	}
@@ -362,6 +377,88 @@ run(function()
 	})
 
 	LegitMode.Object.Visible = shared.vapedev -- wip module, im not adding private modules
+end)
+
+run(function()
+	local AntiHazard
+	local Reference = {}
+	local Pool = {}
+
+	local function getPart()
+		local part = table.remove(Pool)
+		if part then
+			return part
+		end
+
+		part = Instance.new("Part")
+		part.Name = randomString()
+		part.Anchored = true
+		part.Transparency = 1
+		part.CanCollide = false
+		part.Parent = workspace
+
+		return part
+	end
+
+	local function releasePart(part)
+		if not part then
+			return
+		end
+
+		part.Parent = nil
+		table.insert(Pool, part)
+	end
+
+	local function create(obj)
+		if not obj or not obj:IsA("BasePart") then
+			return
+		end
+
+		if Reference[obj] then
+			return
+		end
+
+		local part = getPart()
+		part.Size = obj.Size + Vector3.new(0.5, 0.5, 0.5)
+		part.CFrame = obj.CFrame
+
+		Reference[obj] = part
+	end
+
+	local function remove(obj)
+		local part = Reference[obj]
+		if not part then
+			return
+		end
+
+		Reference[obj] = nil
+		releasePart(part)
+	end
+
+	local function clear()
+		for obj, part in pairs(Reference) do
+			if part then
+				releasePart(part)
+			end
+		end
+		table.clear(Reference)
+	end
+
+	AntiHazard = vape.Categories.Blatant:CreateModule({
+		Name = "AntiHazard",
+		Function = function(callback)
+			if callback then
+				AntiHazard:Clean(collectionService:GetInstanceAddedSignal("x1Slash"):Connect(create))
+				AntiHazard:Clean(collectionService:GetInstanceRemovedSignal("x1Slash"):Connect(remove))
+
+				for _, obj in ipairs(collectionService:GetTagged("x1Slash")) do
+					create(obj)
+				end
+			else
+				clear()
+			end
+		end
+	})
 end)
 
 run(function() 
@@ -663,8 +760,6 @@ end)
 
 run(function() 
 	local DisableEffects
-
-	local EffectsFolder = workspace:FindFirstChild("EffectsFolder")
 
 	local function remove(instance)
 		task.defer(function()
