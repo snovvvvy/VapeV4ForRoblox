@@ -817,6 +817,32 @@ run(function()
 end)
 
 run(function() 
+	local DisableSugarcoatGUI
+	local SugarcoatGUI = playerGui:FindFirstChild("SugarcoatGui")
+
+	local function onEnabled() 
+		if SugarcoatGUI.Enabled then 
+			SugarcoatGUI.Enabled = false
+		end
+	end
+
+	DisableSugarcoatGUI = vape.Categories.Render:CreateModule({
+		Name = "DisableSugarcoatGUI",
+		Function = function(callback)
+			if callback then 
+				if not SugarcoatGUI then 
+					notif("DisableSugarcoatGUI", "Couldn't find the sugar coat gui!", 10, "warning")
+					SugarcoatGUI:Toggle()
+					return
+				end
+
+				DisableSugarcoatGUI:Clean(SugarcoatGUI:GetPropertyChangedSignal("Enabled"):Connect(onEnabled))
+			end
+		end
+	})
+end)
+
+run(function() 
 	local DisableEventsAllowed
 	local EventsAllowed = replicatedStorage:FindFirstChild("EventsAllowed")
 
