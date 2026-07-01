@@ -454,7 +454,7 @@ run(function()
 		part.Name = randomString()
 		part.Anchored = true
 		part.CanCollide = true
-		part.Transparency = 0
+		part.Transparency = 1
 		part.Size = size + (info.Expand or Vector3.zero)
 		part.CFrame = cframe
 		part.Parent = workspace
