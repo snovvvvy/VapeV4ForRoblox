@@ -415,7 +415,7 @@ run(function()
 		local part = Instance.new("Part")
 		part.Name = randomString()
 		part.Anchored = true
-		part.Transparency = 1
+		part.Transparency = 0
 		part.CanCollide = true
 		part.Size = obj.Size + info.Expand
 		part.CFrame = obj.CFrame
