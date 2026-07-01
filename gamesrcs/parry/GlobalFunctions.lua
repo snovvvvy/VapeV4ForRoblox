@@ -2389,7 +2389,7 @@ function t.TargetChatSystem(p1) --[[ Line: 3025 | Upvalues: ModifiersActive (cop
 				"EEEYYYEEOOWW!!",
 				"pls stop attacking me thx",
 				"why you do this?! why?!?",
-				"999 tokens if you let me win trust",
+				" 999 tokens if you let me win trust",
 				"oh man now im peeved",
 				"*discombobulated*"
 			}
@@ -3942,7 +3942,7 @@ function t.BossDead(p1) --[[ Line: 4644 | Upvalues: Players (copy), Sounds (copy
 
 			local t2 = { ", ENJOY!", " WOO!", "!!" }
 
-			BigText.Text = "5000 POINTS FOR ALL" .. t2[math.random(1, #t2)]
+			BigText.Text = " 5000 POINTS FOR ALL" .. t2[math.random(1, #t2)]
 			v:SetAttribute("Score", v:GetAttribute("Score") + 5000)
 			t.CheckScore(v)
 			t.ScoreLabels(v)
