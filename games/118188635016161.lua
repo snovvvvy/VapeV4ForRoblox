@@ -382,32 +382,6 @@ end)
 run(function()
 	local AntiHazard
 	local Reference = {}
-	local Pool = {}
-
-	local function getPart()
-		local part = table.remove(Pool)
-		if part then
-			return part
-		end
-
-		part = Instance.new("Part")
-		part.Name = randomString()
-		part.Anchored = true
-		part.Transparency = 1
-		part.CanCollide = false
-		part.Parent = workspace
-
-		return part
-	end
-
-	local function releasePart(part)
-		if not part then
-			return
-		end
-
-		part.Parent = nil
-		table.insert(Pool, part)
-	end
 
 	local function create(obj)
 		if not obj or not obj:IsA("BasePart") then
@@ -418,9 +392,14 @@ run(function()
 			return
 		end
 
-		local part = getPart()
+		local part = Instance.new("Part")
+		part.Name = randomString()
+		part.Anchored = true
+		part.Transparency = 0
+		part.CanCollide = false
 		part.Size = obj.Size + Vector3.new(0.5, 0.5, 0.5)
 		part.CFrame = obj.CFrame
+		part.Parent = workspace
 
 		Reference[obj] = part
 	end
@@ -432,16 +411,12 @@ run(function()
 		end
 
 		Reference[obj] = nil
-		releasePart(part)
-	end
 
-	local function clear()
-		for obj, part in pairs(Reference) do
-			if part then
-				releasePart(part)
+		task.delay(0.5, function()
+			if part and part.Parent then
+				part:Destroy()
 			end
-		end
-		table.clear(Reference)
+		end)
 	end
 
 	AntiHazard = vape.Categories.Blatant:CreateModule({
@@ -450,12 +425,17 @@ run(function()
 			if callback then
 				AntiHazard:Clean(collectionService:GetInstanceAddedSignal("x1Slash"):Connect(create))
 				AntiHazard:Clean(collectionService:GetInstanceRemovedSignal("x1Slash"):Connect(remove))
-
+				
 				for _, obj in ipairs(collectionService:GetTagged("x1Slash")) do
 					create(obj)
 				end
 			else
-				clear()
+				for _, part in pairs(Reference) do
+					if part and part.Parent then
+						part:Destroy()
+					end
+				end
+				table.clear(Reference)
 			end
 		end
 	})
