@@ -248,8 +248,11 @@ run(function() -- ac bypass by koya
 	if goofinator then
 		goofinator:Destroy()
 		notif("Vape", "Successfully bypassed the anticheat, thanks koya!", 10)
+		shared.AnticheatBypassed = true
 	else
-		notif("Vape", "Couldn't bypass the anticheat. Use at your own risk. (or anticheat alr bypassed)", 10, "warning")
+		if shared.AnticheatBypassed ~= true then
+			notif("Vape", "Couldn't bypass the anticheat. Use at your own risk. (or anticheat alr bypassed)", 10, "warning")
+		end
 	end
 end)
 
