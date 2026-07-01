@@ -386,7 +386,6 @@ run(function()
 end)
 
 run(function()
-
 	local AntiHazard
 	local Reference = {}
 
