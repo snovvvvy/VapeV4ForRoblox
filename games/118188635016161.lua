@@ -251,7 +251,7 @@ run(function() -- ac bypass by koya
 		shared.AnticheatBypassed = true
 	else
 		if shared.AnticheatBypassed ~= true then
-			notif("Vape", "Couldn't bypass the anticheat. Use at your own risk. (or anticheat alr bypassed)", 10, "warning")
+			notif("Vape", "Couldn't bypass the anticheat. Use at your own risk.", 10, "warning")
 		end
 	end
 end)
