@@ -402,6 +402,7 @@ end)
 
 run(function()
 	local AntiHazard
+	local Transparency
 	local Reference = {}
 
 	local Hazards = {
@@ -410,7 +411,7 @@ run(function()
 		},
 
 		Piano = {
-			Expand = Vector3.new(33, 1000, 33),
+			Expand = Vector3.new(36.5, 1000, 36.5),
 
 			Modify = function(obj, size, cframe)
 				local mesh = obj:FindFirstChildWhichIsA("SpecialMesh")
@@ -454,7 +455,8 @@ run(function()
 		part.Name = randomString()
 		part.Anchored = true
 		part.CanCollide = true
-		part.Transparency = 1
+		part.CastShadow = true
+		part.Transparency = Transparency.Value
 		part.Size = size + (info.Expand or Vector3.zero)
 		part.CFrame = cframe
 		part.Parent = workspace
@@ -521,6 +523,17 @@ run(function()
 					end
 				end
 				table.clear(Reference)
+			end
+		end
+	})
+	
+	Transparency = AntiHazard:CreateSlider({
+		Name = "Transparency",
+		Min = 0,
+		Max = 1,
+		Function = function(val) 
+			for obj, ref in pairs(Reference) do
+				ref.Part.Transparency = val
 			end
 		end
 	})
