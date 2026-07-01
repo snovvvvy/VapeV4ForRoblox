@@ -419,7 +419,7 @@ run(function()
 			Expand = Vector3.new(0.5, 0.5, 0.5)
 		},
 		HalfShockwave = {
-			Expand = Vector3.new(1, 1, 1)
+			Expand = Vector3.new(7.5, 100, 7.5)
 		},
 		Piano = {
 			Expand = Vector3.new(37.5, 1000, 37.5),
