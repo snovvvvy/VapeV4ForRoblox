@@ -408,8 +408,9 @@ run(function()
 		x1Slash = {
 			Expand = Vector3.new(0.5, 0.5, 0.5)
 		},
+
 		Piano = {
-			Expand = Vector3.new(2, 1000, 2),
+			Expand = Vector3.new(6.5, 1000, 6.5),
 
 			Modify = function(obj, size, cframe)
 				local mesh = obj:FindFirstChildWhichIsA("SpecialMesh")
@@ -458,7 +459,10 @@ run(function()
 		part.CFrame = cframe
 		part.Parent = workspace
 
-		Reference[obj] = part
+		Reference[obj] = {
+			Part = part,
+			Info = info
+		}
 	end
 
 	local function remove(obj)
@@ -470,8 +474,8 @@ run(function()
 		Reference[obj] = nil
 
 		task.delay(0.5, function()
-			if ref and ref.Parent then
-				ref:Destroy()
+			if ref.Part and ref.Part.Parent then
+				ref.Part:Destroy()
 			end
 		end)
 	end
@@ -480,6 +484,25 @@ run(function()
 		Name = "AntiHazard",
 		Function = function(callback)
 			if callback then
+				AntiHazard:Clean(runService.Heartbeat:Connect(function()
+					for obj, ref in pairs(Reference) do
+						if not obj.Parent or not ref.Part.Parent then
+							remove(obj)
+							continue
+						end
+
+						local size = obj.Size
+						local cframe = obj.CFrame
+
+						if ref.Info.Modify then
+							size, cframe = ref.Info.Modify(obj, size, cframe)
+						end
+
+						ref.Part.Size = size + (ref.Info.Expand or Vector3.zero)
+						ref.Part.CFrame = cframe
+					end
+				end))
+
 				for tag in pairs(Hazards) do
 					AntiHazard:Clean(collectionService:GetInstanceAddedSignal(tag):Connect(function(obj)
 						create(obj, tag)
@@ -492,9 +515,9 @@ run(function()
 					end
 				end
 			else
-				for _, part in pairs(Reference) do
-					if part and part.Parent then
-						part:Destroy()
+				for _, ref in pairs(Reference) do
+					if ref.Part and ref.Part.Parent then
+						ref.Part:Destroy()
 					end
 				end
 				table.clear(Reference)
