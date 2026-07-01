@@ -251,7 +251,7 @@ run(function() -- ac bypass by koya
 		shared.AnticheatBypassed = true
 	else
 		if shared.AnticheatBypassed ~= true then
-			notif("Vape", "Couldn't bypass the anticheat. Use at your own risk.", 10, "warning")
+			notif("Vape", "Couldn't bypass the anticheat. Use at your own risk.", 30, "alert")
 		end
 	end
 end)
@@ -265,28 +265,7 @@ run(function()
 	local Chance
 	local UpdateRate
 	local PerfectParry
-	local LegitMode
 	local oldGPP
-	local cachedTracks = {}
-
-	local function getParryTrack()
-		local weapon = lplr:GetAttribute("Weapon")
-		local track = cachedTracks[weapon]
-
-		if track and track.Parent then
-			return track
-		end
-
-		local animation = replicatedStorage.Animations.ParryStarts:FindFirstChild(weapon .. "ParryStart")
-		if not animation or not entitylib.isAlive then
-			return
-		end
-
-		track = entitylib.character.Humanoid.Animator:LoadAnimation(animation)
-		cachedTracks[weapon] = track
-
-		return track
-	end
 
 	local function isParrying()
 		return math.random(100) <= Chance.Value
@@ -304,50 +283,11 @@ run(function()
 		end
 	end
 
-	local function setupHighlight(obj)
-		obj.Enabled = false
-
-		AutoParry:Clean(entitylib.character.Character:GetAttributeChangedSignal("Parrying"):Connect(function()
-			if not entitylib.isAlive then
-				return
-			end
-
-			if not entitylib.character.Character:GetAttribute("Parrying") then
-				obj.Enabled = true
-
-				local track = getParryTrack()
-
-				if track then
-					task.spawn(function()
-						track:Play()
-						track.TimePosition = 0.2
-						track.Stopped:Wait()
-						obj.Enabled = false
-					end)
-				else
-					obj.Enabled = false
-				end
-			end
-		end))
-	end
-
 	AutoParry = vape.Categories.Blatant:CreateModule({
 		Name = "AutoParry",
 		Function = function(callback)
 			if callback then
 				oldGPP = parry.GlobalFunctions.GPP
-
-				if LegitMode.Enabled then
-					AutoParry:Clean(collectionService:GetInstanceAddedSignal("ParryHighlight"):Connect(setupHighlight))
-
-					for _, obj in ipairs(collectionService:GetTagged("ParryHighlight")) do
-						setupHighlight(obj)
-					end
-				else
-					for _, obj in ipairs(collectionService:GetTagged("ParryHighlight")) do
-						obj.Enabled = true
-					end
-				end
 
 				repeat
 					local parrying = isParrying()
@@ -395,18 +335,6 @@ run(function()
 	PerfectParry = AutoParry:CreateToggle({
 		Name = "Perfect Parry"
 	})
-
-	LegitMode = AutoParry:CreateToggle({
-		Name = "Legit Mode",
-		Function = function()
-			if AutoParry.Enabled then
-				AutoParry:Toggle()
-				AutoParry:Toggle()
-			end
-		end
-	})
-
-	LegitMode.Object.Visible = shared.vapedev -- wip module, im not adding private modules
 end)
 
 run(function()
@@ -535,7 +463,8 @@ run(function()
 				end
 				table.clear(Reference)
 			end
-		end
+		end,
+		Tooltip = "Creates parts over hazards to prevent from taking damage."
 	})
 	
 	Transparency = AntiHazard:CreateSlider({
@@ -707,7 +636,8 @@ run(function()
 					task.wait(1 / Rate.Value)
 				until not AutoOverCharge.Enabled
 			end
-		end
+		end,
+		Tooltip = "Automatically refills the overcharge bar."
 	})
 
 	Rate = AutoOverCharge:CreateSlider({
@@ -849,7 +779,8 @@ run(function()
 
 				DisableSugarcoatGUI:Clean(SugarcoatGUI:GetPropertyChangedSignal("Enabled"):Connect(onEnabled))
 			end
-		end
+		end,
+		Tooltip = "Disables the annoying gui when you perfect parry."
 	})
 end)
 
@@ -869,11 +800,12 @@ run(function()
 				task.wait(1)
 				EventsAllowed.Value = true
 			end
-		end
+		end,
+		Tooltip = "Disable some modifier's effects (still keeps the modifier's multiplier)"
 	})
 end)
 
-run(function() 
+--[[run(function() 
 	local DisableEffects
 
 	local function remove(instance)
@@ -903,7 +835,7 @@ run(function()
 		end,
 		Tooltip = "Attempts to destroy all the effects in the game. [BETA]"
 	})
-end)
+end)]]
 
 run(function()
 	local NewSong
