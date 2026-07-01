@@ -62,6 +62,7 @@ entitylib.start()
 run(function()
 	local taggedObjects = setmetatable({}, { __mode = "k" })
 	local enemyInitialized = setmetatable({}, { __mode = "k" })
+	local pianoInitialized = setmetatable({}, { __mode = "k" })
 	local destroyConnected = setmetatable({}, { __mode = "k" })
 
 	local function tag(obj, tagName)
@@ -191,6 +192,20 @@ run(function()
 				end
 			end))
 		end
+	end
+
+	function TagBehaviors.Piano(obj)
+		if enemyInitialized[obj] then
+			return
+		end
+
+		enemyInitialized[obj] = true
+
+		vape:Clean(obj:GetPropertyChangedSignal("Transparency"):Connect(function()
+			if obj.Transparency == 1 then
+				collectionService:RemoveTag(obj, "Piano")
+			end
+		end))
 	end
 
 	for _, obj in ipairs(workspace:GetDescendants()) do
@@ -394,7 +409,7 @@ run(function()
 			Expand = Vector3.new(0.5, 0.5, 0.5)
 		},
 		Piano = {
-			Expand = Vector3.new(0.5, 1000, 0.5),
+			Expand = Vector3.new(2, 1000, 2),
 
 			Modify = function(obj, size, cframe)
 				local mesh = obj:FindFirstChildWhichIsA("SpecialMesh")
